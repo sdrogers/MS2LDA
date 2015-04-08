@@ -99,6 +99,9 @@ run_lda('beer', 'input/QC_Beer_ParentsFragments_Tonyscripting.csv', True, n_topi
 # beer data with multinomial matrix
 run_lda('beer', 'input/QC_Beer_ParentsFragments_Tonyscripting.csv', False, n_topics)
 
+# urine data with binary matrix
+run_lda('urine37', 'input/Urine_FragmentsParents_MS2filter5000_Tonyscripting.csv', True, n_topics)
+
 # urine data with multinomial matrix
 run_lda('urine37', 'input/Urine_FragmentsParents_MS2filter5000_Tonyscripting.csv', False, n_topics)
 
