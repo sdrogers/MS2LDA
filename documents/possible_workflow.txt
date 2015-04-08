@@ -1,0 +1,17 @@
+Possible workflow
+==========
+
+Proposed by Justin
+1. Create substructure sign. (topics) from a fragmentation file.
+2. Store into database the topics with related fragments above a certain probability cut-off.
+3. Curate/annotate database (this can be done by any chemist/metabolomics researcher in principle)
+4. Create substructure sign. from other sample type fragmentation file.
+5. Compare to those present in database - add novel ones to database - run substructure sign. from database over file.
+6. Then return for each fragmented peak in the file of interest the top 5 or so topic matches with a probability score.
+7. The user can look up compounds with similar topics or select and check compounds based on behavior in the dataset.
+8. Also, I can check if topics are in any way related to pathways....
+9. Compare annotation of compounds to matching with database spectra (pros, cons)
+
+I think such an approach would be publishable in Anal Chem.
+
+The nice thing is that everybody is able to enrich the database with their own samples - and get something back from the already 'curated' substructure signatures. Also, it produces probabilities as to if certain substructures are present in the data/compounds, which is something many people like to publish along with their results.  
