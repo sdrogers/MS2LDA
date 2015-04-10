@@ -298,7 +298,11 @@ object
 ##Read in data and get peaks
 ############
 
-xset <- xcmsSet(files="QCB_fragm_pos_top5.mzXML")
+xset <- xcmsSet(files="Urine_37_posneg_60stepped_1E5_Top10.mzXML")
+
+# doesnt work!!
+# xset <- xcmsSet("Urine_37_posneg_60stepped_1E5_Top10.mzXML", method='centWave', ppm=2, peakwidth=c(10, 100), snthresh=5, prefilter=c(3, 1000), integrate=1, mzdiff=0.001, fitgauss=FALSE, verbose.columns=TRUE)
+
 xset <- group(xset)
 frags <- xcmsSetFragments(xset)
 peaks <- as.data.frame(frags@peaks)
