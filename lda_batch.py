@@ -7,8 +7,15 @@ n_topics = 50
 # run_lda('beer_pos', 'input/QC_Beer_ParentsFragments_Tonyscripting.csv', False, n_topics)
 
 # beer negative mode
-run_lda('beer_neg', 'input/QC_Beer_negmode_7ppm.csv', True, n_topics)
-run_lda('beer_neg', 'input/QC_Beer_negmode_7ppm.csv', False, n_topics)
+# run_lda('beer_neg', 'input/QC_Beer_negmode_7ppm.csv', True, n_topics)
+# run_lda('beer_neg', 'input/QC_Beer_negmode_7ppm.csv', False, n_topics)
+
+# Two matrices of a beer sample from the 'new data' obtained this week ... This one is the 7 Giraffes Extraordinary Ale ...
+n_topics = 100
+run_lda('beer3_pos', 'input/Beer3_Top10_POS_DataMatrix.csv', True, n_topics)
+run_lda('beer3_pos', 'input/Beer3_Top10_POS_DataMatrix.csv', False, n_topics)
+run_lda('beer3_neg', 'input/Beer3_Top10_NEG_DataMatrix.csv', True, n_topics)
+run_lda('beer3_neg', 'input/Beer3_Top10_NEG_DataMatrix.csv', False, n_topics)
 
 # urine37 mixed modes
 # run_lda('urine37_mixed', 'input/Urine_FragmentsParents_MS2filter5000_Tonyscripting.csv', True, n_topics)
