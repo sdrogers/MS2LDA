@@ -172,5 +172,9 @@ print("Constructing mz difference dataframe")
 ##### Write Output #####
 ########################
 
+# combine the dataframes
+combined <- rbind(ms2_df, neutral_loss_df)
+
 write.table(ms2_df, file="FP_Matrix_Beer_3_POS_7ppm_test_IDEOMsettings_SpecPeaks_fragments.csv", col.names=NA, row.names=T, sep="\t")
 write.table(neutral_loss_df, file="FP_Matrix_Beer_3_POS_7ppm_test_IDEOMsettings_SpecPeaks_losses.csv", col.names=NA, row.names=T, sep="\t")
+write.table(combined, file="FP_Matrix_Beer_3_POS_7ppm_test_IDEOMsettings_SpecPeaks_combined.csv", col.names=NA, row.names=T, sep="\t")
