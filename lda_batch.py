@@ -12,10 +12,7 @@ n_topics = 50
 
 # Two matrices of a beer sample from the 'new data' obtained this week ... This one is the 7 Giraffes Extraordinary Ale ...
 n_topics = 100
-run_lda('beer3_pos', 'input/Beer3_T10_POS_MS1MS2matrix_specpeaks_filter.csv', True, n_topics)
-run_lda('beer3_pos', 'input/Beer3_T10_POS_MS1MS2matrix_specpeaks_filter.csv', False, n_topics)
-run_lda('beer3_neg', 'input/Beer3_T10_NEG_MS1MS2matrix_specpeaks_filter.csv', True, n_topics)
-run_lda('beer3_neg', 'input/Beer3_T10_NEG_MS1MS2matrix_specpeaks_filter.csv', False, n_topics)
+run_lda('beer3_pos', 'input/FP_Matrix_Beer_3_POS_7ppm_test_IDEOMsettings_SpecPeaks_combined.csv', False, n_topics)
 
 # urine37 mixed modes
 # run_lda('urine37_mixed', 'input/Urine_FragmentsParents_MS2filter5000_Tonyscripting.csv', True, n_topics)
