@@ -3,44 +3,44 @@ import pandas as pd
 import lda
 import lda.datasets
 import pylab as plt
+from scipy.sparse import coo_matrix
 
 import sys
 import os
 
-def get_outfile(results_prefix, binary, doctype):
-    if binary:
-        parent_dir = 'results/' + results_prefix + '/binary'
-        outfile = parent_dir + '/' + results_prefix + '_binary' + doctype
-    else:
-        parent_dir = 'results/' + results_prefix + '/multinomial'
-        outfile = parent_dir + '/' + results_prefix + '_multinomial' + doctype
+def get_outfile(results_prefix, doctype):
+    parent_dir = 'results/' + results_prefix
+    outfile = parent_dir + '/' + results_prefix + doctype
     if not os.path.exists(parent_dir):
         os.makedirs(parent_dir)        
     return outfile
     
-def run_lda(results_prefix, filename, binary, n_topics):    
+def run_lda(results_prefix, fragment_filename, neutral_loss_filename, mzdiff_filename, n_topics):    
         
-    data = pd.read_csv(filename,index_col=0)    
-    if binary:
-        print "Binary input from " + filename
-        data = data.replace(np.nan,0)
-        data[data>0] = 1
-        data = data.transpose()
-        npdata = np.array(data,dtype='int64')
-    else:
-        print "Multinomial input from " + filename
-        data = np.log(data)
-        min_val = data.min().min()
-        data /= data.max().max()
-        data *= 100
-        from scipy.sparse import coo_matrix
-        data = data.replace(np.nan,0)
-        data = data.transpose()
-        sd = coo_matrix(data)
-        plt.hist(sd.data)
-        plt.show()
-        sd = sd.floor()  
-        npdata = np.array(sd.todense(),dtype='int64')
+    fragment_data = pd.read_csv(fragment_filename, index_col=0)
+    neutral_loss_data = pd.read_csv(neutral_loss_filename, index_col=0)
+    data = fragment_data.append(neutral_loss_data)
+
+    # discretise the fragment and neutral loss intensities values
+    # log and scale it from 0 .. 100
+    data = np.log(data)
+    data /= data.max().max()
+    data *= 100
+    
+    # then scale mzdiff counts from 0 .. 100 too, and append it to data
+    mzdiff_data = pd.read_csv(mzdiff_filename, index_col=0)
+    mzdiff_data /= mzdiff_data.max().max()
+    mzdiff_data *= 100    
+    data = data.append(mzdiff_data)
+    
+    # get rid of NaNs, transpose the data and floor it
+    data = data.replace(np.nan,0)
+    data = data.transpose()
+    sd = coo_matrix(data)
+    plt.hist(sd.data)
+    plt.show()
+    sd = sd.floor()  
+    npdata = np.array(sd.todense(),dtype='int64')
     print "Data shape " + str(npdata.shape)
 
     print "Fitting model..."
@@ -49,7 +49,7 @@ def run_lda(results_prefix, filename, binary, n_topics):
     model.fit(npdata)
     print "DONE!"
     
-    outfile = get_outfile(results_prefix, binary, '_topics.csv') 
+    outfile = get_outfile(results_prefix, '_topics.csv') 
     print "Writing topics to " + outfile
     topic_fragments = model.topic_word_
     n_top_frags = 20
@@ -60,7 +60,7 @@ def run_lda(results_prefix, filename, binary, n_topics):
             # print(out_string)
             f.write(out_string+'\n')
 
-    outfile = get_outfile(results_prefix, binary, '_all.csv') 
+    outfile = get_outfile(results_prefix, '_all.csv') 
     print "Writing fragments x topics probability matrix to " + outfile
     topic = model.topic_word_
     masses = np.array(data.transpose().index)
@@ -72,10 +72,10 @@ def run_lda(results_prefix, filename, binary, n_topics):
     topicdf = pd.DataFrame(d)
     topicdf.to_csv(outfile)
 
-    outfile = get_outfile(results_prefix, binary, '_docs.csv') 
+    outfile = get_outfile(results_prefix, '_docs.csv') 
     print "Writing topic docs to " + outfile
     doc = model.doc_topic_
-    (n_doc,a) = doc.shape
+    (n_doc, a) = doc.shape
     topic_index = np.arange(n_topics)
     doc_names = np.array(data.index)
     d = {}
