@@ -7,7 +7,7 @@ require('gtools')
 ################################
 
 # do peak detection using CentWave
-xset <- xcmsSet(files="Beer_3_T10_POS.mzXML", method="centWave", ppm=2, snthresh=3, peakwidth=c(5,100),
+xset <- xcmsSet(files="/home/joewandy/Project/justin_data/Beer_3_T10_POS.mzXML", method="centWave", ppm=2, snthresh=3, peakwidth=c(5,100),
                 prefilter=c(3,1000), mzdiff=0.001, integrate=0, fitgauss=FALSE, verbose.column=TRUE)
 xset <- group(xset)
 
@@ -61,9 +61,9 @@ ms2_df <- ms2_df[-1,]
 # find fragments that are within 7ppm of each other. Assume same fragment.
 copy_ms2 <- ms2
 while(nrow(copy_ms2) > 0) {
-  
+    
     print(paste(c("remaining=", nrow(copy_ms2)), collapse=""))
-  
+    
     # get first mz value
     mz <- copy_ms2$mz[1]
     
@@ -93,7 +93,7 @@ while(nrow(copy_ms2) > 0) {
     
     # remove fragments from ms2 list and start loop again with next fragment
     copy_ms2 <- copy_ms2[-match.idx,]
-
+    
 }
 
 # add ms1 label in format mz_rt
@@ -116,47 +116,47 @@ neutral_loss_df <- neutral_loss_df[-1,]
 ms2_masses <- ms2$mz
 parent_ids <- ms2$MSnParentPeakID
 matches <- match(as.character(parent_ids), ms1.names)
-parent_masses <- ms1[matches, 5]
+parent_masses <- ms1[matches, 5] # column 5 is the mz
 losses <- parent_masses - ms2_masses
 fragment_intensities <- ms2$intensity
 
 # greedily discretise the loss values
 matches_count = vector()
 while(length(losses) > 0) {
-
-  mz <- losses[1]
-  
-  # get all the losses values within tolerance from mz
-  max.ppm <- mz * 15 * 1e-06
-  match.idx <- which(sapply(losses, function(x) {
-    abs(mz - x) < max.ppm
-  }))    
     
-  # append this new row to the data frame only if matches > threshold
-  threshold <- 5
-  if (length(match.idx)>threshold) {
-
-    matches_count <- c(matches_count, length(match.idx))
-    print(paste(c("remaining=", length(losses), " loss=", mean.mz, " matches=", length(match.idx)), collapse=""))
+    mz <- losses[1]
     
-    # compute their average mean mz as the row label and find column of the parent peaks
-    mean.mz <- round(mean(losses[match.idx]), digits=5)
-    intensities <- fragment_intensities[match.idx]
-    parent.id <- parent_ids[match.idx]
-    parent.idx <- match(as.character(parent.id), ms1.names)
-    row <- rep(NA, nrow(ms1))
-    row[parent.idx] <- intensities
+    # get all the losses values within tolerance from mz
+    max.ppm <- mz * 15 * 1e-06
+    match.idx <- which(sapply(losses, function(x) {
+        abs(mz - x) < max.ppm
+    }))    
     
-    neutral_loss_df <- rbind(neutral_loss_df, row)
-    rownames(neutral_loss_df)[nrow(neutral_loss_df)] <- paste(c("loss_", mean.mz), collapse="") # the row name is the avg mz
-
-  }
-
-  # decrease items from the vectors
-  losses <- losses[-match.idx]
-  fragment_intensities <- fragment_intensities[-match.idx]
-  parent_ids <- parent_ids[-match.idx]
-  
+    # append this new row to the data frame only if matches > threshold
+    threshold <- 5
+    if (length(match.idx)>threshold) {
+        
+        matches_count <- c(matches_count, length(match.idx))
+        print(paste(c("remaining=", length(losses), " loss=", mean.mz, " matches=", length(match.idx)), collapse=""))
+        
+        # compute their average mean mz as the row label and find column of the parent peaks
+        mean.mz <- round(mean(losses[match.idx]), digits=5)
+        intensities <- fragment_intensities[match.idx]
+        parent.id <- parent_ids[match.idx]
+        parent.idx <- match(as.character(parent.id), ms1.names)
+        row <- rep(NA, nrow(ms1))
+        row[parent.idx] <- intensities
+        
+        neutral_loss_df <- rbind(neutral_loss_df, row)
+        rownames(neutral_loss_df)[nrow(neutral_loss_df)] <- paste(c("loss_", mean.mz), collapse="") # the row name is the avg mz
+        
+    }
+    
+    # decrease items from the vectors
+    losses <- losses[-match.idx]
+    fragment_intensities <- fragment_intensities[-match.idx]
+    parent_ids <- parent_ids[-match.idx]
+    
 }
 names(neutral_loss_df) <- paste(as.character(round(ms1$mz, digits=5)), as.character(ms1$rt), sep="_")
 neutral_loss_df <- neutral_loss_df[mixedsort(row.names(neutral_loss_df)),]
@@ -167,6 +167,19 @@ neutral_loss_df <- neutral_loss_df[mixedsort(row.names(neutral_loss_df)),]
 
 print("Constructing mz difference dataframe")
 
+mzdiff_count = vector()
+parent_ids <- ms2$MSnParentPeakID
+for (i in 1:nrow(ms1)) {
+    peak_id <- ms1[i, 1]
+    matches <- match(as.character(parent_ids), peak_id)
+    pos <- which(!is.na(matches))
+    print(paste(c("parent peak id ", peak_id, " has ", length(pos), " fragment peaks"), collapse=""))
+    if (length(pos)>1) {
+        fragment_peaks <- ms2[pos, ]
+        fragment_mzs <- fragment_peaks$mz
+        
+    }
+}
 
 ########################
 ##### Write Output #####
