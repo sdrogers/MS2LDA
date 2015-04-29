@@ -7,7 +7,7 @@ require('gtools')
 ################################
 
 # do peak detection using CentWave
-xset <- xcmsSet(files="Urine_37_Top10_POS.mzXML", method="centWave", ppm=2, snthresh=3, peakwidth=c(5,100),
+xset <- xcmsSet(files="Beer_3_T10_POS.mzXML", method="centWave", ppm=2, snthresh=3, peakwidth=c(5,100),
                 prefilter=c(3,1000), mzdiff=0.001, integrate=0, fitgauss=FALSE, verbose.column=TRUE)
 xset <- group(xset)
 
@@ -175,6 +175,6 @@ print("Constructing mz difference dataframe")
 # combine the dataframes
 combined <- rbind(ms2_df, neutral_loss_df)
 
-write.table(ms2_df, file="Urine_37_Top10_POS_fragments.csv", col.names=NA, row.names=T, sep="\t")
-write.table(neutral_loss_df, file="Urine_37_Top10_POS_losses.csv", col.names=NA, row.names=T, sep="\t")
-write.table(combined, file="Urine_37_Top10_POS_combined.csv", col.names=NA, row.names=T, sep="\t")
+write.table(ms2_df, file="Beer_3_T10_POS_fragments.csv", col.names=NA, row.names=T, sep="\t")
+write.table(neutral_loss_df, file="Beer_3_T10_POS_losses.csv", col.names=NA, row.names=T, sep="\t")
+write.table(combined, file="Beer_3_T10_POS_combined.csv", col.names=NA, row.names=T, sep="\t")
