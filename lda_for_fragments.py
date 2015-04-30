@@ -19,16 +19,17 @@ def run_lda(results_prefix, fragment_filename, neutral_loss_filename, mzdiff_fil
         
     fragment_data = pd.read_csv(fragment_filename, index_col=0)
     neutral_loss_data = pd.read_csv(neutral_loss_filename, index_col=0)
-    data = fragment_data.append(neutral_loss_data)
+    mzdiff_data = pd.read_csv(mzdiff_filename, index_col=0)
 
     # discretise the fragment and neutral loss intensities values
     # log and scale it from 0 .. 100
-    data = np.log(data)
+    data = fragment_data.append(neutral_loss_data)
+    data = np.log10(data)
     data /= data.max().max()
     data *= 100
     
     # then scale mzdiff counts from 0 .. 100 too, and append it to data
-    mzdiff_data = pd.read_csv(mzdiff_filename, index_col=0)
+    mzdiff_data = np.log10(mzdiff_data)
     mzdiff_data /= mzdiff_data.max().max()
     mzdiff_data *= 100    
     data = data.append(mzdiff_data)
@@ -45,7 +46,7 @@ def run_lda(results_prefix, fragment_filename, neutral_loss_filename, mzdiff_fil
 
     print "Fitting model..."
     sys.stdout.flush()
-    model = lda.LDA(n_topics = n_topics, n_iter=1000, random_state=1)
+    model = lda.LDA(n_topics = n_topics, n_iter=500, random_state=1)
     model.fit(npdata)
     print "DONE!"
     
