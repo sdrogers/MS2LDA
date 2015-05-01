@@ -15,7 +15,7 @@ def get_outfile(results_prefix, doctype):
         os.makedirs(parent_dir)        
     return outfile
     
-def run_lda(results_prefix, fragment_filename, neutral_loss_filename, mzdiff_filename, n_topics):    
+def run_lda(results_prefix, fragment_filename, neutral_loss_filename, mzdiff_filename, n_topics, n_samples):    
         
     fragment_data = pd.read_csv(fragment_filename, index_col=0)
     neutral_loss_data = pd.read_csv(neutral_loss_filename, index_col=0)
@@ -29,24 +29,25 @@ def run_lda(results_prefix, fragment_filename, neutral_loss_filename, mzdiff_fil
     data *= 100
     
     # then scale mzdiff counts from 0 .. 100 too, and append it to data
-    mzdiff_data = np.log10(mzdiff_data)
     mzdiff_data /= mzdiff_data.max().max()
-    mzdiff_data *= 100    
+    mzdiff_data *= 100
     data = data.append(mzdiff_data)
     
     # get rid of NaNs, transpose the data and floor it
     data = data.replace(np.nan,0)
     data = data.transpose()
     sd = coo_matrix(data)
-    plt.hist(sd.data)
+    counts, bins, bars = plt.hist(sd.data, bins=range(100))
     plt.show()
+    for b, c in zip(bins, counts):
+        print "bin=" + str(b) + " count=" + str(c)
     sd = sd.floor()  
     npdata = np.array(sd.todense(),dtype='int64')
     print "Data shape " + str(npdata.shape)
 
     print "Fitting model..."
     sys.stdout.flush()
-    model = lda.LDA(n_topics = n_topics, n_iter=500, random_state=1)
+    model = lda.LDA(n_topics = n_topics, n_iter=n_samples, random_state=1)
     model.fit(npdata)
     print "DONE!"
     
@@ -62,7 +63,7 @@ def run_lda(results_prefix, fragment_filename, neutral_loss_filename, mzdiff_fil
             f.write(out_string+'\n')
 
     outfile = get_outfile(results_prefix, '_all.csv') 
-    print "Writing fragments x topics probability matrix to " + outfile
+    print "Writing fragments x topics to " + outfile
     topic = model.topic_word_
     masses = np.array(data.transpose().index)
     d = {}
@@ -91,3 +92,5 @@ def run_lda(results_prefix, fragment_filename, neutral_loss_filename, mzdiff_fil
     ind = [mass_rt.index(i) for i in sorted_mass_rt]
     docdf = docdf[ind]
     docdf.to_csv(outfile)
+    
+    return data, model, topicdf, docdf

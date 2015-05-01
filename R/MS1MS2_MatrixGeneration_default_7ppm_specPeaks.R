@@ -1,3 +1,23 @@
+input_file <- '/home/joewandy/Project/justin_data/Beer_3_T10_POS.mzXML'
+fragments_out <- 'Beer_3_T10_POS_fragments.csv'
+losses_out <- 'Beer_3_T10_POS_losses.csv'
+mzdiffs_out <- 'Beer_3_T10_POS_mzdiffs.csv'
+
+# input_file <- '/home/joewandy/Project/justin_data/Beer_3_T10_NEG.mzXML'
+# fragments_out <- 'Beer_3_T10_NEG_fragments.csv'
+# losses_out <- 'Beer_3_T10_NEG_losses.csv'
+# mzdiffs_out <- 'Beer_3_T10_NEG_mzdiffs.csv'
+
+# input_file <- '/home/joewandy/Project/justin_data/Urine_37_Top10_POS.mzXML'
+# fragments_out <- 'Urine_37_Top10_POS_fragments.csv'
+# losses_out <- 'Urine_37_Top10_POS_losses.csv'
+# mzdiffs_out <- 'Urine_37_Top10_POS_mzdiffs.csv'
+
+# input_file <- '/home/joewandy/Project/justin_data/Urine_37_Top10_NEG.mzXML'
+# fragments_out <- 'Urine_37_Top10_NEG_fragments.csv'
+# losses_out <- 'Urine_37_Top10_NEG_losses.csv'
+# mzdiffs_out <- 'Urine_37_Top10_NEG_mzdiffs.csv'
+
 library(xcms)
 library(Hmisc)
 require('gtools')
@@ -7,7 +27,7 @@ require('gtools')
 ################################
 
 # do peak detection using CentWave
-xset <- xcmsSet(files="/home/joewandy/Project/justin_data/Beer_3_T10_POS.mzXML", method="centWave", ppm=2, snthresh=3, peakwidth=c(5,100),
+xset <- xcmsSet(files=input_file, method="centWave", ppm=2, snthresh=3, peakwidth=c(5,100),
                 prefilter=c(3,1000), mzdiff=0.001, integrate=0, fitgauss=FALSE, verbose.column=TRUE)
 xset <- group(xset)
 
@@ -48,4 +68,4 @@ ms1 <- ms1[which(ms1$peakID %in% ms2$MSnParentPeakID),]
 ### Prepare the matrices for LDA ###
 
 source('extractFeatures.R')
-extract_features(ms1, ms2)
+extract_features(ms1, ms2, fragments_out, losses_out, mzdiffs_out)

@@ -1,5 +1,7 @@
+require('gtools') # for natural sorting
+
 # TODO: tidy up and speed up this function later ...
-extract_features <- function(ms1, ms2) {
+extract_features <- function(ms1, ms2, fragments_out, losses_out, mzdiffs_out) {
 
     ########################################
     ##### MS1/MS2 Dataframe Generation #####
@@ -218,13 +220,8 @@ extract_features <- function(ms1, ms2) {
     ##### Write Output #####
     ########################
     
-    # combine all the dataframes
-    # combined <- rbind(ms2_df, neutral_loss_df)
-    # combined <- rbind(combined, mz_diff_df)
-    
-    write.table(ms2_df, file="Beer_3_T10_POS_fragments.csv", col.names=NA, row.names=T, sep="\t")
-    write.table(neutral_loss_df, file="Beer_3_T10_POS_losses.csv", col.names=NA, row.names=T, sep="\t")
-    write.table(mz_diff_df, file="Beer_3_T10_POS_mzdiff.csv", col.names=NA, row.names=T, sep="\t")
-    # write.table(combined, file="Beer_3_T10_POS_combined.csv", col.names=NA, row.names=T, sep="\t")
+    write.table(ms2_df, file=fragments_out, col.names=NA, row.names=T, sep="\t")
+    write.table(neutral_loss_df, file=losses_out, col.names=NA, row.names=T, sep="\t")
+    write.table(mz_diff_df, file=mzdiffs_out, col.names=NA, row.names=T, sep="\t")
     
 }
