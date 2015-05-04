@@ -39,8 +39,6 @@ def run_lda(results_prefix, fragment_filename, neutral_loss_filename, mzdiff_fil
     sd = coo_matrix(data)
     counts, bins, bars = plt.hist(sd.data, bins=range(100))
     plt.show()
-    for b, c in zip(bins, counts):
-        print "bin=" + str(b) + " count=" + str(c)
     sd = sd.floor()  
     npdata = np.array(sd.todense(),dtype='int64')
     print "Data shape " + str(npdata.shape)

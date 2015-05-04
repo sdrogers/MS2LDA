@@ -1,26 +1,20 @@
-input_file <- '/home/joewandy/Project/justin_data/Beer_3_T10_POS.mzXML'
-fragments_out <- 'Beer_3_T10_POS_fragments.csv'
-losses_out <- 'Beer_3_T10_POS_losses.csv'
-mzdiffs_out <- 'Beer_3_T10_POS_mzdiffs.csv'
-
-# input_file <- '/home/joewandy/Project/justin_data/Beer_3_T10_NEG.mzXML'
-# fragments_out <- 'Beer_3_T10_NEG_fragments.csv'
-# losses_out <- 'Beer_3_T10_NEG_losses.csv'
-# mzdiffs_out <- 'Beer_3_T10_NEG_mzdiffs.csv'
-
-# input_file <- '/home/joewandy/Project/justin_data/Urine_37_Top10_POS.mzXML'
-# fragments_out <- 'Urine_37_Top10_POS_fragments.csv'
-# losses_out <- 'Urine_37_Top10_POS_losses.csv'
-# mzdiffs_out <- 'Urine_37_Top10_POS_mzdiffs.csv'
-
-# input_file <- '/home/joewandy/Project/justin_data/Urine_37_Top10_NEG.mzXML'
-# fragments_out <- 'Urine_37_Top10_NEG_fragments.csv'
-# losses_out <- 'Urine_37_Top10_NEG_losses.csv'
-# mzdiffs_out <- 'Urine_37_Top10_NEG_mzdiffs.csv'
-
 library(xcms)
 library(Hmisc)
 require('gtools')
+
+input_file <- '/home/joewandy/Project/justin_data/Beer_3_T10_POS.mzXML'
+# input_file <- '/home/joewandy/Project/justin_data/Beer_3_T10_NEG.mzXML'
+# input_file <- '/home/joewandy/Project/justin_data/Urine_37_Top10_POS.mzXML'
+# input_file <- '/home/joewandy/Project/justin_data/Urine_37_Top10_NEG.mzXML'
+
+# construct the output filenames
+prefix <- basename(input_file) # get the filename only
+prefix <- sub("^([^.]*).*", "\\1", prefix) # get rid of the extension 
+fragments_out <- paste(c(prefix, '_fragments.csv'), collapse="")
+losses_out <- paste(c(prefix, '_losses.csv'), collapse="")
+mzdiffs_out <- paste(c(prefix, '_mzdiffs.csv'), collapse="")
+ms1_out <- paste(c(prefix, '_ms1.csv'), collapse="")
+ms2_out <- paste(c(prefix, '_ms2.csv'), collapse="")
 
 ################################
 ## Read in data and get peaks ##
@@ -68,4 +62,5 @@ ms1 <- ms1[which(ms1$peakID %in% ms2$MSnParentPeakID),]
 ### Prepare the matrices for LDA ###
 
 source('extractFeatures.R')
-extract_features(ms1, ms2, fragments_out, losses_out, mzdiffs_out)
+extract_features(ms1, ms2, ms1_out, ms2_out, 
+                 fragments_out, losses_out, mzdiffs_out)

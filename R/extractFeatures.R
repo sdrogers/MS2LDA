@@ -1,7 +1,8 @@
 require('gtools') # for natural sorting
 
 # TODO: tidy up and speed up this function later ...
-extract_features <- function(ms1, ms2, fragments_out, losses_out, mzdiffs_out) {
+extract_features <- function(ms1, ms2, ms1_out, ms2_out, 
+                             fragments_out, losses_out, mzdiffs_out) {
 
     ########################################
     ##### MS1/MS2 Dataframe Generation #####
@@ -12,9 +13,9 @@ extract_features <- function(ms1, ms2, fragments_out, losses_out, mzdiffs_out) {
     # create empty data.frame
     ms2_df <- data.frame(t(rep(NA,length(ms1$peakID))))
     
-    # get peak ids then remove from matrix
-    ms1.names <- as.character(ms1$peakID)
-    ms2_df <- ms2_df[-1,]
+    ms1.names <- as.character(ms1$peakID) # set row names on ms1 dataframe
+    ms2.names <- as.character(ms2$peakID) # set row names on ms2 dataframe
+    ms2_df <- ms2_df[-1,] # remove first column
     
     # find fragments that are within 7ppm of each other. Assume same fragment.
     copy_ms2 <- ms2
@@ -36,6 +37,11 @@ extract_features <- function(ms1, ms2, fragments_out, losses_out, mzdiffs_out) {
         # calculate mean mz as label for ms2 row
         mean.mz <- round(mean(copy_ms2$mz[match.idx]), digits=5)
         
+        # store the mean mz (bin id) into the original ms2 dataframe too
+        peakids <- copy_ms2$peakID[match.idx]
+        matching_pos <- match(as.character(peakids), ms2.names)
+        ms2[matching_pos, "bin_id"] <- as.character(mean.mz)
+        
         # get intensities
         intensities <- copy_ms2$intensity[match.idx]
         
@@ -54,8 +60,11 @@ extract_features <- function(ms1, ms2, fragments_out, losses_out, mzdiffs_out) {
         
     }
     
-    # add ms1 label in format mz_rt
-    names(ms2_df) <- paste(as.character(round(ms1$mz, digits=5)), as.character(ms1$rt), sep="_")
+    # add ms1 label in format mz_rt_peakid
+    names(ms2_df) <- paste(as.character(round(ms1$mz, digits=5)), 
+                           as.character(ms1$rt),
+                           as.character(ms1$peakID),
+                           sep="_")
     
     # sort in a natural order
     ms2_df <- ms2_df[mixedsort(row.names(ms2_df)),]
@@ -114,7 +123,13 @@ extract_features <- function(ms1, ms2, fragments_out, losses_out, mzdiffs_out) {
         parent_ids <- parent_ids[-match.idx]
         
     }
-    names(neutral_loss_df) <- paste(as.character(round(ms1$mz, digits=5)), as.character(ms1$rt), sep="_")
+
+    # add ms1 label in format mz_rt_peakid
+    names(neutral_loss_df) <- paste(as.character(round(ms1$mz, digits=5)), 
+                           as.character(ms1$rt),
+                           as.character(ms1$peakID),
+                           sep="_")    
+    
     neutral_loss_df <- neutral_loss_df[mixedsort(row.names(neutral_loss_df)),]
     
     ##############################################
@@ -211,7 +226,12 @@ extract_features <- function(ms1, ms2, fragments_out, losses_out, mzdiffs_out) {
         all_parentids <- all_parentids[-match.idx]    
         
     }
-    names(mz_diff_df) <- paste(as.character(round(ms1$mz, digits=5)), as.character(ms1$rt), sep="_")
+    
+    # add ms1 label in format mz_rt
+    names(mz_diff_df) <- paste(as.character(round(ms1$mz, digits=5)), 
+                           as.character(ms1$rt),
+                           as.character(ms1$peakID),
+                           sep="_")
     mz_diff_df <- mz_diff_df[mixedsort(row.names(mz_diff_df)),]
     print(paste(c("no. of rows in mz_diff_df=", nrow(mz_diff_df)), collapse=""))
     hist(temp_count, breaks=seq(5, max(temp_count), 1))
@@ -220,8 +240,10 @@ extract_features <- function(ms1, ms2, fragments_out, losses_out, mzdiffs_out) {
     ##### Write Output #####
     ########################
     
-    write.table(ms2_df, file=fragments_out, col.names=NA, row.names=T, sep="\t")
-    write.table(neutral_loss_df, file=losses_out, col.names=NA, row.names=T, sep="\t")
-    write.table(mz_diff_df, file=mzdiffs_out, col.names=NA, row.names=T, sep="\t")
+    write.table(ms1, file=ms1_out, col.names=NA, row.names=T, sep=",")
+    write.table(ms2, file=ms2_out, col.names=NA, row.names=T, sep=",")    
+    write.table(ms2_df, file=fragments_out, col.names=NA, row.names=T, sep=",")
+    write.table(neutral_loss_df, file=losses_out, col.names=NA, row.names=T, sep=",")
+    write.table(mz_diff_df, file=mzdiffs_out, col.names=NA, row.names=T, sep=",")
     
 }
