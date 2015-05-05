@@ -196,7 +196,7 @@ def _text_plotter(x_data, y_data, text_positions, axis, txt_width, txt_height, f
         axis.text(x-txt_width, 1.01*t, '%.5f'%x, rotation=0, **fontspec)
         if y != t:
             axis.arrow(x, t,0,y-t, color='red',alpha=0.3, width=txt_width*0.1, 
-                       head_width=txt_width/4, head_length=txt_height*0.5, 
+                       head_width=txt_width/4, head_length=txt_height*0.25, 
                        zorder=0,length_includes_head=True)
             
 def plot_lda_fragments(n_docs, n_fragments, data, model, docdf, ms1, ms2):
@@ -349,11 +349,12 @@ def plot_lda_fragments(n_docs, n_fragments, data, model, docdf, ms1, ms2):
         num_peaks = len(parent_ids)
         for n in range(num_peaks):
 
-            fig = plt.figure()
+            figsize=(10, 6)
+            fig = plt.figure(figsize=figsize)
             ax = fig.add_subplot(111)
             
             #set the bbox for the text. Increase txt_width for wider text.
-            txt_width = 30*(plt.xlim()[1] - plt.xlim()[0])
+            txt_width = 20*(plt.xlim()[1] - plt.xlim()[0])
             txt_height = 1*(plt.ylim()[1] - plt.ylim()[0])
 
             # plot the parent peak first
@@ -409,4 +410,61 @@ def plot_lda_fragments(n_docs, n_fragments, data, model, docdf, ms1, ms2):
             plt.title('Topic ' + str(i) + ' -- parent peak ' + ("%.5f" % parent_mass))
             plt.show()
             
-        # break
+def plot_lda_parents(data, model, docdf, ms1, ms2):
+    
+    n_rows = ms1.shape[0]
+    counter = 0
+    for n in range(n_rows):
+      
+        if counter >= 3:
+            break
+        counter += 1
+        
+        # get the parent peak
+        ms1_row = ms1.iloc[[n]]
+        print "Parent peak"
+        print ms1_row[['peakID', 'mz', 'rt', 'intensity']].to_string(index=False, justify='left')    
+        parent_peakid = ms1_row[['peakID']]
+        parent_mass = ms1_row[['mz']]
+        parent_intensity = ms1_row[['intensity']]
+        parent_peakid = np.asscalar(parent_peakid.values)
+        parent_mass = np.asscalar(parent_mass.values)
+        parent_intensity = np.asscalar(parent_intensity.values)
+    
+        # get the fragment peaks of this parent
+        ms2_rows = ms2.loc[ms2['MSnParentPeakID']==parent_peakid]
+        print "Fragment peaks"    
+        print ms2_rows[['peakID', 'MSnParentPeakID', 'mz', 'rt', 'intensity', 'bin_id']].to_string(index=False, justify='left')    
+        fragment_peakids = ms2_rows[['peakID']]
+        fragment_masses = ms2_rows[['mz']]
+        fragment_intensities = ms2_rows[['intensity']]
+        
+        fig = plt.figure()
+        
+        # plot the parent peak
+        parent_fontspec = {
+            'size':'10', 
+            'color':'blue', 
+            'weight':'bold'
+        }
+        parent_intensity = np.log10(parent_intensity)
+        plt.plot((parent_mass, parent_mass), (0, parent_intensity), linewidth=2.0, color='b')
+        x = parent_mass
+        y = parent_intensity
+        label = "%.5f" % parent_mass
+        plt.text(x, y, label, **parent_fontspec)   
+        
+        # plot the fragment peaks
+        fragment_fontspec = {
+            'size':'8', 
+            'color':'black', 
+            'weight':'bold'
+        }    
+        fragment_masses = fragment_masses.values.ravel().tolist()
+        fragment_intensities = fragment_intensities.values.ravel().tolist()
+        for j in range(len(fragment_masses)):
+            fragment_mass = fragment_masses[j]
+            fragment_intensity = np.log10(fragment_intensities[j])
+            plt.plot((fragment_mass, fragment_mass), (0, fragment_intensity), linewidth=2.0, color='r')
+        
+        plt.show()    
