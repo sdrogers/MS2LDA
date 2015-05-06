@@ -40,7 +40,7 @@ extract_features <- function(ms1, ms2, ms1_out, ms2_out,
         # store the mean mz (bin id) into the original ms2 dataframe too
         peakids <- copy_ms2$peakID[match.idx]
         matching_pos <- match(as.character(peakids), ms2.names)
-        ms2[matching_pos, "bin_id"] <- as.character(mean.mz)
+        ms2[matching_pos, "fragment_bin_id"] <- as.character(mean.mz)
         
         # get intensities
         intensities <- copy_ms2$intensity[match.idx]
@@ -86,6 +86,7 @@ extract_features <- function(ms1, ms2, ms1_out, ms2_out,
     parent_masses <- ms1[matches, 5] # column 5 is the mz
     losses <- parent_masses - ms2_masses
     fragment_intensities <- ms2$intensity
+    fragment_peakids <- ms2$peakID
     
     # greedily discretise the loss values
     while(length(losses) > 0) {
@@ -101,6 +102,7 @@ extract_features <- function(ms1, ms2, ms1_out, ms2_out,
         # compute their average mean mz as the row label and find column of the parent peaks
         mean.mz <- round(mean(losses[match.idx]), digits=5)
         intensities <- fragment_intensities[match.idx]
+        peakids <- fragment_peakids[match.idx]
         parent.id <- parent_ids[match.idx]
         parent.idx <- match(as.character(parent.id), ms1.names)
         
@@ -114,11 +116,15 @@ extract_features <- function(ms1, ms2, ms1_out, ms2_out,
             
             neutral_loss_df <- rbind(neutral_loss_df, row)
             rownames(neutral_loss_df)[nrow(neutral_loss_df)] <- paste(c("loss_", mean.mz), collapse="") # the row name is the avg mz
+
+            matching_pos <- match(as.character(peakids), ms2.names)
+            ms2[matching_pos, "loss_bin_id"] <- as.character(mean.mz)            
             
         }
         
         # decrease items from the vectors
         losses <- losses[-match.idx]
+        fragment_peakids <- fragment_peakids[-match.idx]
         fragment_intensities <- fragment_intensities[-match.idx]
         parent_ids <- parent_ids[-match.idx]
         

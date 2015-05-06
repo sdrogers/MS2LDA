@@ -22,7 +22,8 @@ class Ms2Lda:
             self.mzdiff_data = None
         self.ms1 = pd.read_csv(ms1_filename, index_col=0)
         self.ms2 = pd.read_csv(ms2_filename, index_col=0)
-        self.ms2['bin_id'] = self.ms2['bin_id'].astype(str)
+        self.ms2['fragment_bin_id'] = self.ms2['fragment_bin_id'].astype(str)
+        self.ms2['loss_bin_id'] = self.ms2['loss_bin_id'].astype(str)
     
         self.n_topics = n_topics
         self.n_samples = n_samples
@@ -152,7 +153,7 @@ class Ms2Lda:
         headers = list(self.docdf.columns.values)
         
         for i, topic_dist in enumerate(topic_fragments):
-    
+            
             print "Topic " + str(i)
             print "=========="
             print
@@ -244,7 +245,6 @@ class Ms2Lda:
             print "Fragments"
             print
             parent_topic_fragments = {}
-            parent_topic_losses = {}
             count = 1
             for t in zip(fragments, fragments_p):
     
@@ -252,11 +252,14 @@ class Ms2Lda:
                 tokens = fragment.split('_')
                 bin_id = tokens[1]
                 bin_prob = t[1]
-                ms2_rows = self.ms2.loc[self.ms2['bin_id']==bin_id]
+                ms2_rows = self.ms2.loc[self.ms2['fragment_bin_id']==bin_id]
                 ms2_rows = ms2_rows.loc[ms2_rows['MSnParentPeakID'].isin(parent_ids)]
     
                 print '%-5d%s (%.3f)' % (count, t[0], t[1])
-                print ms2_rows[['peakID', 'MSnParentPeakID', 'mz', 'rt', 'intensity']].to_string(index=False, justify='left')
+                if not ms2_rows.empty:
+                    print ms2_rows[['peakID', 'MSnParentPeakID', 'mz', 'rt', 'intensity']].to_string(index=False, justify='left')
+                else:
+                    print "\tNothing found for the selected parent peaks"
     
                 count += 1
     
@@ -287,32 +290,42 @@ class Ms2Lda:
             print
             print "Losses"
             print
+            parent_topic_losses = {}
+            count = 1
             for t in zip(losses, losses_p):
-                print "%s\t%.3f" % t
+    
                 loss = t[0]
-                loss_p = t[1]
                 tokens = loss.split('_')
-                mz = float(tokens[1])
-                # look up this loss word in the data
-                loss_row = self.neutral_loss_data.loc[loss]
-                loss_row = loss_row.replace(np.nan, 0)
-                loss_row = loss_row.iloc[loss_row.nonzero()[0]]
-                parentids = []
-                intensities = []
-                mzs = []
-                for n in range(len(loss_row.index)):
-                    index = loss_row.index[n]
-                    tokens = index.split('_')
-                    parentid = tokens[2]
-                    parentids.append(int(parentid))
-                    intensity = loss_row.values[n]
-                    intensities.append(intensity)
-                    mzs.append(mz)
+                bin_id = tokens[1]
+                bin_prob = t[1]
+                ms2_rows = self.ms2.loc[self.ms2['loss_bin_id']==bin_id]
+                ms2_rows = ms2_rows.loc[ms2_rows['MSnParentPeakID'].isin(parent_ids)]
+    
+                print '%-5d%s (%.3f)' % (count, t[0], t[1])
+                if not ms2_rows.empty:
+                    print ms2_rows[['peakID', 'MSnParentPeakID', 'mz', 'rt', 'intensity']].to_string(index=False, justify='left')
+                else:
+                    print "\tNothing found for the selected parent peaks"
+
+                count += 1
+    
+                peakids = ms2_rows[['peakID']]
+                mzs = ms2_rows[['mz']]
+                intensities = ms2_rows[['intensity']]
+                parentids = ms2_rows[['MSnParentPeakID']]
+    
+                # convert from pandas dataframes to list
+                peakids = peakids.values.ravel().tolist()
+                mzs = mzs.values.ravel().tolist()
+                intensities = intensities.values.ravel().tolist()
+                parentids = parentids.values.ravel().tolist()
+
                 for n in range(len(parentids)):
                     parentid = parentids[n]
                     mz = mzs[n]
                     intensity = intensities[n]
-                    item = (parentid, mz, intensity)
+                    peakid = peakids[n]
+                    item = (peakid, parentid, mz, intensity)
                     if parentid in parent_topic_losses:
                         existing_list = parent_topic_losses[parentid]
                         existing_list.append(item)
@@ -400,9 +413,10 @@ class Ms2Lda:
                     num_peaks = len(losses_list)
                     for j in range(num_peaks):
                         item = losses_list[j]
-                        parentid = item[0]
-                        mass = item[1]
-                        intensity = np.log10(item[2])
+                        peakid = item[0]
+                        parentid = item[1]
+                        mass = item[2]
+                        intensity = np.log10(item[3])
                         plt.plot((mass, mass), (0, intensity), linewidth=2.0, color='green')
                         x = mass
                         y = intensity
@@ -459,7 +473,7 @@ class Ms2Lda:
             # get the fragment peaks of this parent
             ms2_rows = self.ms2.loc[self.ms2['MSnParentPeakID']==parent_peakid]
             print "Fragment peaks"    
-            print ms2_rows[['peakID', 'MSnParentPeakID', 'mz', 'rt', 'intensity', 'bin_id']].to_string(index=False, justify='left')    
+            print ms2_rows[['peakID', 'MSnParentPeakID', 'mz', 'rt', 'intensity', 'fragment_bin_id']].to_string(index=False, justify='left')    
             fragment_peakids = ms2_rows[['peakID']]
             fragment_masses = ms2_rows[['mz']]
             fragment_intensities = ms2_rows[['intensity']]
