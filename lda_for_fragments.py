@@ -5,6 +5,7 @@ import lda.datasets
 import pylab as plt
 from scipy.sparse import coo_matrix
 import matplotlib.patches as mpatches
+from collections import Counter
 
 import sys
 import os
@@ -27,6 +28,8 @@ class Ms2Lda:
     
         self.n_topics = n_topics
         self.n_samples = n_samples
+
+        self.EPSILON = 0.001
 
     def run_lda(self):    
                     
@@ -85,10 +88,16 @@ class Ms2Lda:
             topic_series = pd.Series(topic[i],index=masses)
             d[topic_name] = topic_series
         self.topicdf = pd.DataFrame(d)
+
+        # threshold topicdf to get rid of small values
+        def f(x):
+            if x < self.EPSILON: return 0
+            else: return x
+        self.topicdf = self.topicdf.applymap(f)
         self.topicdf.to_csv(outfile)
     
-        outfile = self._get_outfile(results_prefix, '_docs.csv') 
-        print "Writing topic docs to " + outfile
+        # outfile = self._get_outfile(results_prefix, '_docs.csv') 
+        # print "Writing topic docs to " + outfile
         doc = self.model.doc_topic_
         (n_doc, a) = doc.shape
         topic_index = np.arange(self.n_topics)
@@ -99,12 +108,28 @@ class Ms2Lda:
             doc_series = pd.Series(doc[i],index=topic_index)
             d[doc_name] = doc_series
         self.docdf = pd.DataFrame(d)
+        
+        # sort columns by mass_rt values
         cols = self.docdf.columns.tolist()
         mass_rt = [(float(m.split('_')[0]),float(m.split('_')[1])) for m in cols]
         sorted_mass_rt = sorted(mass_rt,key=lambda m:m[0])
         ind = [mass_rt.index(i) for i in sorted_mass_rt]
         self.docdf = self.docdf[ind]
-        self.docdf.to_csv(outfile)
+        # self.docdf.to_csv(outfile)
+
+        # threshold docdf to get rid of small values and also scale it
+        self.thresholded_docdf = self.docdf.copy()
+        df = self.thresholded_docdf
+        for i, row in df.iterrows(): # iterate through the columns
+            doc = df.ix[:, i]
+            selected = doc[doc>self.EPSILON]
+            count = len(selected.values)
+            selected = selected * count
+            self.thresholded_docdf.ix[:, i] = selected
+        self.thresholded_docdf = self.thresholded_docdf.replace(np.nan, 0)
+        outfile = self._get_outfile(results_prefix, '_docs.csv') 
+        print "Writing topic docs to " + outfile
+        self.thresholded_docdf.transpose().to_csv(outfile)
             
     def _get_outfile(self, results_prefix, doctype):
         parent_dir = 'results/' + results_prefix
@@ -147,10 +172,14 @@ class Ms2Lda:
                            head_width=txt_width/4, head_length=txt_height*0.25, 
                            zorder=0,length_includes_head=True)
                 
-    def plot_lda_fragments(self, n_docs, n_words):
+    def plot_lda_fragments(self, n_docs, n_words=0, consistency=0.80):
         
         topic_fragments = self.model.topic_word_
         headers = list(self.docdf.columns.values)
+        if n_words > 0:
+            limit_words = True
+        else:
+            limit_words = False
         
         for i, topic_dist in enumerate(topic_fragments):
             
@@ -219,10 +248,14 @@ class Ms2Lda:
     
                 count += 1
     
-            min_parent_mz = np.min(np.array(parent_masses))
+            sys.stdout.flush()
             max_parent_mz = np.max(np.array(parent_masses))
+
+            # argsort in descending order by p(w|d)
+            idx = np.argsort(topic_dist)[::-1] 
+            
+            # take the top n_words and split them into either fragment or loss words
             column_values = np.array(self.data.columns.values)
-            idx = np.argsort(topic_dist)[::-1] # argsort in descending order
             topic_w = np.array(column_values)[idx]
             topic_p = np.array(topic_dist)[idx]    
             fragments = []
@@ -231,7 +264,9 @@ class Ms2Lda:
             losses_p = []
             counter = 0
             for w, p in zip(topic_w, topic_p):
-                if counter >= n_words:
+                if limit_words and counter >= n_words:
+                    break
+                if p < self.EPSILON:
                     break
                 if w.startswith('fragment'):
                     fragments.append(w)
@@ -240,10 +275,13 @@ class Ms2Lda:
                     losses.append(w)
                     losses_p.append(p)
                 counter += 1
+
+            wordfreq = Counter()
                     
-            print
-            print "Fragments"
-            print
+            if limit_words:
+                print
+                print "Fragments"
+                print
             parent_topic_fragments = {}
             count = 1
             for t in zip(fragments, fragments_p):
@@ -254,12 +292,13 @@ class Ms2Lda:
                 bin_prob = t[1]
                 ms2_rows = self.ms2.loc[self.ms2['fragment_bin_id']==bin_id]
                 ms2_rows = ms2_rows.loc[ms2_rows['MSnParentPeakID'].isin(parent_ids)]
-    
-                print '%-5d%s (%.3f)' % (count, t[0], t[1])
-                if not ms2_rows.empty:
-                    print ms2_rows[['peakID', 'MSnParentPeakID', 'mz', 'rt', 'intensity']].to_string(index=False, justify='left')
-                else:
-                    print "\tNothing found for the selected parent peaks"
+
+                if limit_words:    
+                    print '%-5d%s (%.3f)' % (count, t[0], t[1])
+                    if not ms2_rows.empty:
+                        print ms2_rows[['peakID', 'MSnParentPeakID', 'mz', 'rt', 'intensity']].to_string(index=False, justify='left')
+                    else:
+                        print "\tNothing found for the selected parent peaks"
     
                 count += 1
     
@@ -279,17 +318,24 @@ class Ms2Lda:
                     mz = mzs[n]
                     intensity = intensities[n]
                     peakid = peakids[n]
-                    item = (peakid, parentid, mz, intensity)
+                    word = fragment
+                    item = (peakid, parentid, mz, intensity, word)
                     if parentid in parent_topic_fragments:
                         existing_list = parent_topic_fragments[parentid]
                         existing_list.append(item)
                     else:
                         new_list = [item]
                         parent_topic_fragments[parentid] = new_list
-    
-            print
-            print "Losses"
-            print
+                    # count how many times this fragment word appears in the retrieved set
+                    if fragment in wordfreq:
+                        wordfreq[fragment] = wordfreq[fragment] + 1
+                    else:
+                        wordfreq[fragment] = 1
+
+            if limit_words:    
+                print
+                print "Losses"
+                print
             parent_topic_losses = {}
             count = 1
             for t in zip(losses, losses_p):
@@ -300,12 +346,13 @@ class Ms2Lda:
                 bin_prob = t[1]
                 ms2_rows = self.ms2.loc[self.ms2['loss_bin_id']==bin_id]
                 ms2_rows = ms2_rows.loc[ms2_rows['MSnParentPeakID'].isin(parent_ids)]
-    
-                print '%-5d%s (%.3f)' % (count, t[0], t[1])
-                if not ms2_rows.empty:
-                    print ms2_rows[['peakID', 'MSnParentPeakID', 'mz', 'rt', 'intensity']].to_string(index=False, justify='left')
-                else:
-                    print "\tNothing found for the selected parent peaks"
+
+                if limit_words:    
+                    print '%-5d%s (%.3f)' % (count, t[0], t[1])
+                    if not ms2_rows.empty:
+                        print ms2_rows[['peakID', 'MSnParentPeakID', 'mz', 'rt', 'intensity']].to_string(index=False, justify='left')
+                    else:
+                        print "\tNothing found for the selected parent peaks"
 
                 count += 1
     
@@ -325,13 +372,19 @@ class Ms2Lda:
                     mz = mzs[n]
                     intensity = intensities[n]
                     peakid = peakids[n]
-                    item = (peakid, parentid, mz, intensity)
+                    word = loss
+                    item = (peakid, parentid, mz, intensity, word)
                     if parentid in parent_topic_losses:
                         existing_list = parent_topic_losses[parentid]
                         existing_list.append(item)
                     else:
                         new_list = [item]
                         parent_topic_losses[parentid] = new_list
+                    # count how many times this fragment word appears in the retrieved set
+                    if loss in wordfreq:
+                        wordfreq[loss] = wordfreq[loss] + 1
+                    else:
+                        wordfreq[loss] = 1
     
             print
             sys.stdout.flush()
@@ -373,7 +426,7 @@ class Ms2Lda:
                 y = parent_intensity
                 parent_id = parent_ids[n]
                 label = "%.5f" % parent_mass
-                plt.text(x, y, label, **parent_fontspec)   
+                plt.text(x, y, label, **parent_fontspec)
     
                 # plot all the fragment peaks of this parent peak
                 fragments_list = parent_all_fragments[parent_id]
@@ -400,12 +453,16 @@ class Ms2Lda:
                         parentid = item[1]
                         mass = item[2]
                         intensity = np.log10(item[3])
-                        plt.plot((mass, mass), (0, intensity), linewidth=2.0, color='#800000')
-                        x = mass
-                        y = intensity
-                        x_data.append(x)
-                        y_data.append(y)
-                        line_type.append('fragment')
+                        word = item[4]
+                        freq = wordfreq[word]
+                        ratio = float(freq)/len(parent_ids)
+                        if ratio >= consistency:
+                            plt.plot((mass, mass), (0, intensity), linewidth=2.0, color='#800000')
+                            x = mass
+                            y = intensity
+                            x_data.append(x)
+                            y_data.append(y)
+                            line_type.append('fragment')
                     
                 # plot the neutral losses in this topic that also occur in this parent peak
                 if parent_id in parent_topic_losses:        
@@ -417,12 +474,16 @@ class Ms2Lda:
                         parentid = item[1]
                         mass = item[2]
                         intensity = np.log10(item[3])
-                        plt.plot((mass, mass), (0, intensity), linewidth=2.0, color='green')
-                        x = mass
-                        y = intensity
-                        x_data.append(x)
-                        y_data.append(y)
-                        line_type.append('loss')
+                        word = item[4]
+                        freq = wordfreq[word]
+                        ratio = float(freq)/len(parent_ids)
+                        if ratio >= consistency:
+                            plt.plot((mass, mass), (0, intensity), linewidth=2.0, color='green')
+                            x = mass
+                            y = intensity
+                            x_data.append(x)
+                            y_data.append(y)
+                            line_type.append('loss')
                     
                 # Get the corrected text positions, then write the text.
                 x_data = np.array(x_data)
@@ -507,3 +568,25 @@ class Ms2Lda:
                 plt.plot((fragment_mass, fragment_mass), (0, fragment_intensity), linewidth=2.0, color='r')
             
             plt.show()    
+            
+def main():
+    
+    print "MS2LDA test"
+
+    n_topics = 100
+    n_samples = 100
+    
+    fragment_filename = 'input/Beer_3_T10_POS_fragments.csv'
+    neutral_loss_filename = 'input/Beer_3_T10_POS_losses.csv'
+    mzdiff_filename = None    
+    ms1_filename = 'input/Beer_3_T10_POS_ms1.csv'
+    ms2_filename = 'input/Beer_3_T10_POS_ms2.csv'
+    
+    ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename, 
+                ms1_filename, ms2_filename, n_topics, n_samples)
+    ms2lda.run_lda()
+    ms2lda.write_results('beer3_pos')
+    
+    ms2lda.plot_lda_fragments(5, 5, 0.20)
+
+if __name__ == "__main__": main()
