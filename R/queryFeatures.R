@@ -100,8 +100,11 @@ ms1 <- read.csv('/home/joewandy/git/metabolomics_tools/justin/input/Beer_3_T10_P
 ms2 <- read.csv('/home/joewandy/git/metabolomics_tools/justin/input/Beer_3_T10_POS_ms2.csv', row.names=1)
 
 # specify the masses and intensity ratios to query
-masses <- c(91.05421, 103.05457)
-intensities <- c(1.0, 0.81)
+# masses <- c(91.05421, 103.05457)
+# intensities <- c(1.0, 0.81)
+masses <- c(103.054482, 121.064891, 93.069812, 95.049358)
+intensities <- c(100216.476562, 645368.187500, 94983.171875, 13858.294922)
+intensities <- intensities / max(intensities)
 
 # specify the allowed mass difference in parts-per-million
 mass_tol <- 5 
