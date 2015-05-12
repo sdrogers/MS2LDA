@@ -29,8 +29,7 @@ class Ms2Lda:
     
         self.n_topics = n_topics
         self.n_samples = n_samples
-
-        self.EPSILON = 0.001
+        self.EPSILON = 0.05
 
     def run_lda(self):    
                     
@@ -119,18 +118,17 @@ class Ms2Lda:
         # self.docdf.to_csv(outfile)
 
         # threshold docdf to get rid of small values and also scale it
-        self.thresholded_docdf = self.docdf.copy()
-        df = self.thresholded_docdf
-        for i, row in df.iterrows(): # iterate through the columns
-            doc = df.ix[:, i]
-            selected = doc[doc>self.EPSILON]
+        self.docdf = self.docdf.applymap(f)                
+        for i, row in self.docdf.iterrows(): # iterate through the rows
+            doc = self.docdf.ix[:, i]
+            selected = doc[doc>0]
             count = len(selected.values)
             selected = selected * count
-            self.thresholded_docdf.ix[:, i] = selected
-        self.thresholded_docdf = self.thresholded_docdf.replace(np.nan, 0)
+            self.docdf.ix[:, i] = selected
+        self.docdf = self.docdf.replace(np.nan, 0)
         outfile = self._get_outfile(results_prefix, '_docs.csv') 
         print "Writing topic docs to " + outfile
-        self.thresholded_docdf.transpose().to_csv(outfile)
+        self.docdf.transpose().to_csv(outfile)
             
     def _get_outfile(self, results_prefix, doctype):
         parent_dir = 'results/' + results_prefix
@@ -173,33 +171,37 @@ class Ms2Lda:
                            head_width=txt_width/4, head_length=txt_height*0.25, 
                            zorder=0,length_includes_head=True)
                 
-    def plot_lda_fragments(self, n_docs, n_words=0, consistency=0.80):
+    def plot_lda_fragments(self, consistency=0.80):
                 
-        topic_fragments = self.model.topic_word_
-        headers = list(self.docdf.columns.values)
-        if n_words > 0:
-            limit_words = True
-        else:
-            limit_words = False
-        
-        topic_counts, topic_dists = self._plot_lda_fragments_counts(n_docs, n_words, consistency) 
-        sorted_topic_counts = sorted(topic_counts.items(), key=operator.itemgetter(1), reverse=True)
+        topic_h_indices, topic_dists = self._h_index(consistency) 
+        sorted_topic_counts = sorted(topic_h_indices.items(), key=operator.itemgetter(1), reverse=True)
         
         for (i, c) in sorted_topic_counts:
 
             if c == 0:
-                continue
+                continue # nothing to plot
+            
             print "Topic " + str(i)
             print "=========="
             print
+
             topic_dist = topic_dists[i]               
             column_values = np.array(self.docdf.columns.values)    
             doc_dist = self.docdf.iloc[[i]].as_matrix().flatten()
-            idx = np.argsort(doc_dist)[::-1] # argsort in descending order
+            
+            # argsort in descending order
+            idx = np.argsort(doc_dist)[::-1] 
             topic_d = np.array(column_values)[idx]
             topic_p = np.array(doc_dist)[idx]
-            top_n_docs = topic_d[1:n_docs+1]
-            top_n_docs_p = topic_p[1:n_docs+1]
+            
+            # pick the top-n documents
+            # top_n_docs = topic_d[1:n_docs+1]
+            # top_n_docs_p = topic_p[1:n_docs+1]
+
+            # pick the documents with non-zero values
+            nnz_idx = topic_p>0
+            top_n_docs = topic_d[nnz_idx]
+            top_n_docs_p = topic_p[nnz_idx]
     
             print "Parent peaks"
             print
@@ -259,21 +261,23 @@ class Ms2Lda:
 
             # argsort in descending order by p(w|d)
             idx = np.argsort(topic_dist)[::-1] 
-            
-            # take the top n_words and split them into either fragment or loss words
             column_values = np.array(self.data.columns.values)
             topic_w = np.array(column_values)[idx]
             topic_p = np.array(topic_dist)[idx]    
+            
+            # pick the words with non-zero values
+            nnz_idx = topic_p>0
+            topic_w = topic_w[nnz_idx]
+            topic_p = topic_p[nnz_idx]
+
+            
+            # split words into either fragment or loss words                        
             fragments = []
             fragments_p = []
             losses = []
             losses_p = []
             counter = 0
             for w, p in zip(topic_w, topic_p):
-                if limit_words and counter >= n_words:
-                    break
-                if p < self.EPSILON:
-                    break
                 if w.startswith('fragment'):
                     fragments.append(w)
                     fragments_p.append(p)
@@ -284,10 +288,9 @@ class Ms2Lda:
 
             wordfreq = Counter()
                     
-            if limit_words:
-                print
-                print "Fragments"
-                print
+            print
+            print "Fragments"
+            print
             parent_topic_fragments = {}
             count = 1
             for t in zip(fragments, fragments_p):
@@ -299,12 +302,11 @@ class Ms2Lda:
                 ms2_rows = self.ms2.loc[self.ms2['fragment_bin_id']==bin_id]
                 ms2_rows = ms2_rows.loc[ms2_rows['MSnParentPeakID'].isin(parent_ids)]
 
-                if limit_words:    
-                    print '%-5d%s (%.3f)' % (count, t[0], t[1])
-                    if not ms2_rows.empty:
-                        print ms2_rows[['peakID', 'MSnParentPeakID', 'mz', 'rt', 'intensity']].to_string(index=False, justify='left')
-                    else:
-                        print "\tNothing found for the selected parent peaks"
+                print '%-5d%s (%.3f)' % (count, t[0], t[1])
+                if not ms2_rows.empty:
+                    print ms2_rows[['peakID', 'MSnParentPeakID', 'mz', 'rt', 'intensity']].to_string(index=False, justify='left')
+                else:
+                    print "\tNothing found for the selected parent peaks"
     
                 count += 1
     
@@ -338,10 +340,9 @@ class Ms2Lda:
                     else:
                         wordfreq[fragment] = 1
 
-            if limit_words:    
-                print
-                print "Losses"
-                print
+            print
+            print "Losses"
+            print
             parent_topic_losses = {}
             count = 1
             for t in zip(losses, losses_p):
@@ -353,12 +354,11 @@ class Ms2Lda:
                 ms2_rows = self.ms2.loc[self.ms2['loss_bin_id']==bin_id]
                 ms2_rows = ms2_rows.loc[ms2_rows['MSnParentPeakID'].isin(parent_ids)]
 
-                if limit_words:    
-                    print '%-5d%s (%.3f)' % (count, t[0], t[1])
-                    if not ms2_rows.empty:
-                        print ms2_rows[['peakID', 'MSnParentPeakID', 'mz', 'rt', 'intensity']].to_string(index=False, justify='left')
-                    else:
-                        print "\tNothing found for the selected parent peaks"
+                print '%-5d%s (%.3f)' % (count, t[0], t[1])
+                if not ms2_rows.empty:
+                    print ms2_rows[['peakID', 'MSnParentPeakID', 'mz', 'rt', 'intensity']].to_string(index=False, justify='left')
+                else:
+                    print "\tNothing found for the selected parent peaks"
 
                 count += 1
     
@@ -516,227 +516,31 @@ class Ms2Lda:
             
             # break
 
-    # just counts how many words to plot for each topic, but not actually plotting them
-    def _plot_lda_fragments_counts(self, n_docs, n_words=0, consistency=0.80):
-        
+    # compute the h-index of topics
+    def _h_index(self, data):
+                
         topic_fragments = self.model.topic_word_
-        if n_words > 0:
-            limit_words = True
-        else:
-            limit_words = False
-
         topic_counts = {}
         topic_dists = {}
+
+        print "Counting topic",
+        
         for i, topic_dist in enumerate(topic_fragments):
+            
+            print i,
+            sys.stdout.flush()
         
             topic_dists[i] = topic_dist
             
-            column_values = np.array(self.docdf.columns.values)    
-            doc_dist = self.docdf.iloc[[i]].as_matrix().flatten()
-            idx = np.argsort(doc_dist)[::-1] # argsort in descending order
-            topic_d = np.array(column_values)[idx]
-            topic_p = np.array(doc_dist)[idx]
-            top_n_docs = topic_d[1:n_docs+1]
-            top_n_docs_p = topic_p[1:n_docs+1]
-    
-            parent_ids = []
-            parent_masses = []
-            parent_intensities = []
-            parent_all_fragments = {}
-            count = 1
-            for t in zip(top_n_docs, top_n_docs_p):
-    
-                # split mz_rt_peakid string into tokens
-                tokens = t[0].split('_')
-                peakid = int(tokens[2])
-                ms1_row = self.ms1.loc[[peakid]]
-                mz = ms1_row[['mz']]
-                mz = np.asscalar(mz.values)
-                rt = ms1_row[['rt']]
-                rt = np.asscalar(rt.values)
-                intensity = ms1_row[['intensity']]
-                intensity = np.asscalar(intensity.values)
-                prob = t[1]
-    
-                parent_ids.append(peakid)
-                parent_masses.append(mz)
-                parent_intensities.append(intensity)
-                
-                # find all the fragment peaks of this parent peak
-                ms2_rows = self.ms2.loc[self.ms2['MSnParentPeakID']==peakid]
-                peakids = ms2_rows[['peakID']]
-                mzs = ms2_rows[['mz']]
-                intensities = ms2_rows[['intensity']]
-                parentids = ms2_rows[['MSnParentPeakID']]
-    
-                # convert from pandas dataframes to list
-                peakids = peakids.values.ravel().tolist()
-                mzs = mzs.values.ravel().tolist()
-                intensities = intensities.values.ravel().tolist()
-                parentids = parentids.values.ravel().tolist()
-    
-                # save all the fragment peaks of this parent peak into the dictionary
-                parentid = peakid
-                items = []
-                for n in range(len(peakids)):
-                    mz = mzs[n]
-                    intensity = intensities[n]
-                    fragment_peakid = peakids[n]
-                    item = (fragment_peakid, parentid, mz, intensity)
-                    items.append(item)
-                parent_all_fragments[parentid] = items
-    
-                count += 1
-    
-            sys.stdout.flush()
-            max_parent_mz = np.max(np.array(parent_masses))
-
-            # argsort in descending order by p(w|d)
-            idx = np.argsort(topic_dist)[::-1] 
+            # find the words in this topic above the threshold
+            topic_words = self.topicdf.ix[:, i]
+            topic_words = topic_words.iloc[topic_words.nonzero()[0]]            
             
-            # take the top n_words and split them into either fragment or loss words
-            column_values = np.array(self.data.columns.values)
-            topic_w = np.array(column_values)[idx]
-            topic_p = np.array(topic_dist)[idx]    
-            fragments = []
-            fragments_p = []
-            losses = []
-            losses_p = []
-            counter = 0
-            for w, p in zip(topic_w, topic_p):
-                if limit_words and counter >= n_words:
-                    break
-                if p < self.EPSILON:
-                    break
-                if w.startswith('fragment'):
-                    fragments.append(w)
-                    fragments_p.append(p)
-                elif w.startswith('loss'):
-                    losses.append(w)
-                    losses_p.append(p)
-                counter += 1
-
-            wordfreq = Counter()
-                    
-            parent_topic_fragments = {}
-            count = 1
-            for t in zip(fragments, fragments_p):
-    
-                fragment = t[0]
-                tokens = fragment.split('_')
-                bin_id = tokens[1]
-                bin_prob = t[1]
-                ms2_rows = self.ms2.loc[self.ms2['fragment_bin_id']==bin_id]
-                ms2_rows = ms2_rows.loc[ms2_rows['MSnParentPeakID'].isin(parent_ids)]
-    
-                count += 1
-    
-                peakids = ms2_rows[['peakID']]
-                mzs = ms2_rows[['mz']]
-                intensities = ms2_rows[['intensity']]
-                parentids = ms2_rows[['MSnParentPeakID']]
-    
-                # convert from pandas dataframes to list
-                peakids = peakids.values.ravel().tolist()
-                mzs = mzs.values.ravel().tolist()
-                intensities = intensities.values.ravel().tolist()
-                parentids = parentids.values.ravel().tolist()
-
-                for n in range(len(parentids)):
-                    parentid = parentids[n]
-                    mz = mzs[n]
-                    intensity = intensities[n]
-                    peakid = peakids[n]
-                    word = fragment
-                    item = (peakid, parentid, mz, intensity, word)
-                    if parentid in parent_topic_fragments:
-                        existing_list = parent_topic_fragments[parentid]
-                        existing_list.append(item)
-                    else:
-                        new_list = [item]
-                        parent_topic_fragments[parentid] = new_list
-                    # count how many times this fragment word appears in the retrieved set
-                    if fragment in wordfreq:
-                        wordfreq[fragment] = wordfreq[fragment] + 1
-                    else:
-                        wordfreq[fragment] = 1
-
-            parent_topic_losses = {}
-            count = 1
-            for t in zip(losses, losses_p):
-    
-                loss = t[0]
-                tokens = loss.split('_')
-                bin_id = tokens[1]
-                bin_prob = t[1]
-                ms2_rows = self.ms2.loc[self.ms2['loss_bin_id']==bin_id]
-                ms2_rows = ms2_rows.loc[ms2_rows['MSnParentPeakID'].isin(parent_ids)]
-
-                count += 1
-    
-                peakids = ms2_rows[['peakID']]
-                mzs = ms2_rows[['mz']]
-                intensities = ms2_rows[['intensity']]
-                parentids = ms2_rows[['MSnParentPeakID']]
-    
-                # convert from pandas dataframes to list
-                peakids = peakids.values.ravel().tolist()
-                mzs = mzs.values.ravel().tolist()
-                intensities = intensities.values.ravel().tolist()
-                parentids = parentids.values.ravel().tolist()
-
-                for n in range(len(parentids)):
-                    parentid = parentids[n]
-                    mz = mzs[n]
-                    intensity = intensities[n]
-                    peakid = peakids[n]
-                    word = loss
-                    item = (peakid, parentid, mz, intensity, word)
-                    if parentid in parent_topic_losses:
-                        existing_list = parent_topic_losses[parentid]
-                        existing_list.append(item)
-                    else:
-                        new_list = [item]
-                        parent_topic_losses[parentid] = new_list
-                    # count how many times this fragment word appears in the retrieved set
-                    if loss in wordfreq:
-                        wordfreq[loss] = wordfreq[loss] + 1
-                    else:
-                        wordfreq[loss] = 1
-                    
-            # for every parent peak
-            num_peaks = len(parent_ids)
-            for n in range(num_peaks):
-    
-                parent_id = parent_ids[n]
-    
-                # plot the fragment peaks in this topic that also occur in this parent peak
-                if parent_id in parent_topic_fragments:        
-                    fragments_list = parent_topic_fragments[parent_id]
-                    num_peaks = len(fragments_list)
-                    for j in range(num_peaks):
-                        word = item[4]
-                        freq = wordfreq[word]
-                        ratio = float(freq)/len(parent_ids)
-                        if ratio >= consistency:
-                            if i in topic_counts:
-                                topic_counts[i] = topic_counts[i] + 1
-                            else:
-                                topic_counts[i] = 1
-                    
-                # plot the neutral losses in this topic that also occur in this parent peak
-                if parent_id in parent_topic_losses:        
-                    losses_list = parent_topic_losses[parent_id]
-                    num_peaks = len(losses_list)
-                    for j in range(num_peaks):
-                        word = item[4]
-                        freq = wordfreq[word]
-                        ratio = float(freq)/len(parent_ids)
-                        if ratio >= consistency:
-                            if i in topic_counts:
-                                topic_counts[i] = topic_counts[i] + 1
-                            else:
-                                topic_counts[i] = 1
+            # find the documents in this topic above the threshold
+            topic_docs = self.docdf.ix[i, :]
+            topic_docs = topic_docs.iloc[topic_docs.nonzero()[0]]
+            
+            # now find out how many of its documents in this topic actually 'cite' the words
 
             # break            
             if i not in topic_counts:
@@ -808,7 +612,7 @@ def main():
     
     print "MS2LDA test"
 
-    n_topics = 100
+    n_topics = 50
     n_samples = 100
     
     fragment_filename = 'input/Beer_3_T10_POS_fragments.csv'
@@ -821,6 +625,6 @@ def main():
                 ms1_filename, ms2_filename, n_topics, n_samples)
     ms2lda.run_lda()
     ms2lda.write_results('beer3_pos')
-    ms2lda.plot_lda_fragments(5, 5, 0.50)
+    ms2lda.plot_lda_fragments(0.25)
 
 if __name__ == "__main__": main()
