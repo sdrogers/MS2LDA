@@ -1,15 +1,17 @@
-import numpy as np
-import pandas as pd
+from collections import Counter
 import lda
 import lda.datasets
-import pylab as plt
-from scipy.sparse import coo_matrix
-import matplotlib.patches as mpatches
-from collections import Counter
 import operator
-
-import sys
 import os
+from pandas.core.frame import DataFrame
+from scipy.sparse import coo_matrix
+import sys
+
+import matplotlib.patches as mpatches
+import numpy as np
+import pandas as pd
+import pylab as plt
+
 
 class Ms2Lda:
     
@@ -177,15 +179,11 @@ class Ms2Lda:
         sorted_topic_counts = sorted(topic_h_indices.items(), key=operator.itemgetter(1), reverse=True)
         
         for (i, c) in sorted_topic_counts:
-
-            if c == 0:
-                continue # nothing to plot
             
-            print "Topic " + str(i)
-            print "=========="
+            print "Topic " + str(i) + " h-index=" + str(topic_h_indices[i])
+            print "====================="
             print
 
-            topic_dist = topic_dists[i]               
             column_values = np.array(self.docdf.columns.values)    
             doc_dist = self.docdf.iloc[[i]].as_matrix().flatten()
             
@@ -205,7 +203,7 @@ class Ms2Lda:
     
             print "Parent peaks"
             print
-            print '     %s\t%s\t\t%s\t\t%s\t\t%s' % ('peakID', 'mz', 'rt', 'int', 'prob')
+            print '     %s\t%s\t\t%s\t\t%s\t\t%s' % ('peakID', 'mz', 'rt', 'int', 'score')
             parent_ids = []
             parent_masses = []
             parent_intensities = []
@@ -260,16 +258,18 @@ class Ms2Lda:
             max_parent_mz = np.max(np.array(parent_masses))
 
             # argsort in descending order by p(w|d)
-            idx = np.argsort(topic_dist)[::-1] 
-            column_values = np.array(self.data.columns.values)
+            word_dist = self.topicdf.transpose().iloc[[i]].as_matrix().flatten()                          
+            column_values = np.array(self.topicdf.transpose().columns.values)    
+
+            # argsort in descending order
+            idx = np.argsort(word_dist)[::-1] 
             topic_w = np.array(column_values)[idx]
-            topic_p = np.array(topic_dist)[idx]    
+            topic_p = np.array(word_dist)[idx]    
             
             # pick the words with non-zero values
             nnz_idx = topic_p>0
             topic_w = topic_w[nnz_idx]
             topic_p = topic_p[nnz_idx]
-
             
             # split words into either fragment or loss words                        
             fragments = []
@@ -523,29 +523,80 @@ class Ms2Lda:
         topic_counts = {}
         topic_dists = {}
 
-        print "Counting topic",
+        print "Counting the h-indices of topic",
         
         for i, topic_dist in enumerate(topic_fragments):
             
             print i,
             sys.stdout.flush()
-        
-            topic_dists[i] = topic_dist
             
             # find the words in this topic above the threshold
             topic_words = self.topicdf.ix[:, i]
-            topic_words = topic_words.iloc[topic_words.nonzero()[0]]            
+            topic_words = topic_words.iloc[topic_words.nonzero()[0]]      
+
+            fragment_words = {}
+            loss_words = {}            
+            for word in topic_words.index:
+                tokens = word.split('_')
+                word_type = tokens[0]
+                value = tokens[1]
+                if word_type == 'fragment':
+                    fragment_words[value] = 0
+                elif word_type == 'loss':
+                    loss_words[value] = 0
             
             # find the documents in this topic above the threshold
             topic_docs = self.docdf.ix[i, :]
             topic_docs = topic_docs.iloc[topic_docs.nonzero()[0]]
             
-            # now find out how many of its documents in this topic actually 'cite' the words
+            # now find out how many of the documents in this topic actually 'cite' the words    
+            for docname in topic_docs.index:
 
-            # break            
-            if i not in topic_counts:
-                topic_counts[i] = 0
+                # split mz_rt_peakid string into tokens
+                tokens = docname.split('_')
+                peakid = int(tokens[2])
+                
+                # find all the fragment peaks of this parent peak
+                ms2_rows = self.ms2.loc[self.ms2['MSnParentPeakID']==peakid]
+                fragment_bin_ids = ms2_rows[['fragment_bin_id']]
+                loss_bin_ids = ms2_rows[['loss_bin_id']]       
+                
+                # convert from pandas dataframes to list
+                fragment_bin_ids = fragment_bin_ids.values.ravel().tolist()
+                loss_bin_ids = loss_bin_ids.values.ravel().tolist()
+                
+                # count the citation numbers
+                for cited in fragment_bin_ids:
+                    if cited == 'nan':
+                        continue
+                    else:
+                        if cited in fragment_words:
+                            fragment_words[cited] = fragment_words[cited] + 1
+                for cited in loss_bin_ids:
+                    if cited == 'nan':
+                        continue
+                    else:
+                        if cited in loss_words:
+                            loss_words[cited] = loss_words[cited] + 1
+                
+                # make a dataframe of the articles & citation counts
+                fragment_df = DataFrame(fragment_words, index=['counts']).transpose()
+                loss_df = DataFrame(loss_words, index=['counts']).transpose()
+                df = fragment_df.append(loss_df)
+                df = df.sort(['counts'], ascending=False)
+                
+                # compute the h-index
+                h_index = 0
+                for index, row in df.iterrows():
+                    if row['counts'] > h_index:
+                        h_index += 1
+                    else:
+                        break
+
+            topic_counts[i] = h_index
+            topic_dists[i] = topic_dist                         
             
+        print "\n"
         return topic_counts, topic_dists
 
     ## unfinished ... plot the topics for each word in a document                
