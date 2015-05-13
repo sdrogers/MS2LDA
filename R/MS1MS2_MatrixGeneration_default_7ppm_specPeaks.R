@@ -1,11 +1,11 @@
 library(xcms)
 library(Hmisc)
-require('gtools')
+library(gtools)
 
-input_file <- '/home/joewandy/Project/justin_data/Beer_3_T10_POS.mzXML'
+# input_file <- '/home/joewandy/Project/justin_data/Beer_3_T10_POS.mzXML'
 # input_file <- '/home/joewandy/Project/justin_data/Beer_3_T10_NEG.mzXML'
 # input_file <- '/home/joewandy/Project/justin_data/Urine_37_Top10_POS.mzXML'
-# input_file <- '/home/joewandy/Project/justin_data/Urine_37_Top10_NEG.mzXML'
+input_file <- '/home/joewandy/Project/justin_data/Urine_37_Top10_NEG.mzXML'
 
 # construct the output filenames
 prefix <- basename(input_file) # get the filename only

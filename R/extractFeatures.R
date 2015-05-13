@@ -108,8 +108,8 @@ extract_features <- function(ms1, ms2, ms1_out, ms2_out,
         
         # append this new row to the data frame only if no. of parent.idx > threshold
         threshold_counts <- 5
-        threshold_min_loss <- 125
-        if (length(parent.idx) >= threshold_counts && mean.mz > threshold_min_loss) {
+        threshold_max_loss <- 200
+        if (length(parent.idx) >= threshold_counts && mean.mz < threshold_max_loss) {
             
             print(paste(c("remaining=", length(losses), " loss=", mean.mz, " matches=", length(match.idx)), collapse=""))
             row <- rep(NA, nrow(ms1))
