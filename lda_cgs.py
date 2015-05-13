@@ -41,8 +41,9 @@ class CollapseGibbsLda:
         
         # randomly assign words to topics
         for d in range(self.D):
-            sys.stdout.write('.')
-            sys.stdout.flush()
+            if d%100==0:
+                sys.stdout.write('.')
+                sys.stdout.flush()
             document = self.df.ix[:, d]
             word_idx = self._word_indices(document)
             for n in word_idx:
@@ -66,8 +67,9 @@ class CollapseGibbsLda:
                 
             for d in range(self.D):
 
-                sys.stdout.write('.')
-                sys.stdout.flush()
+                if d%100==0:
+                    sys.stdout.write('.')
+                    sys.stdout.flush()
                 
                 # turn word counts in the document into a vector of word occurences
                 document = self.df.ix[:, d]
