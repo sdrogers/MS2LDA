@@ -84,14 +84,22 @@ class CollapseGibbsLda:
                     self.ckn[k, n] -= 1
                     self.ck[k] -= 1
  
-                    # compute log prior and likelihood
+                    # compute log prior and log likelihood
                     log_likelihood = self._log_likelihood(n)
                     log_prior = self._log_prior(d)
                     
-                    # sample new k from the posterior distribution
+                    # sample new k from the posterior distribution log_post
                     log_post = log_likelihood + log_prior
-                    k = self._sample_posterior(log_post)
- 
+                    log_post = np.exp(log_post - log_post.max())
+                    log_post = log_post / log_post.sum()
+                    random_number = np.random.rand()
+                    cumsum = np.cumsum(log_post)
+                    k = 0
+                    for k in range(len(cumsum)):
+                        c = cumsum[k]
+                        if random_number <= c:
+                            break 
+             
                     # reassign word back into model
                     self.cdk[d, k] -= 1
                     self.cd[d] -= 1
@@ -132,19 +140,6 @@ class CollapseGibbsLda:
         """ Computes prior p(z) """
         log_prior = np.log(self.cdk[d,:] + self.alpha) - np.log(self.cd[d] + self.K*self.alpha)
         return log_prior
-
-    def _sample_posterior(self, log_post):
-        """ Samples from the posterior distribution p(z|...) """
-        log_post = np.exp(log_post - log_post.max())
-        log_post = log_post / log_post.sum()
-        random_number = np.random.rand()
-        cumsum = np.cumsum(log_post)
-        k = 0
-        for k in range(len(cumsum)):
-            c = cumsum[k]
-            if random_number <= c:
-                break        
-        return k
 
 
 def main():
