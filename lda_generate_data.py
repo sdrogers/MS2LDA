@@ -1,5 +1,4 @@
 from pandas.core.frame import DataFrame
-import wikipedia
 
 import numpy as np
 import pylab as plt
@@ -7,17 +6,8 @@ import pylab as plt
 
 class LdaDataGenerator:
     
-        def __init__(self, alpha, beta):
+        def __init__(self, alpha):
             self.alpha = alpha
-            self.beta = beta
-                
-        def generate_wikipedia(self, topic_list, document_length):
-            topics = []
-            for t in topic_list:
-                topic = wikipedia.page(t)
-                print topic.title
-                print topic.content
-                topics.append(topic)
 
         def generate_word_dists(self, n_topics, vocab_size, document_length):
             
@@ -77,5 +67,5 @@ class LdaDataGenerator:
             ax.set_ylabel(ylabel)
             ax.set_aspect(2)
             ax.set_aspect('auto')
-            plt.savefig(filename)
+            # plt.savefig(filename)
             plt.show()
