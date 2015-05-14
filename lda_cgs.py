@@ -1,16 +1,16 @@
 """
 Implementation of collapsed Gibbs sampling for LDA
-inspired by https://gist.github.com/mblondel/542786, based on
-
-Griffiths, Thomas L., and Mark Steyvers. "Finding scientific topics." 
-Proceedings of the National Academy of Sciences 101.suppl 1 (2004): 5228-5235.
+inspired by https://gist.github.com/mblondel/542786, 
+but made a lot simpler & hopefully clearer
 """
 
+import sys
+
+from lda_generate_data import LdaDataGenerator
 import numpy as np
 import pandas as pd
 import pylab as plt
 
-import sys
 
 class CollapseGibbsLda:
     
@@ -19,7 +19,7 @@ class CollapseGibbsLda:
         Initialises the collaged Gibbs sampling for LDA
         
         Arguments:
-        - df: the dataframe of counts of words x docs
+        - df: the dataframe of counts of vocabularies x documents
         - K: no. of topics
         - alpha: symmetric prior on document-topic assignment
         - beta: symmetric prior on word-topic assignment
@@ -46,13 +46,13 @@ class CollapseGibbsLda:
                 sys.stdout.flush()
             document = self.df.ix[:, d]
             word_idx = self._word_indices(document)
-            for n in word_idx:
+            for pos, n in enumerate(word_idx):
                 k = np.random.randint(self.K)
                 self.cdk[d, k] += 1
                 self.cd[d] += 1
                 self.ckn[k, n] += 1
                 self.ck[k] += 1
-                self.Z[(d, n)] = k
+                self.Z[(d, pos)] = k
         print
         
     def run(self, n_burn, n_samples):
@@ -75,10 +75,10 @@ class CollapseGibbsLda:
                 document = self.df.ix[:, d]
                 word_idx = self._word_indices(document)
 
-                for n in word_idx:
+                for pos, n in enumerate(word_idx):
                     
                     # remove word from model
-                    k = self.Z[(d, n)]
+                    k = self.Z[(d, pos)]
                     self.cdk[d, k] -= 1
                     self.cd[d] -= 1
                     self.ckn[k, n] -= 1
@@ -105,7 +105,7 @@ class CollapseGibbsLda:
                     self.cd[d] -= 1
                     self.ckn[k, n] -= 1
                     self.ck[k] -= 1
-                    self.Z[(d, n)] = k
+                    self.Z[(d, pos)] = k
 
             if samp > n_burn:                    
                 # update phi
@@ -144,22 +144,38 @@ class CollapseGibbsLda:
 
 def main():
 
-    df = pd.read_csv('input/Beer_3_T10_POS_fragments.csv', index_col=0)
+#     df = pd.read_csv('input/Beer_3_T10_POS_fragments.csv', index_col=0)
+# 
+#     # discretise, log and scale df from 0 .. 100
+#     df = np.log10(df)
+#     df /= df.max().max()
+#     df *= 100
+#             
+#     # get rid of NaNs and floor the values
+#     df = df.replace(np.nan,0)
+#     df = df.apply(np.floor)    
+#     print "Data shape " + str(df.shape)
+#     
+#     gibbs = CollapseGibbsLda(df, K=10, alpha=0.1, beta=0.1)
+#     gibbs.run(n_burn=10, n_samples=20)
+#     print "phi = " + str(gibbs.phi)
+#     print "theta = " + str(gibbs.theta)    
 
-    # discretise, log and scale df from 0 .. 100
-    df = np.log10(df)
-    df /= df.max().max()
-    df *= 100
-            
-    # get rid of NaNs and floor the values
-    df = df.replace(np.nan,0)
-    df = df.apply(np.floor)    
-    print "Data shape " + str(df.shape)
+    alpha = 0.1
+    beta = 0.1
+    n_topics = 10
+    n_docs = 20
+    vocab_size = 100
+    document_length = 50
+
+    gen = LdaDataGenerator(alpha, beta)
+    df = gen.generate_input_df(n_topics, vocab_size, document_length, n_docs)
     
-    gibbs = CollapseGibbsLda(df, K=10, alpha=0.1, beta=0.1)
-    gibbs.run(n_burn=10, n_samples=20)
-    print "phi = " + str(gibbs.phi)
-    print "theta = " + str(gibbs.theta)    
+    gibbs = CollapseGibbsLda(df, n_topics, alpha, beta)
+    gibbs.run(n_burn=100, n_samples=200)
+    print "Z = " + str(gibbs.Z)
+    print "phi = " + str(gibbs.phi) # topics X vocabs
+    print "theta = " + str(gibbs.theta) # docs X topics
 
 if __name__ == "__main__":
     main()
