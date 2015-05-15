@@ -1,6 +1,6 @@
 """
 Implementation of collapsed Gibbs sampling for LDA
-inspired by https://gist.github.com/mblondel/542786, 
+inspired by  
 but made a lot simpler & hopefully clearer
 """
 
