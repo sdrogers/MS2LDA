@@ -1,9 +1,12 @@
+<<<<<<< HEAD
 """
 Implementation of collapsed Gibbs sampling for LDA
 inspired by  
 but made a lot simpler & hopefully clearer
 """
 
+=======
+>>>>>>> 2454e15a87e90b23147e9c714ecc0fab0909272c
 import sys
 
 from lda_generate_data import LdaDataGenerator
@@ -41,7 +44,7 @@ class CollapseGibbsLda:
         
         # randomly assign words to topics
         for d in range(self.D):
-            if d%100==0:
+            if d%10==0:
                 sys.stdout.write('.')
                 sys.stdout.flush()
             document = self.df.ix[:, d]
@@ -67,7 +70,7 @@ class CollapseGibbsLda:
                 
             for d in range(self.D):
 
-                if d%100==0:
+                if d%10==0:
                     sys.stdout.write('.')
                     sys.stdout.flush()
                 
@@ -90,10 +93,10 @@ class CollapseGibbsLda:
                     
                     # sample new k from the posterior distribution log_post
                     log_post = log_likelihood + log_prior
-                    log_post = np.exp(log_post - log_post.max())
-                    log_post = log_post / log_post.sum()
+                    post = np.exp(log_post - log_post.max())
+                    post = post / post.sum()
                     random_number = np.random.rand()
-                    cumsum = np.cumsum(log_post)
+                    cumsum = np.cumsum(post)
                     k = 0
                     for k in range(len(cumsum)):
                         c = cumsum[k]
@@ -101,10 +104,10 @@ class CollapseGibbsLda:
                             break 
              
                     # reassign word back into model
-                    self.cdk[d, k] -= 1
-                    self.cd[d] -= 1
-                    self.ckn[k, n] -= 1
-                    self.ck[k] -= 1
+                    self.cdk[d, k] += 1
+                    self.cd[d] += 1
+                    self.ckn[k, n] += 1
+                    self.ck[k] += 1
                     self.Z[(d, pos)] = k
 
             if samp > n_burn:                    
@@ -144,23 +147,6 @@ class CollapseGibbsLda:
 
 def main():
 
-#     df = pd.read_csv('input/Beer_3_T10_POS_fragments.csv', index_col=0)
-# 
-#     # discretise, log and scale df from 0 .. 100
-#     df = np.log10(df)
-#     df /= df.max().max()
-#     df *= 100
-#             
-#     # get rid of NaNs and floor the values
-#     df = df.replace(np.nan,0)
-#     df = df.apply(np.floor)    
-#     print "Data shape " + str(df.shape)
-#     
-#     gibbs = CollapseGibbsLda(df, K=10, alpha=0.1, beta=0.1)
-#     gibbs.run(n_burn=10, n_samples=20)
-#     print "phi = " + str(gibbs.phi)
-#     print "theta = " + str(gibbs.theta)    
-
     alpha = 0.1
     beta = 0.1
     n_topics = 10
@@ -168,14 +154,14 @@ def main():
     vocab_size = 100
     document_length = 50
 
-    gen = LdaDataGenerator(alpha, beta)
+    gen = LdaDataGenerator(alpha)
     df = gen.generate_input_df(n_topics, vocab_size, document_length, n_docs)
     
     gibbs = CollapseGibbsLda(df, n_topics, alpha, beta)
     gibbs.run(n_burn=100, n_samples=200)
-    print "Z = " + str(gibbs.Z)
-    print "phi = " + str(gibbs.phi) # topics X vocabs
-    print "theta = " + str(gibbs.theta) # docs X topics
+    
+    gen._plot_nicely(gibbs.phi, 'Inferred Topics X Vocabularies', 'vocabs', 'topics', 'inferred_topic_vocab.png')
+    gen._plot_nicely(gibbs.theta.T, 'Inferred Topics X Docs', 'docs', 'topics', 'inferred_topic_docs.png')
 
 if __name__ == "__main__":
     main()

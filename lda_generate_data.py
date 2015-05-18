@@ -1,5 +1,4 @@
 from pandas.core.frame import DataFrame
-import wikipedia
 
 import numpy as np
 import pylab as plt
@@ -7,17 +6,8 @@ import pylab as plt
 
 class LdaDataGenerator:
     
-        def __init__(self, alpha, beta):
+        def __init__(self, alpha):
             self.alpha = alpha
-            self.beta = beta
-                
-        def generate_wikipedia(self, topic_list, document_length):
-            topics = []
-            for t in topic_list:
-                topic = wikipedia.page(t)
-                print topic.title
-                print topic.content
-                topics.append(topic)
 
         def generate_word_dists(self, n_topics, vocab_size, document_length):
             
@@ -30,7 +20,7 @@ class LdaDataGenerator:
                 word_dists[k,:] = temp.flatten()
      
             word_dists /= word_dists.sum(axis=1)[:, np.newaxis] # turn counts into probabilities     
-            self._plot_nicely(word_dists, 'Topics X Vocabularies', 'Vocab', 'Topic', 'topic_vocab.png')
+            self._plot_nicely(word_dists, 'Topics X Vocabularies', 'Vocab', 'Topic')
             return word_dists              
         
         def generate_document(self, word_dists, n_topics, vocab_size, document_length):
@@ -65,17 +55,18 @@ class LdaDataGenerator:
                 
             df = DataFrame(docs)
             print df.shape            
-            self._plot_nicely(df, 'Vocabularies X Documents', 'Docs', 'Vocab', 'vocab_doc.png')
+            self._plot_nicely(df, 'Vocabularies X Documents', 'Docs', 'Vocab')
             return df
         
-        def _plot_nicely(self, mat, title, xlabel, ylabel, filename):
+        def _plot_nicely(self, mat, title, xlabel, ylabel):
             fig = plt.figure()
             ax = fig.add_subplot(111)
-            ax.matshow(mat)
+            im = ax.matshow(mat)
             ax.set_title(title)
             ax.set_xlabel(xlabel)
             ax.set_ylabel(ylabel)
             ax.set_aspect(2)
             ax.set_aspect('auto')
-            plt.savefig(filename)
+            plt.colorbar(im)
+            # plt.savefig(filename)
             plt.show()
