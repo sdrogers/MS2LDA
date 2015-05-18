@@ -1,19 +1,14 @@
-<<<<<<< HEAD
 """
 Implementation of collapsed Gibbs sampling for LDA
-inspired by  
-but made a lot simpler & hopefully clearer
 """
 
-=======
->>>>>>> 2454e15a87e90b23147e9c714ecc0fab0909272c
 import sys
 
 from lda_generate_data import LdaDataGenerator
 import numpy as np
 import pandas as pd
 import pylab as plt
-
+from scipy.special import gammaln
 
 class CollapseGibbsLda:
     
@@ -88,8 +83,8 @@ class CollapseGibbsLda:
                     self.ck[k] -= 1
  
                     # compute log prior and log likelihood
-                    log_likelihood = self._log_likelihood(n)
-                    log_prior = self._log_prior(d)
+                    log_likelihood = self._compute_left(n)
+                    log_prior = self._compute_right(d)
                     
                     # sample new k from the posterior distribution log_post
                     log_post = log_likelihood + log_prior
@@ -118,7 +113,8 @@ class CollapseGibbsLda:
                 self.theta = self.cdk + self.alpha 
                 self.theta /= np.sum(self.theta, axis=1)[:, np.newaxis]
                 
-            print
+            ll = self._log_likelihood()
+            print " Log likelihood = %.3f" % ll
                     
     def _word_indices(self, document):
         """
@@ -134,16 +130,48 @@ class CollapseGibbsLda:
                 results.append(nnz)
         return results
 
-    def _log_likelihood(self, n):
-        """ Computes likelihood p(w|z, ...) """
+    def _compute_left(self, n):
+        """ Computes p(w|z, ...) """
         log_likelihood = np.log(self.ckn[:, n] + self.beta) - np.log(self.ck + self.N*self.beta)
         return log_likelihood
     
-    def _log_prior(self, d):
-        """ Computes prior p(z) """
+    def _compute_right(self, d):
+        """ Computes p(z) """
         log_prior = np.log(self.cdk[d,:] + self.alpha) - np.log(self.cd[d] + self.K*self.alpha)
         return log_prior
-
+    
+    def _log_likelihood(self):
+        """ Computes the log likelihood of the data """
+        
+        # why is this wrong??
+#         ll = self.K * ( gammaln(self.N*self.beta) - (gammaln(self.beta)**self.N) )
+#         for k in range(self.K):
+#             for n in range(self.N):
+#                 ll += gammaln(self.ckn[k, n]+self.beta)
+#             ll -= gammaln(self.ck[k] + self.N*self.beta)
+#           
+#         ll += self.D * ( gammaln(self.K*self.alpha) - (gammaln(self.alpha)**self.K) )
+#         for d in range(self.D):
+#             for k in range(self.K):
+#                 ll += gammaln(self.cdk[d, k]+self.alpha)
+#             ll -= gammaln(self.cd[d] + self.K*self.alpha)
+            
+        # copied from https://github.com/ariddell/lda/blob/develop/lda/_lda.pyx
+        ll = self.K * gammaln(self.beta * self.N)
+        for k in range(self.K):
+            ll -= gammaln(self.beta * self.N + self.ck[k])
+            for n in range(self.N):
+                if self.ckn[k, n] > 0:
+                    ll += gammaln(self.beta + self.ckn[k, n]) - gammaln(self.beta)
+        
+        for d in range(self.D):
+            ll += (gammaln(self.alpha * self.K) -
+                    gammaln(self.alpha * self.K + self.cd[d]))
+            for k in range(self.K):
+                if self.cdk[d, k] > 0:
+                    ll += gammaln(self.alpha + self.cdk[d, k]) - gammaln(self.alpha)            
+            
+        return ll
 
 def main():
 
@@ -160,8 +188,8 @@ def main():
     gibbs = CollapseGibbsLda(df, n_topics, alpha, beta)
     gibbs.run(n_burn=100, n_samples=200)
     
-    gen._plot_nicely(gibbs.phi, 'Inferred Topics X Vocabularies', 'vocabs', 'topics', 'inferred_topic_vocab.png')
-    gen._plot_nicely(gibbs.theta.T, 'Inferred Topics X Docs', 'docs', 'topics', 'inferred_topic_docs.png')
+    gen._plot_nicely(gibbs.phi, 'Inferred Topics X Vocabularies', 'vocabs', 'topics')
+    gen._plot_nicely(gibbs.theta.T, 'Inferred Topics X Docs', 'docs', 'topics')
 
 if __name__ == "__main__":
     main()
