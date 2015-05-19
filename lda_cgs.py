@@ -199,8 +199,8 @@ def main():
     gen = LdaDataGenerator(alpha)
     df = gen.generate_input_df(n_topics, vocab_size, document_length, n_docs)
 
-    training_gibbs = CollapseGibbsLda(df, n_topics, alpha, beta)
-    training_gibbs.run(n_burn=0, n_samples=200, n_thin=1)
+    gibbs = CollapseGibbsLda(df, n_topics, alpha, beta)
+    gibbs.run(n_burn=0, n_samples=200, n_thin=1)
         
 #     gen._plot_nicely(gibbs.phi, 'Inferred Topics X Terms', 'terms', 'topics')
 #     gen._plot_nicely(gibbs.theta.T, 'Inferred Topics X Docs', 'docs', 'topics')
