@@ -187,80 +187,20 @@ class CollapseGibbsLda:
             
         return ll
 
-def cross_validate(df, K_range, alpha, beta, n_folds, n_burn, n_samples, n_thin):
-
-    shuffled_df = df.reindex(np.random.permutation(df.index))
-    folds = np.array_split(shuffled_df, n_folds)
-    
-    avg_testing_hms = []
-    ks = []
-    for k in xrange(K_range[0], K_range[1], K_range[2]):
-    
-        print "k=" + str(k)
-        testing_hms = []
-        for i in range(len(folds)):
-            
-            training_df = None
-            testing_df = None
-            testing_idx = -1
-            for j in range(len(folds)):
-                if j == i:
-                    print "Testing fold=" + str(j)
-                    testing_df = folds[j]
-                    testing_idx = j
-                else:
-                    print "Training fold=" + str(j)
-                    if training_df is None:
-                        training_df = folds[j]
-                    else:
-                        training_df.append(folds[j])
-
-            print "Run training gibbs"
-            training_gibbs = CollapseGibbsLda(training_df, k, alpha, beta)
-            training_gibbs.run(n_burn, n_samples, n_thin)
-            
-            print "Run testing gibbs"
-            training_ckn = training_gibbs.ckn
-            training_ck = training_gibbs.ck
-            testing_gibbs = CollapseGibbsLda(testing_df, k, alpha, beta, training_ckn, training_ck)
-            testing_gibbs.run(n_burn, n_samples, n_thin)
-        
-            # testing_hm = stats.hmean(testing_gibbs.all_lls)
-            testing_hm = len(testing_gibbs.all_lls) / np.sum(1.0/testing_gibbs.all_lls) 
-            print "Harmonic mean for testing fold " + str(testing_idx) + " = " + str(testing_hm)
-            testing_hms.append(testing_hm)
-        
-        testing_hm = np.array(testing_hms)
-        avg_testing_hm = np.mean(testing_hm)
-        print "Average testing harmonic means for K = " + str(k) + " is " + str(avg_testing_hm)
-        avg_testing_hms.append(np.asscalar(avg_testing_hm))
-        ks.append(k)
-        print
-        
-    avg_testing_hms = np.array(avg_testing_hms)
-    ks = np.array(ks)
-    plt.plot(ks, avg_testing_hms)
-    plt.xlabel('K')
-    plt.ylabel('Avg harmonic mean')
-    plt.show()    
-
-    print "avg_testing_hms = " + str(avg_testing_hms)
-    print "ks = " + str(ks)
-
 def main():
 
-    alpha = 0.1
-    beta = 0.1
     n_topics = 10
+    alpha = 50/n_topics
+    beta = 0.1
+    
     n_docs = 50
     vocab_size = 200
     document_length = 50
-
     gen = LdaDataGenerator(alpha)
     df = gen.generate_input_df(n_topics, vocab_size, document_length, n_docs)
-        
-    K_range = (5, 21, 5)
-    cross_validate(df, K_range, alpha, beta, 4, 100, 200, 10)    
+
+    training_gibbs = CollapseGibbsLda(df, n_topics, alpha, beta)
+    training_gibbs.run(n_burn=0, n_samples=200, n_thin=1)
         
 #     gen._plot_nicely(gibbs.phi, 'Inferred Topics X Terms', 'terms', 'topics')
 #     gen._plot_nicely(gibbs.theta.T, 'Inferred Topics X Docs', 'docs', 'topics')

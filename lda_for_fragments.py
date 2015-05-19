@@ -1,12 +1,14 @@
-from collections import Counter
-import lda
-import lda.datasets
+# from collections import Counter
+# import lda
+# import lda.datasets
 import operator
 import os
 from pandas.core.frame import DataFrame
 from scipy.sparse import coo_matrix
 import sys
+import timeit
 
+from lda_cgs import CollapseGibbsLda
 import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
@@ -16,7 +18,7 @@ import pylab as plt
 class Ms2Lda:
     
     def __init__(self, fragment_filename, neutral_loss_filename, mzdiff_filename, 
-                 ms1_filename, ms2_filename, n_topics, n_samples):
+                 ms1_filename, ms2_filename):
         
         self.fragment_data = pd.read_csv(fragment_filename, index_col=0)
         self.neutral_loss_data = pd.read_csv(neutral_loss_filename, index_col=0)
@@ -26,15 +28,14 @@ class Ms2Lda:
             self.mzdiff_data = None
         self.ms1 = pd.read_csv(ms1_filename, index_col=0)
         self.ms2 = pd.read_csv(ms2_filename, index_col=0)
+            
+        self.EPSILON = 0.05
+        
+    def preprocess(self):
+
         self.ms2['fragment_bin_id'] = self.ms2['fragment_bin_id'].astype(str)
         self.ms2['loss_bin_id'] = self.ms2['loss_bin_id'].astype(str)
-    
-        self.n_topics = n_topics
-        self.n_samples = n_samples
-        self.EPSILON = 0.05
 
-    def run_lda(self):    
-                    
         # discretise the fragment and neutral loss intensities values
         # log and scale it from 0 .. 100
         self.data = self.fragment_data.append(self.neutral_loss_data)
@@ -52,20 +53,30 @@ class Ms2Lda:
         self.data = self.data.replace(np.nan,0)
         self.data = self.data.transpose()
         sd = coo_matrix(self.data)
-        counts, bins, bars = plt.hist(sd.data, bins=range(100))
-        plt.title('Discretised intensities')   
-        plt.xlabel('Bins')
-        plt.ylabel('Counts')     
-        plt.show()
+#         counts, bins, bars = plt.hist(sd.data, bins=range(100))
+#         plt.title('Discretised intensities')   
+#         plt.xlabel('Bins')
+#         plt.ylabel('Counts')     
+#         plt.show()
         sd = sd.floor()  
         npdata = np.array(sd.todense(),dtype='int64')
         print "Data shape " + str(npdata.shape)
-    
+        df = DataFrame(npdata)
+        return df
+
+    def run_lda(self, df, n_topics, n_samples, n_burn, n_thin, alpha, beta, use_own_model=True):    
+                        
         print "Fitting model..."
         sys.stdout.flush()
-        self.model = lda.LDA(n_topics = self.n_topics, n_iter= self.n_samples, random_state=1)
-        self.model.fit(npdata)
-        print "DONE!"
+        start = timeit.default_timer()
+        if use_own_model:
+            lda = CollapseGibbsLda(df, n_topics, alpha, beta)
+            lda.run(n_burn, n_samples, n_thin)
+        else:
+            self.model = lda.LDA(n_topics=n_topics, n_iter=n_samples, random_state=1, alpha=alpha, eta=beta)
+            self.model.fit(df)
+        stop = timeit.default_timer()
+        print "DONE. Time=" + str(stop-start)
         
     def write_results(self, results_prefix):
         
@@ -286,7 +297,7 @@ class Ms2Lda:
                     losses_p.append(p)
                 counter += 1
 
-            wordfreq = Counter()
+            wordfreq = {}
                     
             print
             print "Fragments"
@@ -660,22 +671,29 @@ class Ms2Lda:
             plt.show()    
             
 def main():
-    
-    print "MS2LDA test"
-
-    n_topics = 50
-    n_samples = 100
+        
+    n_topics = int(sys.argv[1])
+    print "MS2LDA K=" + str(n_topics)
+    n_samples = 200
+    n_burn = 100
+    n_thin = 10
+    alpha = 0.1
+    beta = 0.01
     
     fragment_filename = 'input/Beer_3_T10_POS_fragments.csv'
     neutral_loss_filename = 'input/Beer_3_T10_POS_losses.csv'
     mzdiff_filename = None    
     ms1_filename = 'input/Beer_3_T10_POS_ms1.csv'
     ms2_filename = 'input/Beer_3_T10_POS_ms2.csv'
-    
     ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename, 
-                ms1_filename, ms2_filename, n_topics, n_samples)
-    ms2lda.run_lda()
-    ms2lda.write_results('beer3_pos')
-    ms2lda.plot_lda_fragments(0.25)
+                ms1_filename, ms2_filename)
+    
+    df = ms2lda.preprocess()
+
+    ms2lda.run_lda(df, n_topics, n_samples, n_burn, n_thin, 
+                   alpha, beta, use_own_model=True)
+
+    # ms2lda.write_results('test')
+    # ms2lda.plot_lda_fragments(0.50)
 
 if __name__ == "__main__": main()
