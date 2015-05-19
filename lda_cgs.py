@@ -131,10 +131,12 @@ class CollapseGibbsLda:
                     # update phi
                     self.phi = self.ckn + self.beta
                     self.phi /= np.sum(self.phi, axis=1)[:, np.newaxis]
+                    self.topic_word_ = self.phi
         
                     # update theta
                     self.theta = self.cdk + self.alpha 
                     self.theta /= np.sum(self.theta, axis=1)[:, np.newaxis]
+                    self.doc_topic_ = self.theta
     
                     print " Log likelihood = %.3f" % ll
 
@@ -190,8 +192,8 @@ class CollapseGibbsLda:
 def main():
 
     n_topics = 10
-    alpha = 50/n_topics
-    beta = 0.1
+    alpha = 0.1
+    beta = 0.01
     
     n_docs = 50
     vocab_size = 200
@@ -200,7 +202,7 @@ def main():
     df = gen.generate_input_df(n_topics, vocab_size, document_length, n_docs)
 
     gibbs = CollapseGibbsLda(df, n_topics, alpha, beta)
-    gibbs.run(n_burn=0, n_samples=200, n_thin=1)
+    gibbs.run(n_burn=10, n_samples=20, n_thin=1)
         
 #     gen._plot_nicely(gibbs.phi, 'Inferred Topics X Terms', 'terms', 'topics')
 #     gen._plot_nicely(gibbs.theta.T, 'Inferred Topics X Docs', 'docs', 'topics')

@@ -42,13 +42,13 @@ class CrossValidatorLda:
                     if training_df is None:
                         training_df = folds[j]
                     else:
-                        training_df.append(folds[j])
+                        training_df = training_df.append(folds[j])
 
-            print "Run training gibbs"
+            print "Run training gibbs " + str(training_df.shape)
             training_gibbs = CollapseGibbsLda(training_df, self.K, self.alpha, self.beta)
             training_gibbs.run(n_burn, n_samples, n_thin)
             
-            print "Run testing gibbs"
+            print "Run testing gibbs " + str(testing_df.shape)
             training_ckn = training_gibbs.ckn
             training_ck = training_gibbs.ck
             testing_gibbs = CollapseGibbsLda(testing_df, self.K, self.alpha, self.beta, training_ckn, training_ck)

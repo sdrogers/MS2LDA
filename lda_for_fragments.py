@@ -70,8 +70,8 @@ class Ms2Lda:
         sys.stdout.flush()
         start = timeit.default_timer()
         if use_own_model:
-            lda = CollapseGibbsLda(df, n_topics, alpha, beta)
-            lda.run(n_burn, n_samples, n_thin)
+            self.model = lda = CollapseGibbsLda(df, n_topics, alpha, beta)
+            self.model.run(n_burn, n_samples, n_thin)
         else:
             self.model = lda.LDA(n_topics=n_topics, n_iter=n_samples, random_state=1, alpha=alpha, eta=beta)
             self.model.fit(df)
@@ -676,7 +676,7 @@ def main():
     print "MS2LDA K=" + str(n_topics)
     n_samples = 200
     n_burn = 100
-    n_thin = 10
+    n_thin = 5
     alpha = 0.1
     beta = 0.01
     
@@ -692,8 +692,7 @@ def main():
 
     ms2lda.run_lda(df, n_topics, n_samples, n_burn, n_thin, 
                    alpha, beta, use_own_model=True)
-
-    # ms2lda.write_results('test')
-    # ms2lda.plot_lda_fragments(0.50)
+    ms2lda.write_results('test')
+    ms2lda.plot_lda_fragments(0.50)
 
 if __name__ == "__main__": main()

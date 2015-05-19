@@ -2,4 +2,4 @@
 
 K=$1
 
-python ./lda_for_fragments.py $K
+python ./lda_cv.py $K
