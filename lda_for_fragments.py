@@ -672,7 +672,10 @@ class Ms2Lda:
             
 def main():
         
-    n_topics = int(sys.argv[1])
+    if len(sys.argv)>1:
+        n_topics = int(sys.argv[1])
+    else:
+        n_topics = 250
     print "MS2LDA K=" + str(n_topics)
     n_samples = 200
     n_burn = 100

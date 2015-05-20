@@ -13,7 +13,7 @@ from scipy import stats
 
 class CollapseGibbsLda:
     
-    def __init__(self, df, K, alpha, beta, training_ckn=None, training_ck=None):
+    def __init__(self, df, K, alpha, beta, previous_model=None):
         """
         Initialises the collaged Gibbs sampling for LDA
         
@@ -34,21 +34,18 @@ class CollapseGibbsLda:
         self.N = df.shape[1]    # total no of words
         self.Z = {}
 
-        if training_ckn is None or training_ck is None:
+        if previous_model is None:
             self.is_training = True
         else:
             self.is_training = False
+            self.previous_model = previous_model
 
         self.cdk = np.zeros((self.D, self.K))
         self.cd = np.zeros(self.D)
-        if self.is_training:
-            self.ckn = np.zeros((self.K, self.N))
-            self.ck = np.zeros(self.K)
-        else:
-            self.ckn = training_ckn
-            self.ck = training_ck
-        
-        # randomly assign words to topics
+        self.ckn = np.zeros((self.K, self.N))
+        self.ck = np.zeros(self.K)
+
+        # randomly assign words to topics if training
         for d in range(self.D):
             if d%10==0:
                 sys.stdout.write('.')
@@ -59,9 +56,8 @@ class CollapseGibbsLda:
                 k = np.random.randint(self.K)
                 self.cdk[d, k] += 1
                 self.cd[d] += 1
-                if self.is_training:
-                    self.ckn[k, n] += 1
-                    self.ck[k] += 1
+                self.ck[k] += 1
+                self.ckn[k, n] += 1
                 self.Z[(d, pos)] = k
         print
         
@@ -72,10 +68,11 @@ class CollapseGibbsLda:
         thin = 0
         for samp in range(n_samples):
         
-            if samp >= n_burn:
-                print "Sample "+ str(samp) + ' ',
+            s = samp+1        
+            if s >= n_burn:
+                print "Sample "+ str(s) + ' ',
             else:
-                print "Burn-in " + str(samp) + ' ',
+                print "Burn-in " + str(s) + ' ',
                 
             for d in range(self.D):
 
@@ -93,9 +90,8 @@ class CollapseGibbsLda:
                     k = self.Z[(d, pos)]
                     self.cdk[d, k] -= 1
                     self.cd[d] -= 1                    
-                    if self.is_training:
-                        self.ckn[k, n] -= 1
-                        self.ck[k] -= 1
+                    self.ck[k] -= 1
+                    self.ckn[k, n] -= 1
  
                     # compute log prior and log likelihood
                     log_likelihood = self._compute_left(n)
@@ -105,46 +101,42 @@ class CollapseGibbsLda:
                     log_post = log_likelihood + log_prior
                     post = np.exp(log_post - log_post.max())
                     post = post / post.sum()
-                    random_number = np.random.rand()
-                    cumsum = np.cumsum(post)
-                    k = 0
-                    for k in range(len(cumsum)):
-                        c = cumsum[k]
-                        if random_number <= c:
-                            break 
+#                     random_number = np.random.rand()
+#                     cumsum = np.cumsum(post)
+#                     k = 0
+#                     for k in range(len(cumsum)):
+#                         c = cumsum[k]
+#                         if random_number <= c:
+#                             break 
+                    k = np.random.multinomial(1, post).argmax()
              
                     # reassign word back into model
                     self.cdk[d, k] += 1
                     self.cd[d] += 1
-                    if self.is_training:                    
-                        self.ckn[k, n] += 1
-                        self.ck[k] += 1
+                    self.ck[k] += 1
+                    self.ckn[k, n] += 1
                     self.Z[(d, pos)] = k
 
-            if samp > n_burn:
-
+            if s > n_burn:
                 thin += 1
                 if thin%n_thin==0:    
                     ll = self._log_likelihood()
-                    self.all_lls.append(ll)  
-        
-                    # update phi
-                    self.phi = self.ckn + self.beta
-                    self.phi /= np.sum(self.phi, axis=1)[:, np.newaxis]
-                    self.topic_word_ = self.phi
-        
-                    # update theta
-                    self.theta = self.cdk + self.alpha 
-                    self.theta /= np.sum(self.theta, axis=1)[:, np.newaxis]
-                    self.doc_topic_ = self.theta
-    
+                    self.all_lls.append(ll)      
                     print " Log likelihood = %.3f" % ll
-
                 else:                
                     print
-
             else:
                 print
+                
+        # update phi
+        self.phi = self.ckn + self.beta
+        self.phi /= np.sum(self.phi, axis=1)[:, np.newaxis]
+        self.topic_word_ = self.phi
+
+        # update theta
+        self.theta = self.cdk + self.alpha 
+        self.theta /= np.sum(self.theta, axis=1)[:, np.newaxis]
+        self.doc_topic_ = self.theta                
 
         self.all_lls = np.array(self.all_lls)
                                     
@@ -164,7 +156,11 @@ class CollapseGibbsLda:
 
     def _compute_left(self, n):
         """ Computes p(w|z, ...) """
-        log_likelihood = np.log(self.ckn[:, n] + self.beta) - np.log(self.ck + self.N*self.beta)
+        if self.is_training:
+            log_likelihood = np.log(self.ckn[:, n] + self.beta) - np.log(self.ck + self.N*self.beta)
+        else:
+            log_likelihood = np.log(self.ckn[:, n] + self.previous_model.ckn[:, n] + self.beta) - \
+                np.log(self.ck + self.previous_model.ckn[:, n] + self.N*self.beta)            
         return log_likelihood
     
     def _compute_right(self, d):
@@ -193,21 +189,20 @@ def main():
 
     n_topics = 10
     alpha = 0.1
-    beta = 0.01
-    
+    beta = 0.01    
     n_docs = 50
     vocab_size = 200
     document_length = 50
     gen = LdaDataGenerator(alpha)
     df = gen.generate_input_df(n_topics, vocab_size, document_length, n_docs)
 
-    gibbs = CollapseGibbsLda(df, n_topics, alpha, beta)
-    gibbs.run(n_burn=10, n_samples=20, n_thin=1)
+    gibbs = CollapseGibbsLda(df, 13, alpha, beta)
+    gibbs.run(n_burn=100, n_samples=200, n_thin=1)
         
-#     gen._plot_nicely(gibbs.phi, 'Inferred Topics X Terms', 'terms', 'topics')
-#     gen._plot_nicely(gibbs.theta.T, 'Inferred Topics X Docs', 'docs', 'topics')
-#     plt.plot(gibbs.all_lls)
-#     plt.show()
+    gen._plot_nicely(gibbs.phi, 'Inferred Topics X Terms', 'terms', 'topics')
+    gen._plot_nicely(gibbs.theta.T, 'Inferred Topics X Docs', 'docs', 'topics')
+    plt.plot(gibbs.all_lls)
+    plt.show()
 
 if __name__ == "__main__":
     main()
