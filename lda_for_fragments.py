@@ -1,6 +1,4 @@
-# from collections import Counter
-# import lda
-# import lda.datasets
+from lda import LDA
 import operator
 import os
 from pandas.core.frame import DataFrame
@@ -67,14 +65,15 @@ class Ms2Lda:
     def run_lda(self, df, n_topics, n_samples, n_burn, n_thin, alpha, beta, use_own_model=True):    
                         
         print "Fitting model..."
+        self.n_topics = n_topics
         sys.stdout.flush()
         start = timeit.default_timer()
         if use_own_model:
-            self.model = lda = CollapseGibbsLda(df, n_topics, alpha, beta)
+            self.model = CollapseGibbsLda(df, n_topics, alpha, beta)
             self.model.run(n_burn, n_samples, n_thin)
         else:
-            self.model = lda.LDA(n_topics=n_topics, n_iter=n_samples, random_state=1, alpha=alpha, eta=beta)
-            self.model.fit(df)
+            self.model = LDA(n_topics=n_topics, n_iter=n_samples, random_state=1, alpha=alpha, eta=beta)
+            self.model.fit(df.as_matrix())
         stop = timeit.default_timer()
         print "DONE. Time=" + str(stop-start)
         
@@ -677,9 +676,9 @@ def main():
     else:
         n_topics = 250
     print "MS2LDA K=" + str(n_topics)
-    n_samples = 200
-    n_burn = 100
-    n_thin = 5
+    n_samples = 20
+    n_burn = 10
+    n_thin = 1
     alpha = 0.1
     beta = 0.01
     

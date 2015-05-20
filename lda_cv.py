@@ -75,17 +75,17 @@ def run_cv(df, k, alpha, beta):
 
 def run_synthetic(parallel=True):
 
-    K = 50
+    K = 200
     print "Cross-validation for K=" + str(K)
     alpha = 0.1
     beta = 0.01    
     n_docs = 50
-    vocab_size = 500
+    vocab_size = 400
     document_length = 50
     gen = LdaDataGenerator(alpha)
     df = gen.generate_input_df(K, vocab_size, document_length, n_docs)
     
-    ks = range(50, 301, 50)
+    ks = range(100, 401, 25)
     if parallel:
         num_cores = multiprocessing.cpu_count()
         mean_margs = Parallel(n_jobs=num_cores)(delayed(run_cv)(df, k, alpha, beta) for k in ks)      
@@ -130,8 +130,8 @@ def run_beer3():
     cv.cross_validate(n_folds, n_burn, n_samples, n_thin)    
 
 def main():    
-    # run_synthetic(parallel=True)
-    run_beer3()
+    run_synthetic(parallel=True)
+    # run_beer3()
 
 if __name__ == "__main__":
     main()

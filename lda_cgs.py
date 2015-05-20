@@ -60,6 +60,13 @@ class CollapseGibbsLda:
                 self.ckn[k, n] += 1
                 self.Z[(d, pos)] = k
         print
+
+        self.document_indices = {}
+        for d in range(self.D):
+            # turn word counts in the document into a vector of word occurences
+            document = self.df.iloc[[d]]
+            word_idx = self._word_indices(document)
+            self.document_indices[d] = word_idx
         
     def run(self, n_burn, n_samples, n_thin):
         """ Runs the Gibbs sampling for LDA """
@@ -80,10 +87,7 @@ class CollapseGibbsLda:
                     sys.stdout.write('.')
                     sys.stdout.flush()
                 
-                # turn word counts in the document into a vector of word occurences
-                document = self.df.iloc[[d]]
-                word_idx = self._word_indices(document)
-
+                word_idx = self.document_indices[d]
                 for pos, n in enumerate(word_idx):
                     
                     # remove word from model
