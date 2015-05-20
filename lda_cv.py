@@ -70,7 +70,7 @@ class CrossValidatorLda:
 def run_cv(df, k, alpha, beta):    
 
     cv = CrossValidatorLda(df, k, alpha, beta)
-    cv.cross_validate(n_folds=2, n_burn=0, n_samples=20, n_thin=1)    
+    cv.cross_validate(n_folds=2, n_burn=50, n_samples=100, n_thin=10)    
     return cv.mean_marg
 
 def run_synthetic(parallel=True):
@@ -130,8 +130,8 @@ def run_beer3():
     cv.cross_validate(n_folds, n_burn, n_samples, n_thin)    
 
 def main():    
-    run_synthetic(parallel=True)
-    # run_beer3()
+    # run_synthetic(parallel=True)
+    run_beer3()
 
 if __name__ == "__main__":
     main()
