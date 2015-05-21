@@ -667,7 +667,7 @@ class Ms2Lda:
                 fragment_intensity = np.log10(fragment_intensities[j])
                 plt.plot((fragment_mass, fragment_mass), (0, fragment_intensity), linewidth=2.0, color='r')
             
-            plt.show()    
+            plt.show()      
             
 def main():
         

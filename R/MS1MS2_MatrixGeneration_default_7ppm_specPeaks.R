@@ -2,19 +2,30 @@ library(xcms)
 library(Hmisc)
 library(gtools)
 
-# input_file <- '/home/joewandy/Project/justin_data/Beer_3_T10_POS.mzXML'
+input_file <- '/home/joewandy/Project/justin_data/Beer_3_T10_POS.mzXML'
 # input_file <- '/home/joewandy/Project/justin_data/Beer_3_T10_NEG.mzXML'
 # input_file <- '/home/joewandy/Project/justin_data/Urine_37_Top10_POS.mzXML'
-input_file <- '/home/joewandy/Project/justin_data/Urine_37_Top10_NEG.mzXML'
+# input_file <- '/home/joewandy/Project/justin_data/Urine_37_Top10_NEG.mzXML'
 
 # construct the output filenames
 prefix <- basename(input_file) # get the filename only
 prefix <- sub("^([^.]*).*", "\\1", prefix) # get rid of the extension 
-fragments_out <- paste(c(prefix, '_fragments.csv'), collapse="")
-losses_out <- paste(c(prefix, '_losses.csv'), collapse="")
-mzdiffs_out <- paste(c(prefix, '_mzdiffs.csv'), collapse="")
-ms1_out <- paste(c(prefix, '_ms1.csv'), collapse="")
-ms2_out <- paste(c(prefix, '_ms2.csv'), collapse="")
+
+# if true, we will use the relative intensities of the ms2 peaks instead
+use_relative_intensities <- FALSE
+if (use_relative_intensities) {
+    fragments_out <- paste(c(prefix, '_fragments_rel.csv'), collapse="")
+    losses_out <- paste(c(prefix, '_losses_rel.csv'), collapse="")
+    mzdiffs_out <- paste(c(prefix, '_mzdiffs_rel.csv'), collapse="")
+    ms1_out <- paste(c(prefix, '_ms1_rel.csv'), collapse="")
+    ms2_out <- paste(c(prefix, '_ms2_rel.csv'), collapse="")
+} else {
+    fragments_out <- paste(c(prefix, '_fragments.csv'), collapse="")
+    losses_out <- paste(c(prefix, '_losses.csv'), collapse="")
+    mzdiffs_out <- paste(c(prefix, '_mzdiffs.csv'), collapse="")
+    ms1_out <- paste(c(prefix, '_ms1.csv'), collapse="")
+    ms2_out <- paste(c(prefix, '_ms2.csv'), collapse="")   
+}
 
 ################################
 ## Read in data and get peaks ##
@@ -58,6 +69,11 @@ ms2 <- ms2[which(ms2$MSnParentPeakID %in% ms1$peakID),]
 
 # make sure only ms1 peaks with ms2 fragments are kept
 ms1 <- ms1[which(ms1$peakID %in% ms2$MSnParentPeakID),]
+
+# scale the intensities of ms2 peaks to relative intensity
+if (use_relative_intensities) {
+    
+}
 
 ### Prepare the matrices for LDA ###
 
