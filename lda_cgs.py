@@ -2,18 +2,23 @@
 Implementation of collapsed Gibbs sampling for LDA
 """
 
+from math import log
+from scipy import stats
+from scipy import weave
+from scipy.special import gammaln
+from scipy.weave import blitz
+from scipy.weave import inline
 import sys
 
 from lda_generate_data import LdaDataGenerator
 import numpy as np
 import pandas as pd
 import pylab as plt
-from scipy.special import gammaln
-from scipy import stats
+import time
 
 class CollapseGibbsLda:
     
-    def __init__(self, df, K, alpha, beta, previous_model=None):
+    def __init__(self, df, K, alpha, beta, previous_model=None, use_inline=True):
         """
         Initialises the collaged Gibbs sampling for LDA
         
@@ -40,10 +45,10 @@ class CollapseGibbsLda:
             self.is_training = False
             self.previous_model = previous_model
 
-        self.cdk = np.zeros((self.D, self.K))
-        self.cd = np.zeros(self.D)
-        self.ckn = np.zeros((self.K, self.N))
-        self.ck = np.zeros(self.K)
+        self.cdk = np.zeros((self.D, self.K), int)
+        self.cd = np.zeros(self.D, int)
+        self.ckn = np.zeros((self.K, self.N), int)
+        self.ck = np.zeros(self.K, int)
 
         # randomly assign words to topics if training
         for d in range(self.D):
@@ -67,6 +72,8 @@ class CollapseGibbsLda:
             document = self.df.iloc[[d]]
             word_idx = self._word_indices(document)
             self.document_indices[d] = word_idx
+            
+        self.use_inline = use_inline
         
     def run(self, n_burn, n_samples, n_thin):
         """ Runs the Gibbs sampling for LDA """
@@ -160,16 +167,78 @@ class CollapseGibbsLda:
 
     def _compute_left(self, n):
         """ Computes p(w|z, ...) """
-        if self.is_training:
-            log_likelihood = np.log(self.ckn[:, n] + self.beta) - np.log(self.ck + self.N*self.beta)
+        
+        if self.use_inline:
+            
+            # C version
+            ckn = self.ckn[:, n]
+            ck = self.ck
+            assert len(ckn) == len(ck)
+            arr_len = len(ckn)
+            beta = self.beta
+            N = self.N
+            results = np.zeros((1, arr_len))
+            code = """
+                for (int i=0; i<arr_len; i++)
+                {
+                    long int ckn_i = ckn(i);
+                    double temp1 = log(ckn_i + beta);
+                    long int ck_i = ck(i);
+                    double temp2 = log(ck_i + N*beta);
+                    results(0, i) = temp1 - temp2;
+                    // printf("%.7f ", results(0, i));
+                }
+                // printf("\\n");
+            """
+            inline(code, ['ckn', 'ck', 'arr_len', 'beta', 'N', 'results'], 
+                                    type_converters = weave.converters.blitz, 
+                                    compiler = "gcc", headers=["<math.h>"])
+            log_likelihood = results[0] # since results is 1 x arr_len
+
         else:
-            log_likelihood = np.log(self.ckn[:, n] + self.previous_model.ckn[:, n] + self.beta) - \
-                np.log(self.ck + self.previous_model.ckn[:, n] + self.N*self.beta)            
+            
+            # slow python version
+            if self.is_training:
+                log_likelihood = np.log(self.ckn[:, n] + self.beta) - np.log(self.ck + self.N*self.beta)
+            else:
+                log_likelihood = np.log(self.ckn[:, n] + self.previous_model.ckn[:, n] + self.beta) - \
+                    np.log(self.ck + self.previous_model.ckn[:, n] + self.N*self.beta)            
+
         return log_likelihood
-    
+            
     def _compute_right(self, d):
         """ Computes p(z) """
-        log_prior = np.log(self.cdk[d,:] + self.alpha) - np.log(self.cd[d] + self.K*self.alpha)
+
+        if self.use_inline:
+            
+            # C version
+            cdk = self.cdk[d, :]
+            cd = int(self.cd[d])
+            arr_len = len(cdk)
+            alpha = self.alpha
+            K = self.K
+            results = np.zeros((1, arr_len))
+            code = """
+                for (int i=0; i<arr_len; i++)
+                {
+                    long int cdk_i = cdk(i);
+                    double temp1 = log(cdk_i + alpha);
+                    double temp2 = log(cd + K*alpha);
+                    results(0, i) = temp1 - temp2;
+                    // printf("%.7f ", results(0, i));
+                }
+                // printf("\\n");
+            """
+            inline(code, ['cdk', 'cd', 'arr_len', 'alpha', 'K', 'results'], 
+                                    type_converters = weave.converters.blitz, 
+                                    compiler = "gcc", headers=["<math.h>"])
+            log_prior = results[0] # since results is 1 x arr_len
+
+        else:
+
+            # slow python version                
+            log_prior = np.log(self.cdk[d, :] + self.alpha) - np.log(self.cd[d] + self.K*self.alpha)
+        
         return log_prior
     
     def _log_likelihood(self):
@@ -200,8 +269,10 @@ def main():
     gen = LdaDataGenerator(alpha)
     df = gen.generate_input_df(n_topics, vocab_size, document_length, n_docs)
 
-    gibbs = CollapseGibbsLda(df, 13, alpha, beta)
+    start_time = time.time()
+    gibbs = CollapseGibbsLda(df, 13, alpha, beta, use_inline=True)
     gibbs.run(n_burn=100, n_samples=200, n_thin=1)
+    print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
         
     gen._plot_nicely(gibbs.phi, 'Inferred Topics X Terms', 'terms', 'topics')
     gen._plot_nicely(gibbs.theta.T, 'Inferred Topics X Docs', 'docs', 'topics')

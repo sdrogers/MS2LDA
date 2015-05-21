@@ -11,12 +11,13 @@ import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
 import pylab as plt
+import time
 
 
 class Ms2Lda:
     
     def __init__(self, fragment_filename, neutral_loss_filename, mzdiff_filename, 
-                 ms1_filename, ms2_filename):
+                 ms1_filename, ms2_filename, relative_intensity=False):
         
         self.fragment_data = pd.read_csv(fragment_filename, index_col=0)
         self.neutral_loss_data = pd.read_csv(neutral_loss_filename, index_col=0)
@@ -27,6 +28,7 @@ class Ms2Lda:
         self.ms1 = pd.read_csv(ms1_filename, index_col=0)
         self.ms2 = pd.read_csv(ms2_filename, index_col=0)
             
+        self.relative_intensity = relative_intensity
         self.EPSILON = 0.05
         
     def preprocess(self):
@@ -34,18 +36,32 @@ class Ms2Lda:
         self.ms2['fragment_bin_id'] = self.ms2['fragment_bin_id'].astype(str)
         self.ms2['loss_bin_id'] = self.ms2['loss_bin_id'].astype(str)
 
-        # discretise the fragment and neutral loss intensities values
-        # log and scale it from 0 .. 100
-        self.data = self.fragment_data.append(self.neutral_loss_data)
-        self.data = np.log10(self.data)
-        self.data /= self.data.max().max()
-        self.data *= 100
-    
-        # then scale mzdiff counts from 0 .. 100 too, and append it to data    
-        if self.mzdiff_data is not None:
-            self.mzdiff_data /= self.mzdiff_data.max().max()
-            self.mzdiff_data *= 100
-            self.data = self.data.append(self.mzdiff_data)
+        if self.relative_intensity: 
+
+            # discretise the fragment and neutral loss intensities values
+            # values are already normalised from 0 .. 1 during feature extraction
+            self.data = self.fragment_data.append(self.neutral_loss_data)
+            self.data *= 100 # so just convert to 0 .. 100
+        
+            # then scale mzdiff counts from 0 .. 100 too, and append it to data    
+            if self.mzdiff_data is not None:
+                self.mzdiff_data *= 100
+                self.data = self.data.append(self.mzdiff_data)
+        
+        else: # absolute intensity values
+
+            # discretise the fragment and neutral loss intensities values
+            # log and scale it from 0 .. 100
+            self.data = self.fragment_data.append(self.neutral_loss_data)
+            self.data = np.log10(self.data)
+            self.data /= self.data.max().max()
+            self.data *= 100
+        
+            # then scale mzdiff counts from 0 .. 100 too, and append it to data    
+            if self.mzdiff_data is not None:
+                self.mzdiff_data /= self.mzdiff_data.max().max()
+                self.mzdiff_data *= 100
+                self.data = self.data.append(self.mzdiff_data)
         
         # get rid of NaNs, transpose the data and floor it
         self.data = self.data.replace(np.nan,0)
@@ -62,14 +78,15 @@ class Ms2Lda:
         df = DataFrame(npdata)
         return df
 
-    def run_lda(self, df, n_topics, n_samples, n_burn, n_thin, alpha, beta, use_own_model=True):    
+    def run_lda(self, df, n_topics, n_samples, n_burn, n_thin, alpha, beta, 
+                use_own_model=False, use_inline=False):    
                         
         print "Fitting model..."
         self.n_topics = n_topics
         sys.stdout.flush()
         start = timeit.default_timer()
         if use_own_model:
-            self.model = CollapseGibbsLda(df, n_topics, alpha, beta)
+            self.model = CollapseGibbsLda(df, n_topics, alpha, beta, use_inline=use_inline)
             self.model.run(n_burn, n_samples, n_thin)
         else:
             self.model = LDA(n_topics=n_topics, n_iter=n_samples, random_state=1, alpha=alpha, eta=beta)
@@ -432,11 +449,14 @@ class Ms2Lda:
                 
                 #set the bbox for the text. Increase txt_width for wider text.
                 txt_width = 20*(plt.xlim()[1] - plt.xlim()[0])
-                txt_height = 1*(plt.ylim()[1] - plt.ylim()[0])
+                txt_height = 0.2*(plt.ylim()[1] - plt.ylim()[0])
     
                 # plot the parent peak first
                 parent_mass = parent_masses[n]
-                parent_intensity = np.log10(parent_intensities[n])
+                if self.relative_intensity:
+                    parent_intensity = 0.25
+                else:
+                    parent_intensity = np.log10(parent_intensities[n])
                 plt.plot((parent_mass, parent_mass), (0, parent_intensity), linewidth=2.0, color='b')
                 x = parent_mass
                 y = parent_intensity
@@ -452,7 +472,10 @@ class Ms2Lda:
                     peakid = item[0]
                     parentid = item[1]
                     mass = item[2]
-                    intensity = np.log10(item[3])
+                    if self.relative_intensity:
+                        intensity = item[3]
+                    else:
+                        intensity = np.log10(item[3])
                     plt.plot((mass, mass), (0, intensity), linewidth=1.0, color='#FF9933')
 
                 x_data = []
@@ -468,7 +491,10 @@ class Ms2Lda:
                         peakid = item[0]
                         parentid = item[1]
                         mass = item[2]
-                        intensity = np.log10(item[3])
+                        if self.relative_intensity:
+                            intensity = item[3]
+                        else:
+                            intensity = np.log10(item[3])
                         word = item[4]
                         freq = wordfreq[word]
                         ratio = float(freq)/len(parent_ids)
@@ -489,7 +515,10 @@ class Ms2Lda:
                         peakid = item[0]
                         parentid = item[1]
                         mass = item[2]
-                        intensity = np.log10(item[3])
+                        if self.relative_intensity:
+                            intensity = item[3]
+                        else:
+                            intensity = np.log10(item[3])
                         word = item[4]
                         freq = wordfreq[word]
                         ratio = float(freq)/len(parent_ids)
@@ -510,10 +539,13 @@ class Ms2Lda:
     
                 xlim_upper = max_parent_mz + 100
                 plt.xlim([0, xlim_upper])
-                plt.ylim([0, 15])
+                plt.ylim([0, 1.5])
 
                 plt.xlabel('m/z')
-                plt.ylabel('log10(intensity)')
+                if self.relative_intensity:
+                    plt.ylabel('relative intensity')                    
+                else:
+                    plt.ylabel('log10(intensity)')
                 plt.title('Topic ' + str(i) + ' -- parent peak ' + ("%.5f" % parent_mass))
                 
                 blue_patch = mpatches.Patch(color='blue', label='Parent peak')
@@ -647,7 +679,10 @@ class Ms2Lda:
                 'color':'blue', 
                 'weight':'bold'
             }
-            parent_intensity = np.log10(parent_intensity)
+            if self.relative_intensity:
+                parent_intensity = 0.25
+            else:
+                parent_intensity = np.log10(parent_intensity)
             plt.plot((parent_mass, parent_mass), (0, parent_intensity), linewidth=2.0, color='b')
             x = parent_mass
             y = parent_intensity
@@ -664,7 +699,10 @@ class Ms2Lda:
             fragment_intensities = fragment_intensities.values.ravel().tolist()
             for j in range(len(fragment_masses)):
                 fragment_mass = fragment_masses[j]
-                fragment_intensity = np.log10(fragment_intensities[j])
+                if self.relative_intensity:
+                    fragment_intensity = np.log10(fragment_intensities[j])
+                else:
+                    fragment_intensity = fragment_intensities[j]
                 plt.plot((fragment_mass, fragment_mass), (0, fragment_intensity), linewidth=2.0, color='r')
             
             plt.show()      
@@ -677,23 +715,27 @@ def main():
         n_topics = 250
     print "MS2LDA K=" + str(n_topics)
     n_samples = 20
-    n_burn = 10
+    n_burn = 0
     n_thin = 1
     alpha = 0.1
     beta = 0.01
     
-    fragment_filename = 'input/Beer_3_T10_POS_fragments.csv'
-    neutral_loss_filename = 'input/Beer_3_T10_POS_losses.csv'
+    start_time = time.time()
+    relative_intensity = True
+    fragment_filename = 'input/Beer_3_T10_POS_fragments_rel.csv'
+    neutral_loss_filename = 'input/Beer_3_T10_POS_losses_rel.csv'
     mzdiff_filename = None    
-    ms1_filename = 'input/Beer_3_T10_POS_ms1.csv'
-    ms2_filename = 'input/Beer_3_T10_POS_ms2.csv'
+    ms1_filename = 'input/Beer_3_T10_POS_ms1_rel.csv'
+    ms2_filename = 'input/Beer_3_T10_POS_ms2_rel.csv'
     ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename, 
-                ms1_filename, ms2_filename)
-    
+                ms1_filename, ms2_filename, relative_intensity)    
     df = ms2lda.preprocess()
-
+    
+    start_time = time.time()
     ms2lda.run_lda(df, n_topics, n_samples, n_burn, n_thin, 
-                   alpha, beta, use_own_model=True)
+                   alpha, beta, use_own_model=True, use_inline=False)
+    print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
+
     ms2lda.write_results('test')
     ms2lda.plot_lda_fragments(0.50)
 

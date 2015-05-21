@@ -12,7 +12,7 @@ prefix <- basename(input_file) # get the filename only
 prefix <- sub("^([^.]*).*", "\\1", prefix) # get rid of the extension 
 
 # if true, we will use the relative intensities of the ms2 peaks instead
-use_relative_intensities <- FALSE
+use_relative_intensities <- TRUE
 if (use_relative_intensities) {
     fragments_out <- paste(c(prefix, '_fragments_rel.csv'), collapse="")
     losses_out <- paste(c(prefix, '_losses_rel.csv'), collapse="")
@@ -72,6 +72,22 @@ ms1 <- ms1[which(ms1$peakID %in% ms2$MSnParentPeakID),]
 
 # scale the intensities of ms2 peaks to relative intensity
 if (use_relative_intensities) {
+    
+    parent_ids <- ms2$MSnParentPeakID
+    for (i in 1:nrow(ms1)) {
+        peak_id <- ms1[i, 1]
+        matches <- match(as.character(parent_ids), peak_id)
+        pos <- which(!is.na(matches))
+        # if there's more than one fragment peak
+        if (length(pos)>0) {
+            # then scale by the relative intensities of the spectrum
+            fragment_peaks <- ms2[pos, ]
+            fragment_intensities <- fragment_peaks$intensity
+            max_intense <- max(fragment_intensities)
+            fragment_intensities <- fragment_intensities / max_intense
+            ms2[pos, ]$intensity <- fragment_intensities
+        }
+    }
     
 }
 
