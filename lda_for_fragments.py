@@ -714,26 +714,25 @@ def main():
     else:
         n_topics = 250
     print "MS2LDA K=" + str(n_topics)
-    n_samples = 2
-    n_burn = 0
-    n_thin = 1
+    n_samples = 200
+    n_burn = 100
+    n_thin = 10
     alpha = 0.1
     beta = 0.01
     
-    start_time = time.time()
     relative_intensity = True
-    fragment_filename = 'input/Beer_3_T10_POS_fragments_rel.csv'
-    neutral_loss_filename = 'input/Beer_3_T10_POS_losses_rel.csv'
+    fragment_filename = 'input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
+    neutral_loss_filename = 'input/relative_intensities/Beer_3_T10_POS_losses_rel.csv'
     mzdiff_filename = None    
-    ms1_filename = 'input/Beer_3_T10_POS_ms1_rel.csv'
-    ms2_filename = 'input/Beer_3_T10_POS_ms2_rel.csv'
+    ms1_filename = 'input/relative_intensities/Beer_3_T10_POS_ms1_rel.csv'
+    ms2_filename = 'input/relative_intensities/Beer_3_T10_POS_ms2_rel.csv'
     ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename, 
                 ms1_filename, ms2_filename, relative_intensity)    
     df = ms2lda.preprocess()
     
     start_time = time.time()
     ms2lda.run_lda(df, n_topics, n_samples, n_burn, n_thin, 
-                   alpha, beta, use_own_model=True, use_inline=False)
+                   alpha, beta, use_own_model=False, use_inline=False)
     print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
 
     ms2lda.write_results('test')
