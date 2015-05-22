@@ -91,6 +91,7 @@ class CollapseGibbsLda:
             for d in range(self.D):
 
                 if d%10==0:
+                    
                     sys.stdout.write('.')
                     sys.stdout.flush()
                 
