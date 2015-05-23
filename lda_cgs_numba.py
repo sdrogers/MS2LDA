@@ -16,7 +16,7 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
     thin = 0
     
     # prepare some K-length vectors to hold the intermediate results during loop
-    log_post = np.empty(K, dtype=np.float64)
+    post = np.empty(K, dtype=np.float64)
     cumsum = np.empty(K, dtype=np.float64)
 
     # loop over samples
@@ -43,7 +43,7 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
                 k = Z[(d, pos)]                
                 k = _nb_get_new_index(d, n, k, cdk, cd, ck, ckn,
                                       N, K, alpha, beta, 
-                                      log_post, cumsum, random_number)
+                                      post, cumsum, random_number)
                 Z[(d, pos)] = k
 
         if s > n_burn:
@@ -75,7 +75,7 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
 ), nopython=True)
 def _nb_get_new_index(d, n, k, cdk, cd, ck, ckn,
                       N, K, alpha, beta, 
-                      log_post, cumsum, random_number):
+                      post, cumsum, random_number):
 
     temp_ckn = ckn[:, n]
     temp_cdk = cdk[d, :]
@@ -89,29 +89,25 @@ def _nb_get_new_index(d, n, k, cdk, cd, ck, ckn,
     # log_likelihood = np.log(ckn[:, n] + beta) - np.log(ck + N*beta)
     # log_prior = np.log(cdk[d, :] + alpha) - np.log(cd[d] + K*alpha)        
     # log_post = log_likelihood + log_prior
-    for i in range(len(log_post)):
-        log_likelihood = math.log(temp_ckn[i] + beta) - math.log(ck[i] + N*beta)
-        log_prior = math.log(temp_cdk[i] + alpha) - math.log(cd[d] + K*alpha)
-        log_post[i] = log_likelihood + log_prior
+    
+    # we risk underflowing by not working in log space here
+    for i in range(len(post)):
+        likelihood = (temp_ckn[i] + beta) / (ck[i] + N*beta)
+        prior = (temp_cdk[i] + alpha) / (cd[d] + K*alpha)
+        post[i] = likelihood * prior
 
     # post = np.exp(log_post - log_post.max())
     # post = post / post.sum()
-    max_log_post = log_post[0]
-    for i in range(len(log_post)):
-        val = log_post[i]
-        if val > max_log_post:
-            max_log_post = val
     sum_post = 0
-    for i in range(len(log_post)):
-        log_post[i] = math.exp(log_post[i] - max_log_post)
-        sum_post += log_post[i]
-    for i in range(len(log_post)):
-        log_post[i] = log_post[i] / sum_post
+    for i in range(len(post)):
+        sum_post += post[i]
+    for i in range(len(post)):
+        post[i] = post[i] / sum_post
                             
     # k = np.random.multinomial(1, post).argmax()
     total = 0
-    for i in range(len(log_post)):
-        val = log_post[i]
+    for i in range(len(post)):
+        val = post[i]
         total += val
         cumsum[i] = total
     k = 0

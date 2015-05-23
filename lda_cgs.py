@@ -145,7 +145,7 @@ class CollapseGibbsLda:
 
 def main():
 
-    multiplier = 10
+    multiplier = 1
     n_topics = 20 * multiplier
     n_docs = 100 * multiplier
     vocab_size = 200 * multiplier

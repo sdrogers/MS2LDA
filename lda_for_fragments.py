@@ -724,8 +724,8 @@ def main():
     else:
         n_topics = 250
     print "MS2LDA K=" + str(n_topics)
-    n_samples = 200
-    n_burn = 100
+    n_samples = 20
+    n_burn = 10
     n_thin = 1
     alpha = 0.1
     beta = 0.01
