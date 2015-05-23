@@ -1,20 +1,25 @@
-try:
-    from lda import LDA
-except Exception:
-    pass
 import operator
 import os
+import sys
+import time
+import timeit
+
+from numpy.random.mtrand import RandomState
 from pandas.core.frame import DataFrame
 from scipy.sparse import coo_matrix
-import sys
-import timeit
 
 from lda_cgs import CollapseGibbsLda
 import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
 import pylab as plt
-import time
+
+
+try:
+    from lda import LDA
+except Exception:
+    pass
+
 
 
 class Ms2Lda:
@@ -86,13 +91,15 @@ class Ms2Lda:
                         
         print "Fitting model..."
         self.n_topics = n_topics
+        rng = RandomState(1234567890)
         sys.stdout.flush()
-        start = timeit.default_timer()
         if use_own_model:
             self.model = CollapseGibbsLda(df, n_topics, alpha, beta)
+            start = timeit.default_timer()
             self.model.run(n_burn, n_samples, n_thin, use_native=use_native)
         else:
-            self.model = LDA(n_topics=n_topics, n_iter=n_samples, random_state=1, alpha=alpha, eta=beta)
+            self.model = LDA(n_topics=n_topics, n_iter=n_samples, random_state=rng, alpha=alpha, eta=beta)
+            start = timeit.default_timer()
             self.model.fit(df.as_matrix())
         stop = timeit.default_timer()
         print "DONE. Time=" + str(stop-start)
@@ -483,12 +490,12 @@ class Ms2Lda:
 
                 x_data = []
                 y_data = []
+                line_type = []
     
                 # plot the fragment peaks in this topic that also occur in this parent peak
                 if parent_id in parent_topic_fragments:        
                     fragments_list = parent_topic_fragments[parent_id]
                     num_peaks = len(fragments_list)
-                    line_type = []
                     for j in range(num_peaks):
                         item = fragments_list[j]
                         peakid = item[0]
@@ -717,8 +724,8 @@ def main():
     else:
         n_topics = 250
     print "MS2LDA K=" + str(n_topics)
-    n_samples = 5
-    n_burn = 0
+    n_samples = 200
+    n_burn = 100
     n_thin = 1
     alpha = 0.1
     beta = 0.01
@@ -729,14 +736,12 @@ def main():
     mzdiff_filename = None    
     ms1_filename = 'input/relative_intensities/Beer_3_T10_POS_ms1_rel.csv'
     ms2_filename = 'input/relative_intensities/Beer_3_T10_POS_ms2_rel.csv'
+
     ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename, 
                 ms1_filename, ms2_filename, relative_intensity)    
-    df = ms2lda.preprocess()
-    
-    start_time = time.time()
+    df = ms2lda.preprocess()    
     ms2lda.run_lda(df, n_topics, n_samples, n_burn, n_thin, 
-                   alpha, beta, use_own_model=True, use_native=True)
-    print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
+                   alpha, beta, use_own_model=False, use_native=True)
 
     ms2lda.write_results('test')
     ms2lda.plot_lda_fragments(0.50)

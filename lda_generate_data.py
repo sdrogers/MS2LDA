@@ -1,3 +1,7 @@
+""" Produces some synthetic data according to the generative process of LDA.
+See example usage in the main method of lda_cgs.py
+"""
+from numpy import int64
 from pandas.core.frame import DataFrame
 
 import numpy as np
@@ -6,8 +10,9 @@ import pylab as plt
 
 class LdaDataGenerator:
     
-        def __init__(self, alpha):
+        def __init__(self, alpha, make_plot=False):
             self.alpha = alpha
+            self.make_plot = make_plot
 
         def generate_word_dists(self, n_topics, vocab_size, document_length):
             
@@ -20,7 +25,8 @@ class LdaDataGenerator:
                 word_dists[k,:] = temp.flatten()
      
             word_dists /= word_dists.sum(axis=1)[:, np.newaxis] # turn counts into probabilities     
-#             self._plot_nicely(word_dists, 'Topics X Terms', 'Terms', 'Topics')
+            if self.make_plot:
+                self._plot_nicely(word_dists, 'Topics X Terms', 'Terms', 'Topics')
             return word_dists              
         
         def generate_document(self, word_dists, n_topics, vocab_size, document_length):
@@ -44,19 +50,22 @@ class LdaDataGenerator:
             return d
         
         def generate_input_df(self, n_topics, vocab_size, document_length, n_docs):
+            
+            print "Generating input DF"
                         
             # word_dists is the topic x document_length matrix
             word_dists = self.generate_word_dists(n_topics, vocab_size, document_length)            
             
             # generate each document x terms vector
-            docs = np.zeros((vocab_size, n_docs))
+            docs = np.zeros((vocab_size, n_docs), dtype=int64)
             for i in range(n_docs):
                 docs[:, i] = self.generate_document(word_dists, n_topics, vocab_size, document_length)
                 
             df = DataFrame(docs)
             df = df.transpose()
             print df.shape            
-#             self._plot_nicely(df, 'Documents X Terms', 'Terms', 'Docs')
+            if self.make_plot:            
+                self._plot_nicely(df, 'Documents X Terms', 'Terms', 'Docs')
             return df
         
         def _plot_nicely(self, mat, title, xlabel, ylabel):

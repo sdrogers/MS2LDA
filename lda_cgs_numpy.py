@@ -5,30 +5,31 @@ from scipy.special import gammaln
 import numpy as np
 
 
-def sample_numpy(n_burn, n_samples, n_thin, 
+def sample_numpy(random_state, n_burn, n_samples, n_thin, 
             D, N, K, document_indices, 
             alpha, beta, 
             Z, cdk, ckn, cd, ck,
-            is_training, previous_model):
+            is_training, previous_model, silent):
 
     all_lls = []
     thin = 0
     for samp in range(n_samples):
     
         s = samp+1        
-        if s >= n_burn:
-            print("Sample " + str(s) + " "),
-        else:
-            print("Burn-in " + str(s) + " "),
+        if not silent:
+            if s >= n_burn:
+                print("Sample " + str(s) + " "),
+            else:
+                print("Burn-in " + str(s) + " "),
             
         for d in range(D):
 
-            if d%10==0:                        
+            if not silent and d%10==0:                        
                 sys.stdout.write('.')
                 sys.stdout.flush()
             
-            word_idx = document_indices[d]
-            for pos, n in enumerate(word_idx):
+            word_locs = document_indices[d]
+            for pos, n in word_locs:
                 
                 # remove word from model
                 k = Z[(d, pos)]
@@ -50,7 +51,7 @@ def sample_numpy(n_burn, n_samples, n_thin,
                 log_post = log_likelihood + log_prior
                 post = np.exp(log_post - log_post.max())
                 post = post / post.sum()
-                k = np.random.multinomial(1, post).argmax()
+                k = random_state.multinomial(1, post).argmax()
          
                 # reassign word back into model
                 cdk[d, k] += 1
@@ -69,11 +70,11 @@ def sample_numpy(n_burn, n_samples, n_thin,
                     ll -= gammaln(ck[k] + N*beta)
                 ll += D * ( gammaln(K*alpha) - (gammaln(alpha)*K) )
                 all_lls.append(ll)      
-                print(" Log likelihood = %.3f " % ll)                        
+                if not silent: print(" Log likelihood = %.3f " % ll)                        
             else:                
-                print
+                if not silent: print
         else:
-            print
+            if not silent: print
             
     # update phi
     phi = ckn + beta
