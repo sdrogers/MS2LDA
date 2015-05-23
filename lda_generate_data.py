@@ -20,7 +20,7 @@ class LdaDataGenerator:
                 word_dists[k,:] = temp.flatten()
      
             word_dists /= word_dists.sum(axis=1)[:, np.newaxis] # turn counts into probabilities     
-            self._plot_nicely(word_dists, 'Topics X Terms', 'Terms', 'Topics')
+#             self._plot_nicely(word_dists, 'Topics X Terms', 'Terms', 'Topics')
             return word_dists              
         
         def generate_document(self, word_dists, n_topics, vocab_size, document_length):
@@ -56,7 +56,7 @@ class LdaDataGenerator:
             df = DataFrame(docs)
             df = df.transpose()
             print df.shape            
-            self._plot_nicely(df, 'Documents X Terms', 'Terms', 'Docs')
+#             self._plot_nicely(df, 'Documents X Terms', 'Terms', 'Docs')
             return df
         
         def _plot_nicely(self, mat, title, xlabel, ylabel):

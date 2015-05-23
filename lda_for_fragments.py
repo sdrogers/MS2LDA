@@ -1,4 +1,7 @@
-from lda import LDA
+try:
+    from lda import LDA
+except Exception:
+    pass
 import operator
 import os
 from pandas.core.frame import DataFrame
@@ -79,15 +82,15 @@ class Ms2Lda:
         return df
 
     def run_lda(self, df, n_topics, n_samples, n_burn, n_thin, alpha, beta, 
-                use_own_model=False, use_inline=False):    
+                use_own_model=False, use_native=False):    
                         
         print "Fitting model..."
         self.n_topics = n_topics
         sys.stdout.flush()
         start = timeit.default_timer()
         if use_own_model:
-            self.model = CollapseGibbsLda(df, n_topics, alpha, beta, use_inline=use_inline)
-            self.model.run(n_burn, n_samples, n_thin)
+            self.model = CollapseGibbsLda(df, n_topics, alpha, beta)
+            self.model.run(n_burn, n_samples, n_thin, use_native=use_native)
         else:
             self.model = LDA(n_topics=n_topics, n_iter=n_samples, random_state=1, alpha=alpha, eta=beta)
             self.model.fit(df.as_matrix())
@@ -714,9 +717,9 @@ def main():
     else:
         n_topics = 250
     print "MS2LDA K=" + str(n_topics)
-    n_samples = 200
-    n_burn = 100
-    n_thin = 10
+    n_samples = 5
+    n_burn = 0
+    n_thin = 1
     alpha = 0.1
     beta = 0.01
     
@@ -732,7 +735,7 @@ def main():
     
     start_time = time.time()
     ms2lda.run_lda(df, n_topics, n_samples, n_burn, n_thin, 
-                   alpha, beta, use_own_model=False, use_inline=False)
+                   alpha, beta, use_own_model=True, use_native=True)
     print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
 
     ms2lda.write_results('test')
