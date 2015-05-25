@@ -2,12 +2,13 @@
 Cross-validation for LDA
 """
 
-import sys
-from joblib import Parallel, delayed  
 import multiprocessing
+import sys
 
-from lda_for_fragments import Ms2Lda
+from joblib import Parallel, delayed  
+
 from lda_cgs import CollapseGibbsLda
+from lda_for_fragments import Ms2Lda
 from lda_generate_data import LdaDataGenerator
 import numpy as np
 import pandas as pd
@@ -46,12 +47,14 @@ class CrossValidatorLda:
                         training_df = training_df.append(folds[j])
 
             print "Run training gibbs " + str(training_df.shape)
-            training_gibbs = CollapseGibbsLda(training_df, self.K, self.alpha, self.beta)
-            training_gibbs.run(n_burn, n_samples, n_thin)
+            training_gibbs = CollapseGibbsLda(training_df, self.K, self.alpha, self.beta, 
+                                              silent=False)
+            training_gibbs.run(n_burn, n_samples, n_thin, use_native=True)
             
             print "Run testing gibbs " + str(testing_df.shape)
-            testing_gibbs = CollapseGibbsLda(testing_df, self.K, self.alpha, self.beta, training_gibbs)
-            testing_gibbs.run(n_burn, n_samples, n_thin)
+            testing_gibbs = CollapseGibbsLda(testing_df, self.K, self.alpha, self.beta, 
+                                             previous_model=training_gibbs, silent=False)
+            testing_gibbs.run(n_burn, n_samples, n_thin, use_native=True)
         
             # testing_hm = stats.hmean(testing_gibbs.all_lls)
             testing_hm = len(testing_gibbs.all_lls) / np.sum(1.0/testing_gibbs.all_lls) 
@@ -70,22 +73,22 @@ class CrossValidatorLda:
 def run_cv(df, k, alpha, beta):    
 
     cv = CrossValidatorLda(df, k, alpha, beta)
-    cv.cross_validate(n_folds=2, n_burn=50, n_samples=100, n_thin=10)    
+    cv.cross_validate(n_folds=2, n_burn=100, n_samples=200, n_thin=10)    
     return cv.mean_marg
 
 def run_synthetic(parallel=True):
 
-    K = 200
+    K = 25
     print "Cross-validation for K=" + str(K)
     alpha = 0.1
     beta = 0.01    
     n_docs = 50
-    vocab_size = 400
+    vocab_size = 500
     document_length = 50
     gen = LdaDataGenerator(alpha)
     df = gen.generate_input_df(K, vocab_size, document_length, n_docs)
     
-    ks = range(100, 401, 25)
+    ks = range(1, 51, 1)
     if parallel:
         num_cores = multiprocessing.cpu_count()
         mean_margs = Parallel(n_jobs=num_cores)(delayed(run_cv)(df, k, alpha, beta) for k in ks)      
@@ -117,20 +120,21 @@ def run_beer3():
     alpha = 0.1
     beta = 0.01
      
-    fragment_filename = 'input/Beer_3_T10_POS_fragments.csv'
-    neutral_loss_filename = 'input/Beer_3_T10_POS_losses.csv'
-    mzdiff_filename = None    
-    ms1_filename = 'input/Beer_3_T10_POS_ms1.csv'
-    ms2_filename = 'input/Beer_3_T10_POS_ms2.csv'
-    ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename, 
-                ms1_filename, ms2_filename)
+    relative_intensity = True
+    fragment_filename = 'input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
+    neutral_loss_filename = 'input/relative_intensities/Beer_3_T10_POS_losses_rel.csv'
+    mzdiff_filename = None
+    ms1_filename = 'input/relative_intensities/Beer_3_T10_POS_ms1_rel.csv'
+    ms2_filename = 'input/relative_intensities/Beer_3_T10_POS_ms2_rel.csv'
+    ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename,
+                ms1_filename, ms2_filename, relative_intensity)
      
     df = ms2lda.preprocess()
     cv = CrossValidatorLda(df, K, alpha, beta)
     cv.cross_validate(n_folds, n_burn, n_samples, n_thin)    
 
 def main():    
-    # run_synthetic(parallel=True)
+    # run_synthetic(parallel=False)
     run_beer3()
 
 if __name__ == "__main__":

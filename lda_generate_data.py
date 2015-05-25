@@ -6,6 +6,7 @@ from pandas.core.frame import DataFrame
 
 import numpy as np
 import pylab as plt
+import pandas as pd
 
 
 class LdaDataGenerator:
@@ -15,7 +16,7 @@ class LdaDataGenerator:
             self.make_plot = make_plot
 
         def generate_word_dists(self, n_topics, vocab_size, document_length):
-            
+                        
             width = vocab_size/n_topics
             word_dists = np.zeros((n_topics, vocab_size))
      
@@ -49,7 +50,7 @@ class LdaDataGenerator:
 
             return d
         
-        def generate_input_df(self, n_topics, vocab_size, document_length, n_docs):
+        def generate_input_df(self, n_topics, vocab_size, document_length, n_docs, outfile=None):
             
             print "Generating input DF"
                         
@@ -66,9 +67,19 @@ class LdaDataGenerator:
             print df.shape            
             if self.make_plot:            
                 self._plot_nicely(df, 'Documents X Terms', 'Terms', 'Docs')
+            
+            if outfile is not None:
+                df.to_csv(outfile)        
+            
             return df
         
-        def _plot_nicely(self, mat, title, xlabel, ylabel):
+        def generate_from_file(self, infile):
+            df = pd.read_csv(infile, index_col=0)
+            # need to change column type from string to integer for other parts in gibbs sampling to work
+            df.rename(columns = lambda x: int(x), inplace=True)
+            return df
+        
+        def _plot_nicely(self, mat, title, xlabel, ylabel, outfile=None):
             fig = plt.figure()
             ax = fig.add_subplot(111)
             im = ax.matshow(mat)
@@ -78,5 +89,6 @@ class LdaDataGenerator:
             ax.set_aspect(2)
             ax.set_aspect('auto')
             plt.colorbar(im)
-            # plt.savefig(filename)
+            if outfile is not None:
+                plt.savefig(outfile)
             plt.show()

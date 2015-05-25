@@ -9,10 +9,12 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
             D, N, K, document_indices, 
             alpha, beta, 
             Z, cdk, ckn, cd, ck,
-            is_training, previous_model, silent):
+            previous_ckn, previous_ck, silent, cv):
 
     all_lls = []
     thin = 0
+    N_beta = N * beta
+    K_alpha = K * alpha    
     for samp in range(n_samples):
     
         s = samp+1        
@@ -39,13 +41,9 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                 ckn[k, n] -= 1
 
                 # compute log prior and log likelihood
-                if is_training:
-                    log_likelihood = np.log(ckn[:, n] + beta) - np.log(ck + N*beta)
-                else:
-                    log_likelihood = np.log(ckn[:, n] + previous_model.ckn[:, n] + beta) - \
-                        np.log(ck + previous_model.ckn[:, n] + N*beta)            
-
-                log_prior = np.log(cdk[d, :] + alpha) - np.log(cd[d] + K*alpha)        
+                log_likelihood = np.log(ckn[:, n] + previous_ckn[:, n] + beta) - \
+                    np.log(ck + previous_ck + N_beta)            
+                log_prior = np.log(cdk[d, :] + alpha) - np.log(cd[d] + K_alpha)        
                 
                 # sample new k from the posterior distribution log_post
                 log_post = log_likelihood + log_prior

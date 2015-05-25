@@ -2,15 +2,16 @@ import math
 import sys
 
 from numba import jit
-from numba.types import int64, float64
+from numba.types import int64, float64, boolean
 
 import numpy as np
+
 
 def sample_numba(random_state, n_burn, n_samples, n_thin, 
             D, N, K, document_indices, 
             alpha, beta, 
             Z, cdk, ckn, cd, ck,
-            is_training, previous_model, silent):
+            previous_ckn, previous_ck, silent, cv):
 
     all_lls = []
     thin = 0
@@ -18,6 +19,10 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
     # prepare some K-length vectors to hold the intermediate results during loop
     post = np.empty(K, dtype=np.float64)
     cumsum = np.empty(K, dtype=np.float64)
+
+    # precompute repeated constants
+    N_beta = N * beta
+    K_alpha = K * alpha    
 
     # loop over samples
     for samp in range(n_samples):
@@ -41,9 +46,11 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
             for pos, n in word_locs:
                 random_number = random_state.rand()                
                 k = Z[(d, pos)]                
-                k = _nb_get_new_index(d, n, k, cdk, cd, ck, ckn,
+                k = _nb_get_new_index(d, n, k, cdk, cd, 
+                                      ckn, ck, previous_ckn, previous_ck,
                                       N, K, alpha, beta, 
-                                      post, cumsum, random_number)
+                                      N_beta, K_alpha,
+                                      post, cumsum, random_number, cv)
                 Z[(d, pos)] = k
 
         if s > n_burn:
@@ -69,22 +76,27 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
     return phi, theta, all_lls
 
 @jit(int64(
-           int64, int64, int64, int64[:, :], int64[:], int64[:], int64[:, :],
+           int64, int64, int64, int64[:, :], int64[:], 
+           int64[:, :], int64[:], int64[:, :], int64[:],
            int64, int64, float64, float64,
-           float64[:], float64[:], float64
+           float64, float64,
+           float64[:], float64[:], float64, boolean
 ), nopython=True)
-def _nb_get_new_index(d, n, k, cdk, cd, ck, ckn,
+def _nb_get_new_index(d, n, k, cdk, cd, 
+                      ckn, ck, previous_ckn, previous_ck,
                       N, K, alpha, beta, 
-                      post, cumsum, random_number):
+                      N_beta, K_alpha,                      
+                      post, cumsum, random_number, cv):
 
     temp_ckn = ckn[:, n]
+    temp_previous_ckn = previous_ckn[:, n]
     temp_cdk = cdk[d, :]
 
     # remove from model
     cdk[d, k] -= 1
-    cd[d] -= 1                    
-    ck[k] -= 1
+    cd[d] -= 1         
     ckn[k, n] -= 1
+    ck[k] -= 1
 
     # log_likelihood = np.log(ckn[:, n] + beta) - np.log(ck + N*beta)
     # log_prior = np.log(cdk[d, :] + alpha) - np.log(cd[d] + K*alpha)        
@@ -92,8 +104,8 @@ def _nb_get_new_index(d, n, k, cdk, cd, ck, ckn,
     
     # we risk underflowing by not working in log space here
     for i in range(len(post)):
-        likelihood = (temp_ckn[i] + beta) / (ck[i] + N*beta)
-        prior = (temp_cdk[i] + alpha) / (cd[d] + K*alpha)
+        likelihood = (temp_ckn[i] + temp_previous_ckn[i] + beta) / (ck[i] + previous_ck[i] + N_beta)
+        prior = (temp_cdk[i] + alpha) / (cd[d] + K_alpha)
         post[i] = likelihood * prior
 
     # post = np.exp(log_post - log_post.max())
@@ -119,8 +131,8 @@ def _nb_get_new_index(d, n, k, cdk, cd, ck, ckn,
     # put back to model
     cdk[d, k] += 1
     cd[d] += 1
-    ck[k] += 1
     ckn[k, n] += 1
+    ck[k] += 1
     
     return k
 
