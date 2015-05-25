@@ -722,10 +722,10 @@ def main():
     if len(sys.argv)>1:
         n_topics = int(sys.argv[1])
     else:
-        n_topics = 250
+        n_topics = 125
     print "MS2LDA K=" + str(n_topics)
-    n_samples = 20
-    n_burn = 10
+    n_samples = 400
+    n_burn = 200
     n_thin = 1
     alpha = 0.1
     beta = 0.01
@@ -741,7 +741,7 @@ def main():
                 ms1_filename, ms2_filename, relative_intensity)    
     df = ms2lda.preprocess()    
     ms2lda.run_lda(df, n_topics, n_samples, n_burn, n_thin, 
-                   alpha, beta, use_own_model=False, use_native=True)
+                   alpha, beta, use_own_model=True, use_native=True)
 
     ms2lda.write_results('test')
     ms2lda.plot_lda_fragments(0.50)

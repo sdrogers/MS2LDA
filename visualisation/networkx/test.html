@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.link {
+  fill: none;
+  stroke: #bbb;
+}
+
+</style>
+<body>
+<h1>Beer3 Pos Results</h2>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+
+var width = 600
+var height = 400;
+
+var color = d3.scale.category10();
+
+var force = d3.layout.force()
+    .linkDistance(10)
+    .linkStrength(2)
+    .size([width, height]);
+
+var svg = d3.select("body")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height)
+        .call(d3.behavior.zoom().on("zoom", redraw))
+    .append('g')
+    .attr("transform","translate(100,50)scale(.5,.5)");
+
+function redraw() {
+  svg.attr("transform",
+      "translate(" + d3.event.translate + ")"
+      + " scale(" + d3.event.scale + ")");
+}   
+
+var drag = force.stop().drag()
+.on("dragstart", function(d) {
+    d3.event.sourceEvent.stopPropagation(); // to prevent pan functionality from 
+                                            //overriding node drag functionality.
+    // put any other 'dragstart' actions here
+});
+
+d3.json("test.json", function(error, graph) {
+  var nodes = graph.nodes.slice(),
+      links = [],
+      bilinks = [];
+
+  graph.links.forEach(function(link) {
+    var s = nodes[link.source],
+        t = nodes[link.target],
+        i = {}; // intermediate node
+    nodes.push(i);
+    links.push({source: s, target: i}, {source: i, target: t});
+    bilinks.push([s, i, t]);
+  });
+
+  force
+      .nodes(nodes)
+      .links(links)
+      .start();
+
+  var link = svg.selectAll(".link")
+      .data(bilinks)
+    .enter().append("path")
+      .attr("class", "link");
+
+  var node = svg.selectAll(".node")
+      .data(graph.nodes)
+      .enter().append("circle")
+      .attr("class", "node")
+      .attr("r", function(d) {
+        if (d.in_degree == 0) {
+          return 5;
+        } else {  
+          return d.in_degree;
+        } 
+      })
+      .style("fill", function(d) { return color(d.group); })
+      .call(force.drag);
+
+  node.append("title")
+      .text(function(d) { return d.name; });
+
+  force.on("tick", function() {
+    link.attr("d", function(d) {
+      return "M" + d[0].x + "," + d[0].y
+          + "S" + d[1].x + "," + d[1].y
+          + " " + d[2].x + "," + d[2].y;
+    });
+    node.attr("transform", function(d) {
+      return "translate(" + d.x + "," + d.y + ")";
+    });
+  });
+});
+
+</script>
