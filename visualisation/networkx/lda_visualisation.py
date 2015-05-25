@@ -173,7 +173,7 @@ def export_docdf_to_networkx(infile):
         
 def main():
     
-    infile = '/home/joewandy/git/metabolomics_tools/justin/results/test/test_docs.csv'
+    infile = '/home/joewandy/git/metabolomics_tools/justin/notebooks/results/beer3_pos_rel/beer3_pos_rel_docs.csv'
     
     # sif_out = '/home/joewandy/git/metabolomics_tools/justin/cytoscape/beer3_pos_docs_cytoscape.sif'
     # noa_out = '/home/joewandy/git/metabolomics_tools/justin/cytoscape/beer3_pos_docs_cytoscape.noa'

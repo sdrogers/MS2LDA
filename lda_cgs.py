@@ -161,6 +161,7 @@ class CollapseGibbsLda:
                 self.alpha, self.beta,
                 self.Z, self.cdk, self.ckn, self.cd, self.ck,
                 self.previous_ckn, self.previous_ck, self.silent, self.cv)
+        self.loglikelihoods_ = self.all_lls
         
     def save(self, filename):
         # binary mode ('b') is required for portability between Unix and Windows
