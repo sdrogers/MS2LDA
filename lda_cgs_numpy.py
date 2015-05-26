@@ -9,7 +9,8 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
             D, N, K, document_indices, 
             alpha, beta, 
             Z, cdk, ckn, cd, ck,
-            previous_ckn, previous_ck, silent, cv):
+            previous_ckn, previous_ck, previous_K,
+            silent):
 
     all_lls = []
     thin = 0
@@ -36,26 +37,59 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                 # remove word from model
                 k = Z[(d, pos)]
                 cdk[d, k] -= 1
-                cd[d] -= 1                    
-                ck[k] -= 1
+                cd[d] -= 1    
                 ckn[k, n] -= 1
+                ck[k] -= 1
 
-                # compute log prior and log likelihood
-                log_likelihood = np.log(ckn[:, n] + previous_ckn[:, n] + beta) - \
-                    np.log(ck + previous_ck + N_beta)            
-                log_prior = np.log(cdk[d, :] + alpha) - np.log(cd[d] + K_alpha)        
+                if previous_K == 0:
+
+                    # for training
+                    log_likelihood = np.log(ckn[:, n] + beta) - np.log(ck + N_beta)
                 
+                elif previous_K == K:
+                
+                    # for cross-validation
+                    log_likelihood = np.log(previous_ckn[:, n] + beta) - np.log(previous_ck + N_beta)
+                
+                else:
+                    
+                    # for testing on unseen data
+                    log_likelihood_previous = np.log(previous_ckn[:, n] + beta) - np.log(previous_ck + N_beta)
+                    log_likelihood_current = np.log(ckn[:, n] + beta) - np.log(ck + N_beta)    
+
+                    # The combined likelihood: 
+                    # front is from previous topic-word distribution
+                    # back is from current topic-word distribution
+                    front = log_likelihood_previous[0:previous_K]
+                    back = log_likelihood_current[previous_K:]
+                    log_likelihood = np.hstack((front, back))
+                                
+                log_prior = np.log(cdk[d, :] + alpha) - np.log(cd[d] + K_alpha)                
+
                 # sample new k from the posterior distribution log_post
                 log_post = log_likelihood + log_prior
                 post = np.exp(log_post - log_post.max())
                 post = post / post.sum()
-                k = random_state.multinomial(1, post).argmax()
+                
+                # k = random_state.multinomial(1, post).argmax()
+                cumsum = np.empty(K, dtype=np.float64)
+                random_number = random_state.rand()                                
+                total = 0
+                for i in range(len(post)):
+                    val = post[i]
+                    total += val
+                    cumsum[i] = total
+                k = 0
+                for k in range(len(cumsum)):
+                    c = cumsum[k]
+                    if random_number <= c:
+                        break
          
                 # reassign word back into model
                 cdk[d, k] += 1
                 cd[d] += 1
-                ck[k] += 1
                 ckn[k, n] += 1
+                ck[k] += 1
                 Z[(d, pos)] = k
 
         if s > n_burn:
@@ -65,7 +99,7 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                 for k in range(K):
                     for n in range(N):
                         ll += gammaln(ckn[k, n]+beta)
-                    ll -= gammaln(ck[k] + N*beta)
+                    ll -= gammaln(ck[k] + N*beta)                        
                 ll += D * ( gammaln(K*alpha) - (gammaln(alpha)*K) )
                 all_lls.append(ll)      
                 if not silent: print(" Log likelihood = %.3f " % ll)                        

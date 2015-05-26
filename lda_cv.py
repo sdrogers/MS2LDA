@@ -5,6 +5,8 @@ Cross-validation for LDA
 import multiprocessing
 import sys
 
+import os
+
 from joblib import Parallel, delayed  
 
 from lda_cgs import CollapseGibbsLda
@@ -73,12 +75,12 @@ class CrossValidatorLda:
 def run_cv(df, k, alpha, beta):    
 
     cv = CrossValidatorLda(df, k, alpha, beta)
-    cv.cross_validate(n_folds=2, n_burn=100, n_samples=200, n_thin=10)    
+    cv.cross_validate(n_folds=4, n_burn=100, n_samples=200, n_thin=5)    
     return cv.mean_marg
 
 def run_synthetic(parallel=True):
 
-    K = 25
+    K = 10
     print "Cross-validation for K=" + str(K)
     alpha = 0.1
     beta = 0.01    
@@ -88,7 +90,7 @@ def run_synthetic(parallel=True):
     gen = LdaDataGenerator(alpha)
     df = gen.generate_input_df(K, vocab_size, document_length, n_docs)
     
-    ks = range(1, 51, 1)
+    ks = range(1, 20, 1)
     if parallel:
         num_cores = multiprocessing.cpu_count()
         mean_margs = Parallel(n_jobs=num_cores)(delayed(run_cv)(df, k, alpha, beta) for k in ks)      
@@ -100,6 +102,7 @@ def run_synthetic(parallel=True):
         
     plt.figure()
     plt.plot(np.array(ks), np.array(mean_margs))
+    plt.grid()
     plt.xlabel('K')
     plt.ylabel('Marg')
     plt.title('CV results')
@@ -111,21 +114,55 @@ def run_beer3():
         K = int(sys.argv[1])
     else:
         K = 250
+
+    # find the current path of this script file        
+    current_path = os.path.dirname(os.path.abspath(__file__))
         
     print "Cross-validation for K=" + str(K)
     n_folds = 4
-    n_samples = 400
-    n_burn = 200
-    n_thin = 10
+    n_samples = 500
+    n_burn = 250
+    n_thin = 5
     alpha = 0.1
     beta = 0.01
      
     relative_intensity = True
-    fragment_filename = 'input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
-    neutral_loss_filename = 'input/relative_intensities/Beer_3_T10_POS_losses_rel.csv'
+    fragment_filename = current_path + '/input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
+    neutral_loss_filename = current_path + '/input/relative_intensities/Beer_3_T10_POS_losses_rel.csv'
     mzdiff_filename = None
-    ms1_filename = 'input/relative_intensities/Beer_3_T10_POS_ms1_rel.csv'
-    ms2_filename = 'input/relative_intensities/Beer_3_T10_POS_ms2_rel.csv'
+    ms1_filename = current_path + '/input/relative_intensities/Beer_3_T10_POS_ms1_rel.csv'
+    ms2_filename = current_path + '/input/relative_intensities/Beer_3_T10_POS_ms2_rel.csv'
+    ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename,
+                ms1_filename, ms2_filename, relative_intensity)
+     
+    df = ms2lda.preprocess()
+    cv = CrossValidatorLda(df, K, alpha, beta)
+    cv.cross_validate(n_folds, n_burn, n_samples, n_thin)    
+
+def run_urine37():
+
+    if len(sys.argv)>1:
+        K = int(sys.argv[1])
+    else:
+        K = 250
+        
+    # find the current path of this script file        
+    current_path = os.path.dirname(os.path.abspath(__file__))        
+        
+    print "Cross-validation for K=" + str(K)
+    n_folds = 4
+    n_samples = 500
+    n_burn = 250
+    n_thin = 5
+    alpha = 0.1
+    beta = 0.01
+     
+    relative_intensity = True
+    fragment_filename = current_path + 'input/relative_intensities/Urine_37_Top10_POS_fragments_rel.csv'
+    neutral_loss_filename = current_path + 'input/relative_intensities/Urine_37_Top10_POS_losses_rel.csv'
+    mzdiff_filename = None
+    ms1_filename = current_path + 'input/relative_intensities/Urine_37_Top10_POS_ms1_rel.csv'
+    ms2_filename = current_path + 'input/relative_intensities/Urine_37_Top10_POS_ms2_rel.csv'
     ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename,
                 ms1_filename, ms2_filename, relative_intensity)
      
@@ -134,8 +171,20 @@ def run_beer3():
     cv.cross_validate(n_folds, n_burn, n_samples, n_thin)    
 
 def main():    
-    # run_synthetic(parallel=False)
-    run_beer3()
+
+    data = None
+    if len(sys.argv)>2:
+        data = sys.argv[2].upper()
+
+    if data == 'BEER3POS':
+        print "Data = Beer3 Positive"
+        run_beer3()
+    elif data == 'URINE37POS':
+        print "Data = Urine37 Positive"
+        run_urine37()
+    else:
+        print "Data = Synthetic"
+        run_synthetic(parallel=False)        
 
 if __name__ == "__main__":
     main()

@@ -6,12 +6,12 @@ from numba.types import int64, float64, boolean
 
 import numpy as np
 
-
 def sample_numba(random_state, n_burn, n_samples, n_thin, 
             D, N, K, document_indices, 
             alpha, beta, 
             Z, cdk, ckn, cd, ck,
-            previous_ckn, previous_ck, silent, cv):
+            previous_ckn, previous_ck, previous_K,
+            silent):
 
     all_lls = []
     thin = 0
@@ -47,10 +47,10 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
                 random_number = random_state.rand()                
                 k = Z[(d, pos)]                
                 k = _nb_get_new_index(d, n, k, cdk, cd, 
-                                      ckn, ck, previous_ckn, previous_ck,
+                                      ckn, ck, previous_ckn, previous_ck, previous_K,
                                       N, K, alpha, beta, 
                                       N_beta, K_alpha,
-                                      post, cumsum, random_number, cv)
+                                      post, cumsum, random_number)
                 Z[(d, pos)] = k
 
         if s > n_burn:
@@ -77,16 +77,16 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
 
 @jit(int64(
            int64, int64, int64, int64[:, :], int64[:], 
-           int64[:, :], int64[:], int64[:, :], int64[:],
+           int64[:, :], int64[:], int64[:, :], int64[:], int64,
            int64, int64, float64, float64,
            float64, float64,
-           float64[:], float64[:], float64, boolean
+           float64[:], float64[:], float64,
 ), nopython=True)
 def _nb_get_new_index(d, n, k, cdk, cd, 
-                      ckn, ck, previous_ckn, previous_ck,
+                      ckn, ck, previous_ckn, previous_ck, previous_K,
                       N, K, alpha, beta, 
                       N_beta, K_alpha,                      
-                      post, cumsum, random_number, cv):
+                      post, cumsum, random_number):
 
     temp_ckn = ckn[:, n]
     temp_previous_ckn = previous_ckn[:, n]
@@ -102,19 +102,46 @@ def _nb_get_new_index(d, n, k, cdk, cd,
     # log_prior = np.log(cdk[d, :] + alpha) - np.log(cd[d] + K*alpha)        
     # log_post = log_likelihood + log_prior
     
-    # we risk underflowing by not working in log space here
     for i in range(len(post)):
-        likelihood = (temp_ckn[i] + temp_previous_ckn[i] + beta) / (ck[i] + previous_ck[i] + N_beta)
+
+        # we risk underflowing by not working in log space here
+        if i < previous_K:
+            likelihood = (temp_previous_ckn[i] + beta) / (previous_ck[i] + N_beta)
+        else:
+            likelihood = (temp_ckn[i] + beta) / (ck[i] + N_beta)
         prior = (temp_cdk[i] + alpha) / (cd[d] + K_alpha)
         post[i] = likelihood * prior
 
+        # better but slower code
+#         if i < previous_K:
+#             likelihood = math.log(temp_previous_ckn[i] + beta) - math.log(previous_ck[i] + N_beta)
+#         else:
+#             likelihood = math.log(temp_ckn[i] + beta) - math.log(ck[i] + N_beta)
+#         prior = math.log(temp_cdk[i] + alpha) - math.log(cd[d] + K_alpha)
+#         post[i] = likelihood + prior
+
     # post = np.exp(log_post - log_post.max())
     # post = post / post.sum()
+
+    # we risk underflowing by not working in log space here    
     sum_post = 0
     for i in range(len(post)):
         sum_post += post[i]
     for i in range(len(post)):
         post[i] = post[i] / sum_post
+    
+    # better but slower code
+#     max_log_post = post[0]
+#     for i in range(len(post)):
+#         val = post[i]
+#         if val > max_log_post:
+#             max_log_post = val
+#     sum_post = 0
+#     for i in range(len(post)):
+#         post[i] = math.exp(post[i] - max_log_post)
+#         sum_post += post[i]
+#     for i in range(len(post)):
+#         post[i] = post[i] / sum_post
                             
     # k = np.random.multinomial(1, post).argmax()
     total = 0
