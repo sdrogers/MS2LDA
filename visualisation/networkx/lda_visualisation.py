@@ -138,7 +138,7 @@ def export_docdf_to_networkx(infile):
                 docid = nodes[docname]
                 topicid = nodes[topic]
                 weight = col_value
-                if weight > 0.5:
+                if weight > 0:
                     G.add_edge(docid, topicid, weight=weight)
 
     for n in node_names:
@@ -165,7 +165,7 @@ def export_docdf_to_networkx(infile):
     json.dump(d, open('test.json','w'))
     print('Wrote node-link JSON data to test.json') 
     
-    PORT = 7890
+    PORT = 1234 
     Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
     httpd = SocketServer.TCPServer(("", PORT), Handler)
     print("serving at port " + str(PORT))
@@ -174,6 +174,7 @@ def export_docdf_to_networkx(infile):
 def main():
     
     infile = '/home/joewandy/git/metabolomics_tools/justin/notebooks/results/beer3_pos_rel/beer3_pos_rel_docs.csv'
+    # infile = '/home/joewandy/git/metabolomics_tools/justin/notebooks/results/urine37_pos_rel/urine37_pos_rel_docs.csv'
     
     # sif_out = '/home/joewandy/git/metabolomics_tools/justin/cytoscape/beer3_pos_docs_cytoscape.sif'
     # noa_out = '/home/joewandy/git/metabolomics_tools/justin/cytoscape/beer3_pos_docs_cytoscape.noa'

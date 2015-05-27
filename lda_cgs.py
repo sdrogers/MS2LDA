@@ -67,26 +67,30 @@ class CollapseGibbsLda:
                 # then K is no. of old topics + no. of new topics
                 previous_K = len(self.previous_model.selected_topics)                
                 self.K = K + previous_K
+                self.previous_K = previous_K 
+                
                 print "Total no. of topics = " + str(self.K)
                 
-                # extract the previous ckn and ck values for the old topics
+                # Get the previous ckn and ck values from the training stage.
+                # During gibbs update in this testing stage, assignment of word 
+                # to the first previous_K topics will use the previous fixed 
+                # topic-word distributions -- as specified by previous_ckn and previous_ck
                 selected = self.previous_model.selected_topics
                 self.previous_ckn = self.previous_model.ckn[selected, :]
                 self.previous_ck = self.previous_model.ck[selected]
                 
-                # put them into the right shapes
+                # make the previous count matrices have the right number of rows
                 temp = np.zeros((self.K, self.N), int)
                 self.previous_ckn = np.vstack((self.previous_ckn, temp)) # shape is (old_K+new_K) x N
                 temp = np.zeros(self.K, int)
                 self.previous_ck = np.hstack((self.previous_ck, temp)) # length is (old_K+new_K)
 
-                # during gibbs update, the first 0<k<previous_K topics will use the previous topic-word 
-                # distributions specified by previous_ckn and previous_ck
-                self.previous_K = previous_K 
+                # make the previous count matrices have the right number of columns
                 
             else:
                 
-                # otherwise all previous topics were fixed, for cross-validation
+                # otherwise all previous topics were fixed -- for cross-validation
+                # assume the same number of vocabs during the training and testing stages
                 self.K = K
                 self.previous_ckn = self.previous_model.ckn
                 self.previous_ck = self.previous_model.ck
@@ -94,6 +98,7 @@ class CollapseGibbsLda:
                 
         else:
 
+            # for training stage
             self.K = K            
             self.previous_ckn = np.zeros((self.K, self.N), int)
             self.previous_ck = np.zeros(self.K, int)

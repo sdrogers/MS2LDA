@@ -2,16 +2,26 @@ library(xcms)
 library(Hmisc)
 library(gtools)
 
+# beer3 and urine37 dataset
 # input_file <- '/home/joewandy/Project/justin_data/Beer_3_T10_POS.mzXML'
 # input_file <- '/home/joewandy/Project/justin_data/Beer_3_T10_NEG.mzXML'
-input_file <- '/home/joewandy/Project/justin_data/Urine_37_Top10_POS.mzXML'
+# input_file <- '/home/joewandy/Project/justin_data/Urine_37_Top10_POS.mzXML'
 # input_file <- '/home/joewandy/Project/justin_data/Urine_37_Top10_NEG.mzXML'
+
+# beer2pos and beer3pos as training-testing data
+input_file <- '/home/joewandy/Project/justin_data/Beer_data/Positive/Beer_2_T10_POS.mzXML'
+# input_file <- '/home/joewandy/Project/justin_data/Beer_data/Positive/Beer_3_T10_POS.mzXML'
+
+# reuse prev vocabularies, if any
+prev_fragment_file <- 'Beer_3_T10_POS_fragments_rel.csv'
+prev_loss_file <- 'Beer_3_T10_POS_losses_rel.csv'
+prev_mzdiff_file <- 'Beer_3_T10_POS_mzdiffs_rel.csv'
 
 # construct the output filenames
 prefix <- basename(input_file) # get the filename only
 prefix <- sub("^([^.]*).*", "\\1", prefix) # get rid of the extension 
 
-# if true, we will use the relative intensities of the ms2 peaks instead
+# if true, we will use the relative intensities of the ms2 peaks instead of absolute intensity
 use_relative_intensities <- TRUE
 if (use_relative_intensities) {
     fragments_out <- paste(c(prefix, '_fragments_rel.csv'), collapse="")
@@ -93,6 +103,31 @@ if (use_relative_intensities) {
 
 ### Prepare the matrices for LDA ###
 
-source('extractFeatures.R')
-extract_features(ms1, ms2, ms1_out, ms2_out, 
-                 fragments_out, losses_out, mzdiffs_out)
+###############################
+##### Feature Extractions #####
+###############################
+
+source('extractFragmentFeatures.R')
+results <- extract_ms2_fragment_df(ms1, ms2, prev_fragment_file)
+fragment_df <- results$fragment_df
+ms2 <- results$ms2
+
+source('extractLossFeatures.R')
+results <- extract_neutral_loss_df(ms1, ms2)
+neutral_loss_df <- results$neutral_loss_df
+ms2 <- results$ms2
+
+source('extractMzdiffFeatures.R')
+results <- extract_mzdiff_df(ms1, ms2)
+mz_diff_df <- results$mz_diff_df
+ms2 <- results$ms2
+
+########################
+##### Write Output #####
+########################
+
+write.table(ms1, file=ms1_out, col.names=NA, row.names=T, sep=",")
+write.table(ms2, file=ms2_out, col.names=NA, row.names=T, sep=",")    
+write.table(fragment_df, file=fragments_out, col.names=NA, row.names=T, sep=",")
+write.table(neutral_loss_df, file=losses_out, col.names=NA, row.names=T, sep=",")
+write.table(mz_diff_df, file=mzdiffs_out, col.names=NA, row.names=T, sep=",")

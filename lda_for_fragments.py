@@ -109,13 +109,22 @@ class Ms2Lda:
         outfile = self._get_outfile(results_prefix, '_topics.csv') 
         print "Writing topics to " + outfile
         topic_fragments = self.model.topic_word_
-        n_top_frags = 20
         with open(outfile,'w') as f:
             for i,topic_dist in enumerate(topic_fragments):
-                topic_f = np.array(self.data.columns.values)[np.argsort(topic_dist)][:-n_top_frags:-1]
-                out_string = 'Topic {},{}'.format(i, ','.join(topic_f.astype('str')))
-                # print(out_string)
-                f.write(out_string+'\n')
+#                 topic_f = np.array(self.data.columns.values)[np.argsort(topic_dist)][:-n_top_frags:-1]
+#                 out_string = 'Topic {},{}'.format(i, ','.join(topic_f.astype('str')))
+#                 f.write(out_string+'\n')
+                ordering = np.argsort(topic_dist)
+                vocab = self.data.columns.values                
+                topic_words = np.array(vocab)[ordering][::-1]
+                dist = topic_dist[ordering][::-1]
+                f.write('Topic {}'.format(i))
+                for j in range(len(topic_words)):
+                    if dist[j] > self.EPSILON:
+                        f.write(',{}'.format(topic_words[j]))
+                    else:
+                        break
+                f.write('\n')
     
         outfile = self._get_outfile(results_prefix, '_all.csv') 
         print "Writing fragments x topics to " + outfile
