@@ -158,11 +158,11 @@ def run_urine37():
     beta = 0.01
      
     relative_intensity = True
-    fragment_filename = current_path + 'input/relative_intensities/Urine_37_Top10_POS_fragments_rel.csv'
-    neutral_loss_filename = current_path + 'input/relative_intensities/Urine_37_Top10_POS_losses_rel.csv'
+    fragment_filename = current_path + '/input/relative_intensities/Urine_37_Top10_POS_fragments_rel.csv'
+    neutral_loss_filename = current_path + '/input/relative_intensities/Urine_37_Top10_POS_losses_rel.csv'
     mzdiff_filename = None
-    ms1_filename = current_path + 'input/relative_intensities/Urine_37_Top10_POS_ms1_rel.csv'
-    ms2_filename = current_path + 'input/relative_intensities/Urine_37_Top10_POS_ms2_rel.csv'
+    ms1_filename = current_path + '/input/relative_intensities/Urine_37_Top10_POS_ms1_rel.csv'
+    ms2_filename = current_path + '/input/relative_intensities/Urine_37_Top10_POS_ms2_rel.csv'
     ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename,
                 ms1_filename, ms2_filename, relative_intensity)
      

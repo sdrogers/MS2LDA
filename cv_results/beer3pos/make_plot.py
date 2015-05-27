@@ -2,11 +2,12 @@ import pandas as pd
 import numpy as np
 import pylab as plt
 
-df = pd.read_csv('results.csv')
+df = pd.read_csv('results.csv', sep=',|=', header=None)
+df = df.sort([1])
 print df
 
-X = df.ix[:, 0]
-Y = df.ix[:, 1]
+X = df.ix[:, 1]
+Y = df.ix[:, 3]
 plt.plot(X, Y, linewidth=2, label='log marginal likelihood')
 plt.legend()
 plt.grid()
