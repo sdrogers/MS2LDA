@@ -13,9 +13,7 @@ input_file <- '/home/joewandy/Project/justin_data/Beer_data/Positive/Beer_2_T10_
 # input_file <- '/home/joewandy/Project/justin_data/Beer_data/Positive/Beer_3_T10_POS.mzXML'
 
 # reuse prev vocabularies, if any
-prev_fragment_file <- 'Beer_3_T10_POS_fragments_rel.csv'
-prev_loss_file <- 'Beer_3_T10_POS_losses_rel.csv'
-prev_mzdiff_file <- 'Beer_3_T10_POS_mzdiffs_rel.csv'
+prev_words_file <- '/home/joewandy/git/metabolomics_tools/justin/input/test.selected.words'
 
 # construct the output filenames
 prefix <- basename(input_file) # get the filename only
@@ -57,63 +55,22 @@ peaks <- as.data.frame(frags@peaks)
 ##### Data filtering #####
 ##########################
 
-### MS1 ###
-
-# get ms1 peaks
-ms1 <- peaks[which(peaks$msLevel==1),]
-
-# keep peaks with RT > 3 mins and < 21 mins
-ms1 <- ms1[which(ms1$rt >= 3*60),]
-ms1 <- ms1[which(ms1$rt <= 21*60),]
-
-### MS2 ###
-
-# get ms2 peaks
-ms2 <- peaks[which(peaks$msLevel==2),]
-
-# keep ms2 peaks with intensity > 5000
-ms2 <- ms2[which(ms2$intensity>5000),]
-
-# keep ms2 peaks with parent in filtered ms1 list
-ms2 <- ms2[which(ms2$MSnParentPeakID %in% ms1$peakID),]
-
-# make sure only ms1 peaks with ms2 fragments are kept
-ms1 <- ms1[which(ms1$peakID %in% ms2$MSnParentPeakID),]
-
-# scale the intensities of ms2 peaks to relative intensity
-if (use_relative_intensities) {
-    
-    parent_ids <- ms2$MSnParentPeakID
-    for (i in 1:nrow(ms1)) {
-        peak_id <- ms1[i, 1]
-        matches <- match(as.character(parent_ids), peak_id)
-        pos <- which(!is.na(matches))
-        # if there's more than one fragment peak
-        if (length(pos)>0) {
-            # then scale by the relative intensities of the spectrum
-            fragment_peaks <- ms2[pos, ]
-            fragment_intensities <- fragment_peaks$intensity
-            max_intense <- max(fragment_intensities)
-            fragment_intensities <- fragment_intensities / max_intense
-            ms2[pos, ]$intensity <- fragment_intensities
-        }
-    }
-    
-}
-
-### Prepare the matrices for LDA ###
+source('createPeakList.R')
+results <- create_peaklist(peaks, use_relative_intensities)
+ms1 <- results$ms1
+ms2 <- results$ms2
 
 ###############################
 ##### Feature Extractions #####
 ###############################
 
 source('extractFragmentFeatures.R')
-results <- extract_ms2_fragment_df(ms1, ms2, prev_fragment_file)
+results <- extract_ms2_fragment_df(ms1, ms2, prev_words_file)
 fragment_df <- results$fragment_df
 ms2 <- results$ms2
 
 source('extractLossFeatures.R')
-results <- extract_neutral_loss_df(ms1, ms2)
+results <- extract_neutral_loss_df(ms1, ms2, prev_words_file)
 neutral_loss_df <- results$neutral_loss_df
 ms2 <- results$ms2
 

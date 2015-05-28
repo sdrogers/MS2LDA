@@ -50,8 +50,10 @@ class LdaDataGenerator:
 
             return d
         
-        def generate_input_df(self, n_topics, vocab_size, document_length, n_docs, outfile=None):
-            
+        def generate_input_df(self, n_topics, vocab_size, document_length, n_docs, 
+                              previous_vocab=None, vocab_prefix=None, 
+                              df_outfile=None, vocab_outfile=None):
+                        
             print "Generating input DF"
                         
             # word_dists is the topic x document_length matrix
@@ -62,22 +64,50 @@ class LdaDataGenerator:
             for i in range(n_docs):
                 docs[:, i] = self.generate_document(word_dists, n_topics, vocab_size, document_length)
                 
+            if previous_vocab is not None:
+                width = vocab_size/n_topics
+                high = int(document_length / width)                
+                # randomly initialises the previous_vocab part
+                additional = np.random.randint(high, size=(len(previous_vocab), n_docs))
+                docs = np.vstack((additional, docs))
+                
             df = DataFrame(docs)
             df = df.transpose()
             print df.shape            
             if self.make_plot:            
                 self._plot_nicely(df, 'Documents X Terms', 'Terms', 'Docs')
             
-            if outfile is not None:
-                df.to_csv(outfile)        
+            if df_outfile is not None:
+                df.to_csv(df_outfile)        
+
+            print "Generating vocabularies"
+            if previous_vocab is not None:
+                vocab = previous_vocab.tolist()
+            else:
+                vocab = []
+            for n in range(vocab_size):
+                if vocab_prefix is None:
+                    vocab.append("word_" + str(n))
+                else:
+                    vocab.append(vocab_prefix + "_word_" + str(n))                    
+            vocab = np.array(vocab)
+            np.savetxt(vocab_outfile, vocab, fmt='%s')
             
-            return df
+            return df, vocab
         
-        def generate_from_file(self, infile):
-            df = pd.read_csv(infile, index_col=0)
-            # need to change column type from string to integer for other parts in gibbs sampling to work
+        def generate_from_file(self, df_infile, vocab_infile):
+            
+            # read data frame
+            df = pd.read_csv(df_infile, index_col=0)
+
+            # here we need to change column type from string to integer for 
+            # other parts in gibbs sampling to work ...
+            # TODO: check why, because this means we cannot set the column 
+            # names in the dataframe to the words!
             df.rename(columns = lambda x: int(x), inplace=True)
-            return df
+            
+            vocab = np.loadtxt(vocab_infile, fmt='%s')
+            return df, vocab
         
         def _plot_nicely(self, mat, title, xlabel, ylabel, outfile=None):
             fig = plt.figure()

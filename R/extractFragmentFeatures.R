@@ -1,6 +1,6 @@
 require('gtools') # for natural sorting
 
-extract_ms2_fragment_df <- function(ms1, ms2, prev_fragment_file) {
+extract_ms2_fragment_df <- function(ms1, ms2, prev_words_file) {
     
     ########################################
     ##### MS1/MS2 Dataframe Generation #####
@@ -8,11 +8,11 @@ extract_ms2_fragment_df <- function(ms1, ms2, prev_fragment_file) {
     
     print("Constructing MS1/MS2 dataframe")
     
-    # for existing words
+    # create an empty dataframe for existing words
     existing_fragment_df <- data.frame(t(rep(NA,length(ms1$peakID))))
     existing_fragment_df <- existing_fragment_df[-1,] # remove first column
 
-    # for new words
+    # create an empty dataframe for new words
     new_fragment_df <- data.frame(t(rep(NA,length(ms1$peakID))))
     new_fragment_df <- new_fragment_df[-1,] # remove first column
     
@@ -21,10 +21,15 @@ extract_ms2_fragment_df <- function(ms1, ms2, prev_fragment_file) {
     
     # reuse existing words, if any
     copy_ms2 <- ms2
-    if (file.exists(prev_fragment_file)) {
-    
-        prev_fragment_df <- read.csv(prev_fragment_file, header=T, check.names=F, row.names=1)
-        prev_words <- rownames(prev_fragment_df)
+    if (file.exists(prev_words_file)) {
+
+        prev_words <- read.csv(prev_words_file, header=F)
+        pos <-with(prev_words, grepl("fragment", V1))
+        
+        # select the rows containing 'fragment' and make it into a vector for strsplit
+        prev_words <- as.vector(prev_words[pos, 1]) 
+        
+        # split by _
         tokens <- strsplit(prev_words, '_')
         prev_mzs <- sapply(tokens, '[', 2)
         prev_mzs <- as.numeric(prev_mzs)
@@ -44,7 +49,7 @@ extract_ms2_fragment_df <- function(ms1, ms2, prev_fragment_file) {
                 abs(mz - x) < max.ppm
             }))    
             
-            # calculate mean mz as label for ms2 row
+            # use the existing word as label for the rows
             mean.mz <- round(mz, digits=5)
 
             # if there's a match then use the actual fragment peaks
