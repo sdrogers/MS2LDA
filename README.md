@@ -31,7 +31,9 @@ Windows Installation Guide
 8. Now we need to install some of the additional packages used in the project (on top of the usual NumPy/SciPy packages). **Launch "Anaconda Command Prompt" from the "Anaconda" start menu folder.** In the command-prompt window that appears, type the following commands to install the previous LDA implementation that we used (to be removed) and update all packages in the distribution to the latest:
 
 > pip install lda
+
 > conda update --all
+
 > exit
 
 9. Finally we have reached the stage where we can run stuff!! Under the same start-up menu folder, you can also **launch the "IPython (2.7) Notebook"**. This will open the notebook client in the web browser. You can then navigate to the **Notebooks** folder in the cloned repository location from step (3). The default is in "Documents\GitHub\metabolomics_tools\justin\notebooks". Click on one of the notebooks to load it. See **lda_results_beer_3_pos_plots.ipynb** for an example of a nicely documented notebook. 
