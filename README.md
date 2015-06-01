@@ -14,6 +14,9 @@ Explanations of important files and folders:
 Windows Installation Guide
 ==========================
 
+Setting up the development environment
+--------------------------------------
+
 1. First we need to check out the project. Go to https://windows.github.com/ and download the GitHub for Windows client. Install it. This provides a tool to clone our source-code repository.
  
 2. During the installation of the GitHub client, **enter the details of your GitHub user account**. If you haven't got one, create it at https://github.com/join. 
@@ -36,8 +39,11 @@ Windows Installation Guide
 
 > exit
 
-9. Finally we have reached the stage where we can run stuff!! Under the same start-up menu folder, you can also **launch the "IPython (2.7) Notebook"**. This will open the notebook client in the web browser. You can then navigate to the **Notebooks** folder in the cloned repository location from step (3). The default is in "Documents\GitHub\metabolomics_tools\justin\notebooks". Click on one of the notebooks to load it. See **lda_results_beer_3_pos_plots.ipynb** for an example of a nicely documented notebook. 
+Running the project
+-------------------
 
-10. From the notebook menu, click **Cell** followed by **Run All** to re-run everything. Alternatively, you can run each cell in the notebook sequentially by first selecting a cell, then pressing Shift-Enter to run that cell and moving on to the next one. 
+1. Finally we have reached the stage where we can run stuff!! Under the same start-up menu folder, you can also **launch the "IPython (2.7) Notebook"**. This will open the notebook client in the web browser. You can then navigate to the **Notebooks** folder in the cloned repository location from step (3). The default is in "Documents\GitHub\metabolomics_tools\justin\notebooks". Click on one of the notebooks to load it. See **lda_results_beer_3_pos_plots.ipynb** for an example of a nicely documented notebook. 
 
-11. It is also often useful to have some sort of text editor or an integrated development environment to edit and make changes to the source codes etc. I recommend the [PyCharm Community Edition IDE](https://www.jetbrains.com/pycharm/download/) or at least the [Notepad++ text editor](https://notepad-plus-plus.org/).
+2. From the notebook menu, click **Cell** followed by **Run All** to re-run everything. Alternatively, you can run each cell in the notebook sequentially by first selecting a cell, then pressing Shift-Enter to run that cell and moving on to the next one. 
+
+3. It is also often useful to have some sort of text editor or an integrated development environment to edit and make changes to the source codes etc. I recommend the [PyCharm Community Edition IDE](https://www.jetbrains.com/pycharm/download/) or at least the [Notepad++ text editor](https://notepad-plus-plus.org/).
