@@ -1,5 +1,6 @@
 import operator
 import os
+import re
 import sys
 import time
 import timeit
@@ -10,6 +11,7 @@ from scipy.sparse import coo_matrix
 
 from lda_cgs import CollapseGibbsLda
 import matplotlib.patches as mpatches
+import networkx as nx
 import numpy as np
 import pandas as pd
 import pylab as plt
@@ -109,6 +111,11 @@ class Ms2Lda:
         stop = timeit.default_timer()
         print "DONE. Time=" + str(stop-start)
         
+    def _natural_sort(self, l): 
+        convert = lambda text: int(text) if text.isdigit() else text.lower() 
+        alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+        return sorted(l, key = alphanum_key)
+                
     def write_results(self, results_prefix):
 
         previous_model = self.model.previous_model
@@ -117,6 +124,7 @@ class Ms2Lda:
             selected_topics = previous_model.selected_topics
         
         # create topic-word output file
+        # the column names of each topic is assigned here
         topic_names = []
         outfile = self._get_outfile(results_prefix, '_topics.csv') 
         print "Writing topics to " + outfile
@@ -166,6 +174,12 @@ class Ms2Lda:
             topic_series = pd.Series(topic[i], index=masses)
             d[topic_name] = topic_series
         self.topicdf = pd.DataFrame(d)
+        
+        # make sure that columns in topicdf are in the correct order
+        # because many times we'd index the columns in the dataframes directly by their positions
+        cols = self.topicdf.columns.tolist()
+        sorted_cols = self._natural_sort(cols)
+        self.topicdf = self.topicdf[sorted_cols]        
 
         # threshold topicdf to get rid of small values
         def f(x):
@@ -210,14 +224,30 @@ class Ms2Lda:
     def save_model(self, topic_indices, model_out, words_out):
         self.model.save(topic_indices, model_out, words_out)
                 
-    def plot_lda_fragments(self, consistency=0.50):
+    def plot_lda_fragments(self, consistency=0.50, sort_by="h_index"):
                 
-        topic_h_indices, topic_dists = self._h_index(consistency) 
-        sorted_topic_counts = sorted(topic_h_indices.items(), key=operator.itemgetter(1), reverse=True)
+        if sort_by == 'h_index':
+            topic_ranking = self._h_index() 
+        elif sort_by == 'in_degree':
+            topic_ranking = self._in_degree() 
+        
+        sorted_topic_counts = sorted(topic_ranking.items(), key=operator.itemgetter(1), reverse=True)
+        print "Topic Ranking"
+        print "============="
+        print
+        for topic_number, score in sorted_topic_counts:
+            if sort_by == 'h_index':
+                print "Topic " + str(topic_number) + " h-index=" + str(score)
+            elif sort_by == 'in_degree':
+                print "Topic " + str(topic_number) + " in-degree=" + str(score)
+        print
         
         for (i, c) in sorted_topic_counts:
-            
-            print "Topic " + str(i) + " h-index=" + str(topic_h_indices[i])
+
+            if sort_by == 'h_index':
+                print "Topic " + str(i) + " h-index=" + str(topic_ranking[i])
+            elif sort_by == 'in_degree':
+                print "Topic " + str(i) + " in-degree=" + str(topic_ranking[i])
             print "====================="
             print
 
@@ -237,6 +267,10 @@ class Ms2Lda:
             nnz_idx = topic_p>0
             top_n_docs = topic_d[nnz_idx]
             top_n_docs_p = topic_p[nnz_idx]
+            
+            if len(top_n_docs) == 0:
+                print "No parent peaks above the threshold found for this topic"
+                continue
     
             print "Parent peaks"
             print
@@ -610,14 +644,12 @@ class Ms2Lda:
                            zorder=0,length_includes_head=True)
     
     # compute the h-index of topics
-    def _h_index(self, data):
+    def _h_index(self):
                 
         topic_fragments = self.model.topic_word_
         topic_counts = {}
-        topic_dists = {}
 
         print "Counting the h-indices of topic",
-        
         for i, topic_dist in enumerate(topic_fragments):
             
             print i,
@@ -687,10 +719,38 @@ class Ms2Lda:
                         break
 
             topic_counts[i] = h_index
-            topic_dists[i] = topic_dist                         
             
         print "\n"
-        return topic_counts, topic_dists
+        return topic_counts
+    
+    def _get_docname(self, row_index):
+        tokens = row_index.split('_')
+        docname = "doc_"+ str(tokens[0]) + "_" + str(tokens[1])
+        return docname
+    
+    def _get_topicname(self, col_index):
+        topic = "topic_" + str(col_index)
+        return topic    
+    
+    # computes the in-degree of topics
+    def _in_degree(self):    
+
+        topic_fragments = self.model.topic_word_
+        topic_counts = {}
+        
+        print "Counting the in-degrees of topic",
+        for i, topic_dist in enumerate(topic_fragments):
+            
+            print i,
+            sys.stdout.flush()
+            
+            # find the documents in this topic above the threshold
+            topic_docs = self.docdf.ix[i, :]
+            topic_docs = topic_docs.iloc[topic_docs.nonzero()[0]]
+            topic_counts[i] = len(topic_docs)
+            
+        print "\n"
+        return topic_counts                
             
 def main():
         
@@ -698,8 +758,7 @@ def main():
         n_topics = int(sys.argv[1])
     else:
         n_topics = 125
-    print "MS2LDA K=" + str(n_topics)
-    n_samples = 200
+    n_samples = 10
     n_burn = 0
     n_thin = 1
     alpha = 0.1
@@ -729,22 +788,50 @@ def main():
 
     # test on beer2pos
     
-    gibbs1 = CollapseGibbsLda.load('input/test.gibbs.p')
-    if hasattr(gibbs1, 'selected_topics'):
-        print "Kept topics = " + str(gibbs1.selected_topics)
+#     gibbs1 = CollapseGibbsLda.load('input/test.gibbs.p')
+#     if hasattr(gibbs1, 'selected_topics'):
+#         print "Kept topics = " + str(gibbs1.selected_topics)
+# 
+#     relative_intensity = True
+#     fragment_filename = 'input/relative_intensities/Beer_2_T10_POS_fragments_rel.csv'
+#     neutral_loss_filename = 'input/relative_intensities/Beer_2_T10_POS_losses_rel.csv'
+#     mzdiff_filename = None    
+#     ms1_filename = 'input/relative_intensities/Beer_2_T10_POS_ms1_rel.csv'
+#     ms2_filename = 'input/relative_intensities/Beer_2_T10_POS_ms2_rel.csv'
+# 
+#     ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename, 
+#                 ms1_filename, ms2_filename, relative_intensity)    
+#     df, vocab = ms2lda.preprocess()    
+#     ms2lda.run_lda(df, vocab, n_topics, n_samples, n_burn, n_thin, 
+#                    alpha, beta, use_own_model=True, use_native=True, previous_model=gibbs1)
+#     ms2lda.write_results('test2')
+#     ms2lda.plot_lda_fragments(0.50)
 
-    relative_intensity = True
-    fragment_filename = 'input/relative_intensities/Beer_2_T10_POS_fragments_rel.csv'
-    neutral_loss_filename = 'input/relative_intensities/Beer_2_T10_POS_losses_rel.csv'
-    mzdiff_filename = None    
-    ms1_filename = 'input/relative_intensities/Beer_2_T10_POS_ms1_rel.csv'
-    ms2_filename = 'input/relative_intensities/Beer_2_T10_POS_ms2_rel.csv'
+    n_samples = 10
+    n_burn = 0
+    n_thin = 1    
+    n_topics = 200
+    alpha = 0.1
+    beta = 0.01
+    
+    fragment_filename = 'input/relative_intensities/NISSLE_WC_fragm_pos_fragments_rel.csv'
+    neutral_loss_filename = 'input/relative_intensities/NISSLE_WC_fragm_pos_losses_rel.csv'
+    mzdiff_filename = None
+    
+    ms1_filename = 'input/relative_intensities/NISSLE_WC_fragm_pos_ms1_rel.csv'
+    ms2_filename = 'input/relative_intensities/NISSLE_WC_fragm_pos_ms2_rel.csv'
 
+    print "MS2LDA K=" + str(n_topics)    
     ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename, 
-                ms1_filename, ms2_filename, relative_intensity)    
-    df, vocab = ms2lda.preprocess()    
+                    ms1_filename, ms2_filename, relative_intensity=True)
+    df, vocab = ms2lda.preprocess()     
+
     ms2lda.run_lda(df, vocab, n_topics, n_samples, n_burn, n_thin, 
-                   alpha, beta, use_own_model=True, use_native=True, previous_model=gibbs1)
-    ms2lda.write_results('test2')
+                   alpha, beta, use_own_model=True, use_native=True)
+    
+    ms2lda.write_results('NISSLE_WC_pos_rel_200')    
+    
+    ms2lda.plot_lda_fragments(consistency=0.33, sort_by="h_index")
+    # ms2lda.plot_lda_fragments(consistency=0.33, sort_by="in_degree")    
 
 if __name__ == "__main__": main()

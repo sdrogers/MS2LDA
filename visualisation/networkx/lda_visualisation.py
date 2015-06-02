@@ -9,10 +9,8 @@ import json
 import sys
 
 from networkx.readwrite import json_graph
-from networkx_viewer import Viewer
 from pandas.core.frame import DataFrame
 
-import networkx as nx
 import networkx as nx
 import numpy as np
 import pandas as pd
@@ -155,12 +153,6 @@ def export_docdf_to_networkx(infile):
     print("Total nodes = " + str(G.number_of_nodes()))
     print("Total edges = " + str(G.number_of_edges()))
 
-    print("Making layout")
-    pos = nx.graphviz_layout(G, prog='sfdp')
-    nx.draw(G, pos, font_size=8, node_size=10)
-    print("Showing")
-    plt.show()
-    
     d = json_graph.node_link_data(G) # node-link format to serialize
     json.dump(d, open('test.json','w'))
     print('Wrote node-link JSON data to test.json') 
