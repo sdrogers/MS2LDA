@@ -13,7 +13,7 @@ input_file <- '/home/joewandy/Project/justin_data/Beer_data/Positive/Beer_2_T10_
 # input_file <- '/home/joewandy/Project/justin_data/Beer_data/Positive/Beer_3_T10_POS.mzXML'
 
 # reuse prev vocabularies, if any
-# prev_words_file <- '/home/joewandy/git/metabolomics_tools/justin/input/test.selected.words'
+prev_words_file <- '/home/joewandy/git/metabolomics_tools/justin/notebooks/results/beer3_pos_rel/beer3pos.vocab'
 
 # construct the output filenames
 prefix <- basename(input_file) # get the filename only
