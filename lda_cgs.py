@@ -17,19 +17,23 @@ the Journal of machine Learning research 3 (2003): 993-1022.
 
 [2] Oliphant, Travis. "Numba python bytecode to LLVM translator." 
 Proceedings of the Python for Scientific Computing Conference (SciPy). 2012.
+
+The variational Bayes version of this file can also be found in lda_vb.py
+
 """
 
+import cPickle
 import sys
 import time
 
 from lda.lda import LDA
+from numpy import int64
 from numpy.random import RandomState
 
 from lda_generate_data import LdaDataGenerator
 import numpy as np
-import pylab as plt
 import pandas as pd
-import cPickle
+import pylab as plt
 
 
 class CollapseGibbsLda:
@@ -85,15 +89,15 @@ class CollapseGibbsLda:
                 
                 # make previous_ckn have the right number of columns
                 N_diff = self.N - len(self.previous_vocab)
-                temp = np.zeros((self.previous_K, N_diff), int)
+                temp = np.zeros((self.previous_K, N_diff), int64)
                 self.previous_ckn = np.hstack((self.previous_ckn, temp)) # size is previous_K x N
                 
                 # make previous_ckn have the right number of rows
-                temp = np.zeros((self.K, self.N), int)
+                temp = np.zeros((self.K, self.N), int64)
                 self.previous_ckn = np.vstack((self.previous_ckn, temp)) # size is (previous_K+K) x N
 
                 # make previous_ck have the right length
-                temp = np.zeros(self.K, int)
+                temp = np.zeros(self.K, int64)
                 self.previous_ck = np.hstack((self.previous_ck, temp)) # length is (previous_K+K)
 
                 # total no. of topics = old + new topics
@@ -114,15 +118,15 @@ class CollapseGibbsLda:
 
             # for training stage
             self.K = K            
-            self.previous_ckn = np.zeros((self.K, self.N), int)
-            self.previous_ck = np.zeros(self.K, int)
+            self.previous_ckn = np.zeros((self.K, self.N), int64)
+            self.previous_ck = np.zeros(self.K, int64)
             self.previous_K = 0 # no old topics
 
         # make the current arrays too
-        self.ckn = np.zeros((self.K, self.N), int)
-        self.ck = np.zeros(self.K, int)
-        self.cdk = np.zeros((self.D, self.K), int)
-        self.cd = np.zeros(self.D, int)
+        self.ckn = np.zeros((self.K, self.N), int64)
+        self.ck = np.zeros(self.K, int64)
+        self.cdk = np.zeros((self.D, self.K), int64)
+        self.cd = np.zeros(self.D, int64)
 
         # make sure to get the same results from running gibbs each time
         if random_state is None:
