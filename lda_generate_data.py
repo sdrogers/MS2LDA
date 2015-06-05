@@ -91,7 +91,8 @@ class LdaDataGenerator:
                 else:
                     vocab.append(vocab_prefix + "_word_" + str(n))                    
             vocab = np.array(vocab)
-            np.savetxt(vocab_outfile, vocab, fmt='%s')
+            if vocab_outfile is not None:
+                np.savetxt(vocab_outfile, vocab, fmt='%s')
             
             return df, vocab
         

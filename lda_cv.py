@@ -19,8 +19,9 @@ import pylab as plt
 
 class CrossValidatorLda:
     
-    def __init__(self, df, K, alpha, beta):
+    def __init__(self, df, vocab, K, alpha, beta):
         self.df = df
+        self.vocab = vocab
         self.K = K
         self.alpha = alpha
         self.beta = beta
@@ -49,12 +50,12 @@ class CrossValidatorLda:
                         training_df = training_df.append(folds[j])
 
             print "Run training gibbs " + str(training_df.shape)
-            training_gibbs = CollapseGibbsLda(training_df, self.K, self.alpha, self.beta, 
+            training_gibbs = CollapseGibbsLda(training_df, self.vocab, self.K, self.alpha, self.beta, 
                                               silent=False)
             training_gibbs.run(n_burn, n_samples, n_thin, use_native=True)
             
             print "Run testing gibbs " + str(testing_df.shape)
-            testing_gibbs = CollapseGibbsLda(testing_df, self.K, self.alpha, self.beta, 
+            testing_gibbs = CollapseGibbsLda(testing_df, self.vocab, self.K, self.alpha, self.beta, 
                                              previous_model=training_gibbs, silent=False)
             testing_gibbs.run(n_burn, n_samples, n_thin, use_native=True)
         
@@ -72,9 +73,9 @@ class CrossValidatorLda:
         print "K=" + str(self.K) + ", mean_approximate_log_marginal_likelihood=" + str(self.mean_marg)
     
 
-def run_cv(df, k, alpha, beta):    
+def run_cv(df, vocab, k, alpha, beta):    
 
-    cv = CrossValidatorLda(df, k, alpha, beta)
+    cv = CrossValidatorLda(df, vocab, k, alpha, beta)
     cv.cross_validate(n_folds=4, n_burn=100, n_samples=200, n_thin=5)    
     return cv.mean_marg
 
@@ -88,16 +89,16 @@ def run_synthetic(parallel=True):
     vocab_size = 500
     document_length = 50
     gen = LdaDataGenerator(alpha)
-    df = gen.generate_input_df(K, vocab_size, document_length, n_docs)
+    df, vocab = gen.generate_input_df(K, vocab_size, document_length, n_docs)
     
-    ks = range(1, 20, 1)
+    ks = range(5, 31, 5)
     if parallel:
         num_cores = multiprocessing.cpu_count()
-        mean_margs = Parallel(n_jobs=num_cores)(delayed(run_cv)(df, k, alpha, beta) for k in ks)      
+        mean_margs = Parallel(n_jobs=num_cores)(delayed(run_cv)(df, vocab, k, alpha, beta) for k in ks)      
     else:
         mean_margs = []
         for k in ks:
-            mean_marg = run_cv(df, k, alpha, beta)
+            mean_marg = run_cv(df, vocab, k, alpha, beta)
             mean_margs.append(mean_marg)
         
     plt.figure()
@@ -166,8 +167,8 @@ def run_urine37():
     ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename,
                 ms1_filename, ms2_filename, relative_intensity)
      
-    df = ms2lda.preprocess()
-    cv = CrossValidatorLda(df, K, alpha, beta)
+    df, vocab = ms2lda.preprocess()
+    cv = CrossValidatorLda(df, vocab, K, alpha, beta)
     cv.cross_validate(n_folds, n_burn, n_samples, n_thin)    
 
 def main():    
