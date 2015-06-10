@@ -13,7 +13,7 @@ def ldae_is_variants(words, topics, topic_prior, num_samples=1000, variant=3, va
     Nd = len(words)
     topic_alpha = np.sum(topic_prior)
 
-    print "Creating the proposal q-distribution"
+    # Creating the proposal q-distribution
     if variant == 1:
         # Importance sample from prior
         qstar = np.tile(topic_prior, (1, Nd)) # T x Nd
@@ -35,25 +35,20 @@ def ldae_is_variants(words, topics, topic_prior, num_samples=1000, variant=3, va
                 qstar = np.multiply(pseudo_counts, topic_word_dist) # T x Nd
                 qq = qstar / np.sum(qstar, 0)
 
-    print "Drawing samples from the q-distribution "
+    # Drawing samples from the q-distribution
     samples = np.zeros((Nd, num_samples), dtype=np.int64)
     for n in range(Nd):
-        print "Word " + str(n+1) + "/" + str(Nd)
         probs = qq[:, n]
         temp = np.random.multinomial(1, probs, size=num_samples)
         sampled_idx = np.argmax(temp, axis=1)
         samples[n, :] = sampled_idx
 
-    print "Do a bin count for each topic within a sample ",
+    # Do a bin count for each topic within a sample
     Nk = np.zeros((T, num_samples), dtype=np.int64) # T x num_samples
     for s in range(num_samples):
-        if s % 100000 == 0:
-            sys.stdout.write('.')
-            sys.stdout.flush()
         Nk[:, s] = np.bincount(samples[:, s], minlength=T)
-    print
 
-    print "Evaluate P(z, v) at samples and compare to q-distribution"
+    # Evaluate P(z, v) at samples and compare to q-distribution
     log_pz = np.sum(gammaln(Nk+topic_prior), 0) + \
              gammaln(topic_alpha) - np.sum(gammaln(topic_prior)) \
              - gammaln(Nd+topic_alpha)      # length is num_samples
@@ -115,8 +110,8 @@ def main():
     variant = 3
     variant_iters = 1000
 
-    # words, topics, topic_prior = generate_synthetic()
-    words, topics, topic_prior = generate_from_matlab('/home/joewandy/sampling codes/lda_eval_matlab_code_20120930/test.mat')
+    words, topics, topic_prior = generate_synthetic()
+    # words, topics, topic_prior = generate_from_matlab('/home/joewandy/sampling codes/lda_eval_matlab_code_20120930/test.mat')
 
     results = []
     for x in range(30):

@@ -31,6 +31,7 @@ from numpy import int64
 from numpy.random import RandomState
 
 from lda_generate_data import LdaDataGenerator
+import lda_utils as utils
 import numpy as np
 import pandas as pd
 import pylab as plt
@@ -141,7 +142,7 @@ class CollapseGibbsLda:
                 sys.stdout.write('.')
                 sys.stdout.flush()
             document = self.df.iloc[[d]]
-            word_idx = self._word_indices(document)
+            word_idx = utils.word_indices(document)
             for pos, n in enumerate(word_idx):
                 k = self.random_state.randint(self.K)
                 self.cdk[d, k] += 1
@@ -155,7 +156,7 @@ class CollapseGibbsLda:
         self.document_indices = {}
         for d in range(self.D):
             document = self.df.iloc[[d]]
-            word_idx = self._word_indices(document)
+            word_idx = utils.word_indices(document)
             word_locs = []
             for pos, n in enumerate(word_idx):
                 word_locs.append((pos, n))
@@ -233,20 +234,6 @@ class CollapseGibbsLda:
                 f.write("{}\n".format(item))                
         print "Words written to " + words_out            
                                     
-    def _word_indices(self, document):
-        """
-        Turns a document vector of word counts into a vector of the indices
-         words that have non-zero counts, repeated for each count
-        e.g. 
-        >>> word_indices(np.array([3, 0, 1, 2, 0, 5]))
-        [0, 0, 0, 2, 3, 3, 5, 5, 5, 5, 5]
-        """
-        results = []
-        for nnz in document.values.nonzero()[1]:
-            for n in range(int(document[nnz])):
-                results.append(nnz)
-        return results
-
 def main():
 
     multiplier = 1
