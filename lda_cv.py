@@ -26,6 +26,7 @@ class CrossValidatorLda:
         self.alpha = alpha
         self.beta = beta
 
+    # run cross-validation by fixing topics in the testing run and computing the harmonic mean of the log likelihood
     def cross_validate(self, n_folds, n_burn, n_samples, n_thin):
     
         shuffled_df = self.df.reindex(np.random.permutation(self.df.index))
@@ -70,8 +71,7 @@ class CrossValidatorLda:
         self.mean_marg = np.asscalar(mean_marg)
         print
         print "Cross-validation done!"
-        print "K=" + str(self.K) + ", mean_approximate_log_marginal_likelihood=" + str(self.mean_marg)
-    
+        print "K=" + str(self.K) + ", mean_approximate_log_marginal_likelihood=" + str(self.mean_marg)    
 
 def run_cv(df, vocab, k, alpha, beta):    
 
