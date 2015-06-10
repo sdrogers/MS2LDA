@@ -194,8 +194,8 @@ def run_beer3():
     ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename,
                 ms1_filename, ms2_filename, relative_intensity)
      
-    df = ms2lda.preprocess()
-    cv = CrossValidatorLda(df, K, alpha, beta)
+    df, vocab = ms2lda.preprocess()
+    cv = CrossValidatorLda(df, vocab, K, alpha, beta)
     # cv.cross_validate(n_folds, n_burn, n_samples, n_thin)   
     cv.cross_validate_is(n_folds, n_burn, n_samples, n_thin, 
                          is_num_samples, is_iters)         
