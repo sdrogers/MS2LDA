@@ -114,8 +114,10 @@ class CrossValidatorLda:
             for d in range(testing_df.shape[0]):
                 document = self.df.iloc[[d]]
                 words = utils.word_indices(document)
-                marg += ldae_is_variants(words, topics, topic_prior, 
+                doc_marg = ldae_is_variants(words, topics, topic_prior, 
                                          num_samples=is_num_samples, variant=3, variant_iters=is_iters)
+                print "\td = " + str(d) + " doc_marg=" + str(doc_marg)
+                marg += doc_marg              
             print "Log evidence " + str(testing_idx) + " = " + str(marg)
             print
             margs.append(marg)

@@ -2,6 +2,7 @@ import sys
 import numpy as np
 from numpy.random import rand
 from scipy.special import gammaln
+from scipy.misc import logsumexp
 import scipy.io as sio
 import pylab as plt
 
@@ -68,8 +69,9 @@ def ldae_is_variants(words, topics, topic_prior, num_samples=1000, variant=3, va
 
     log_weights = log_joint - log_qq
 
-    # the logsumexp below might underflow ..
-    log_evidence = np.log(np.sum(np.exp(log_weights))) - np.log(len(log_weights))
+    # the logsumexp below might underflow .. !!
+    # log_evidence = np.log(np.sum(np.exp(log_weights))) - np.log(len(log_weights))
+    log_evidence = logsumexp(log_weights) - np.log(len(log_weights))
     return log_evidence
 
 def generate_synthetic():
