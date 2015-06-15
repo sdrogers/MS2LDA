@@ -107,7 +107,7 @@ class LdaDataGenerator:
             # names in the dataframe to the words!
             df.rename(columns = lambda x: int(x), inplace=True)
             
-            vocab = np.loadtxt(vocab_infile, fmt='%s')
+            vocab = np.genfromtxt(vocab_infile, dtype='str')
             return df, vocab
         
         def _plot_nicely(self, mat, title, xlabel, ylabel, outfile=None):

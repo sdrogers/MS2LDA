@@ -1,43 +1,28 @@
 """
 An implementation of a collapsed Gibbs sampling for Latent Dirichlet Allocation [1]
-
-Two variant implementations of the Gibbs sampling method are provided:
-
-- lda_cgs_numpy.py contains a Numpy implementation of the collapsed Gibbs sampling
-
-- lda_cgs_numba.py contains a version of the sampler written in (only) Python, but structured in
-  such a way that it can be accelerated by Numba [2], a JIT translator of Python bytecode to LLVM 
-  (http://numba.pydata.org). This mostly entails converting vectorised Numpy operations into unrolled 
-  loops, resulting in some performance boost (5x or more) in the compiled code over Numpy.
-  However, it is still slower than the LDA version found at https://pypi.python.org/pypi/lda, 
-  written in Cython.
+but with n-bags of words for each topic
 
 [1] Blei, David M., Andrew Y. Ng, and Michael I. Jordan. "Latent dirichlet allocation." 
 the Journal of machine Learning research 3 (2003): 993-1022.
 
-[2] Oliphant, Travis. "Numba python bytecode to LLVM translator." 
-Proceedings of the Python for Scientific Computing Conference (SciPy). 2012.
-
-The variational Bayes version of this file can also be found in lda_vb.py
-
 """
 
 import cPickle
+from collections import namedtuple, OrderedDict
 import sys
 import time
 
-from lda.lda import LDA
 from numpy import int64
 from numpy.random import RandomState
 
+from lda_bag_of_words import BagOfWord
 from lda_generate_data import LdaDataGenerator
 import lda_utils as utils
 import numpy as np
-import pandas as pd
 import pylab as plt
 
 
-class CollapseGibbsLda:
+class CollapseGibbs_nbags_Lda(object):
     
     def __init__(self, df, vocab, K, alpha, beta, random_state=None, previous_model=None, silent=False):
         """
@@ -60,8 +45,22 @@ class CollapseGibbsLda:
 
         self.D = df.shape[0]    # total no of docs
         self.N = df.shape[1]    # total no of words
-        self.vocab = vocab
-        assert(len(self.vocab)==self.N)
+        assert(len(vocab)==self.N)
+        
+        # index of each word
+        self.vocab = [v[0] for v in vocab] 
+        
+        # the bag index for each word in self.vocab, values can only be in [0, 1, ..., n_bags-1]
+        self.vocab_type = [v[1] for v in vocab]
+            
+        # create all the bags from 0 to (n_bags-1)
+        max_bag = max(self.vocab_type)
+        self.bag_indices = range(max_bag+1)
+        self.n_bags = len(self.bag_indices)
+        self.bags = []
+        for bi in self.bag_indices:
+            new_bag = BagOfWord()
+            self.bags.append(new_bag)
 
         # set total no of topics
         self.cv = False
@@ -76,30 +75,34 @@ class CollapseGibbsLda:
             
                 # no. of previously selected topics
                 self.previous_K = len(self.previous_model.selected_topics)                
+
+                # the previously selected words
+                self.previous_vocab = self.previous_model.selected_vocab
                 
                 # Get the previous ckn and ck values from the training stage.
                 # During gibbs update in this testing stage, assignment of word 
                 # to the first previous_K topics will use the previous fixed 
                 # topic-word distributions -- as specified by previous_ckn and previous_ck
-                self.previous_ckn = self.previous_model.selected_ckn
-                self.previous_ck = self.previous_model.selected_ck
-                self.previous_vocab = self.previous_model.selected_vocab
-                assert(len(self.previous_ck)==self.previous_K)
-                assert(self.previous_ckn.shape[0]==len(self.previous_ck))
-                assert(self.previous_ckn.shape[1]==len(self.previous_vocab))
+                for b in self.bag_indices:
+                                            
+                    self.bags[b].previous_ckn = self.previous_model.bags[b].selected_ckn
+                    self.bags[b].previous_ck = self.previous_model.bags[b].selected_ck
+                    assert(len(self.bags[b].previous_ck)==self.previous_K)
+                    assert(self.bags[b].previous_ckn.shape[0]==len(self.bags[b].previous_ck))
+                    assert(self.bags[b].previous_ckn.shape[1]==len(self.previous_vocab))
                 
-                # make previous_ckn have the right number of columns
-                N_diff = self.N - len(self.previous_vocab)
-                temp = np.zeros((self.previous_K, N_diff), int64)
-                self.previous_ckn = np.hstack((self.previous_ckn, temp)) # size is previous_K x N
-                
-                # make previous_ckn have the right number of rows
-                temp = np.zeros((self.K, self.N), int64)
-                self.previous_ckn = np.vstack((self.previous_ckn, temp)) # size is (previous_K+K) x N
-
-                # make previous_ck have the right length
-                temp = np.zeros(self.K, int64)
-                self.previous_ck = np.hstack((self.previous_ck, temp)) # length is (previous_K+K)
+                    # make previous_ckn have the right number of columns
+                    N_diff = self.N - len(self.previous_vocab)
+                    temp = np.zeros((self.previous_K, N_diff), int64)
+                    self.bags[b].previous_ckn = np.hstack((self.bags[b].previous_ckn, temp)) # size is previous_K x N
+                    
+                    # make previous_ckn have the right number of rows
+                    temp = np.zeros((self.K, self.N), int64)
+                    self.bags[b].previous_ckn = np.vstack((self.bags[b].previous_ckn, temp)) # size is (previous_K+K) x N
+    
+                    # make previous_ck have the right length
+                    temp = np.zeros(self.K, int64)
+                    self.bags[b].previous_ck = np.hstack((self.bags[b].previous_ck, temp)) # length is (previous_K+K)
 
                 # total no. of topics = old + new topics
                 self.K = self.K + self.previous_K
@@ -111,21 +114,24 @@ class CollapseGibbsLda:
                 # otherwise all previous topics were fixed -- for cross-validation
                 # assume the vocabs are the same during the training and testing stages
                 self.K = K
-                self.previous_ckn = self.previous_model.ckn
-                self.previous_ck = self.previous_model.ck
-                self.previous_K = K # old topics == new topics
+                self.previous_K = K
+                for b in self.bag_indices:
+                    self.bags[b].previous_ckn = self.previous_model.bags[b].ckn
+                    self.bags[b].previous_ck = self.previous_model.bags[b].ck
                 
         else:
 
             # for training stage
             self.K = K            
-            self.previous_ckn = np.zeros((self.K, self.N), int64)
-            self.previous_ck = np.zeros(self.K, int64)
             self.previous_K = 0 # no old topics
+            for b in self.bag_indices:            
+                self.bags[b].previous_ckn = np.zeros((self.K, self.N), int64)
+                self.bags[b].previous_ck = np.zeros(self.K, int64)
 
         # make the current arrays too
-        self.ckn = np.zeros((self.K, self.N), int64)
-        self.ck = np.zeros(self.K, int64)
+        for b in self.bag_indices:
+            self.bags[b].ckn = np.zeros((self.K, self.N), int64)
+            self.bags[b].ck = np.zeros(self.K, int64)
         self.cdk = np.zeros((self.D, self.K), int64)
         self.cd = np.zeros(self.D, int64)
 
@@ -144,11 +150,12 @@ class CollapseGibbsLda:
             document = self.df.iloc[[d]]
             word_idx = utils.word_indices(document)
             for pos, n in enumerate(word_idx):
+                b = self.vocab_type[n]
                 k = self.random_state.randint(self.K)
                 self.cdk[d, k] += 1
                 self.cd[d] += 1
-                self.ckn[k, n] += 1
-                self.ck[k] += 1
+                self.bags[b].ckn[k, n] += 1
+                self.bags[b].ck[k] += 1
                 self.Z[(d, pos)] = k
         print
 
@@ -177,20 +184,21 @@ class CollapseGibbsLda:
         sampler_func = None
         if not use_native:
             print "Using Numpy for LDA sampling"
-            from lda_cgs_numpy import sample_numpy
+            from lda_nbags_cgs_numpy import sample_numpy
             sampler_func = sample_numpy
         else:
             print "Using JIT for LDA sampling"
-            from lda_cgs_numba import sample_numba
+            from lda_nbags_cgs_numba import sample_numba
             sampler_func = sample_numba
 
         # this will modify the various count matrices (Z, cdk, ckn, cd, ck) inside
         self.topic_word_, self.doc_topic_, self.all_lls = sampler_func(
                 self.random_state, n_burn, n_samples, n_thin,
-                self.D, self.N, self.K, self.document_indices,
+                self.D, self.N, self.K, self.document_indices, self.vocab_type,
                 self.alpha, self.beta,
-                self.Z, self.cdk, self.ckn, self.cd, self.ck,
-                self.previous_ckn, self.previous_ck, self.previous_K,
+                self.Z, 
+                self.cdk, self.cd, 
+                self.bags, self.bag_indices, self.previous_K,
                 self.silent)
         self.loglikelihoods_ = self.all_lls
         
@@ -208,17 +216,19 @@ class CollapseGibbsLda:
 
         # Gets the ckn and ck matrices, but only for the selected rows and 
         # with all-zero columns removed         
-        self.selected_ckn = self.ckn[topic_indices, :].copy()
-        self.selected_ck = self.ck[topic_indices].copy()
-        colsum = np.sum(self.selected_ckn, axis=0)
-        all_zero_cols = (colsum==0)
-        all_zero_cols_pos = np.where(all_zero_cols)
-        self.selected_ckn = np.delete(self.selected_ckn, all_zero_cols_pos, 1)
+        for b in self.bag_indices:
 
-        # also save the words used by topic_indices
-        non_zero_cols = (colsum>0)
-        non_zero_cols_pos = np.where(non_zero_cols)
-        self.selected_vocab = self.vocab[non_zero_cols_pos] 
+            self.bags[b].selected_ckn = self.bags[b].ckn[topic_indices, :].copy()
+            self.bags[b].selected_ck = self.bags[b].ck[topic_indices].copy()
+            colsum = np.sum(self.bags[b].selected_ckn, axis=0)
+            all_zero_cols = (colsum==0)
+            all_zero_cols_pos = np.where(all_zero_cols)
+            self.bags[b].selected_ckn = np.delete(self.bags[b].selected_ckn, all_zero_cols_pos, 1)
+    
+            # also save the words used by topic_indices
+            non_zero_cols = (colsum>0)
+            non_zero_cols_pos = np.where(non_zero_cols)
+            self.bags[b].selected_vocab = self.bags[b].vocab[non_zero_cols_pos] 
 
         # dump the whole model out
         # binary mode ('b') is required for portability between Unix and Windows
@@ -245,7 +255,7 @@ def main():
     alpha = 0.1
     beta = 0.01    
     n_samples = 200
-    n_burn = 0
+    n_burn = 100
     n_thin = 1
 
     random_state = RandomState(1234567890)
@@ -254,7 +264,14 @@ def main():
 #     df, vocab = gen.generate_input_df(n_topics, vocab_size, document_length, n_docs, 
 #                                       previous_vocab=None, vocab_prefix='gibbs1', 
 #                                       df_outfile='input/test1.csv', vocab_outfile='input/test1.words')
-    df, vocab = gen.generate_from_file('input/test1.csv', 'input/test1.words')
+    df, words = gen.generate_from_file('input/test1.csv', 'input/test1.words')
+    vocab = []
+    print "Vocab"
+    for w in words:
+        b = np.random.randint(3)
+        item = (w, b)
+        print "\t" + str(item)
+        vocab.append(item)
 
 #     print "\nUsing LDA package"
 #     gibbs = LDA(n_topics=n_topics, n_iter=n_samples, random_state=random_state, alpha=alpha, eta=beta)
@@ -263,7 +280,7 @@ def main():
 #     print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
 
     print "\nUsing own LDA"
-    gibbs1 = CollapseGibbsLda(df, vocab, n_topics, alpha, beta, random_state=random_state, previous_model=None, silent=False)
+    gibbs1 = CollapseGibbs_nbags_Lda(df, vocab, n_topics, alpha, beta, random_state=random_state, previous_model=None, silent=False)
     start_time = time.time()
     gibbs1.run(n_burn, n_samples, n_thin, use_native=False)
     print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
@@ -273,7 +290,7 @@ def main():
 #     gibbs1.save(selected_topics, 'input/gibbs1.p', 'input/gibbs1.selected.words')
 #   
 #     # try loading model
-#     gibbs1 = CollapseGibbsLda.load('input/gibbs1.p')
+#     gibbs1 = CollapseGibbs_nbags_Lda.load('input/gibbs1.p')
 #     if hasattr(gibbs1, 'selected_topics'):
 #         print "Kept topics = " + str(gibbs1.selected_topics)
 #   
@@ -281,12 +298,19 @@ def main():
     gen._plot_nicely(gibbs1.topic_word_, 'Inferred Topics X Terms', 'terms', 'topics', outfile='test1_topic_word.png')
     plt.plot(gibbs1.loglikelihoods_)
     plt.show()
-#    
-#     topic_word = gibbs1.topic_word_
-#     n_top_words = 20
-#     for i, topic_dist in enumerate(topic_word):
-#         topic_words = vocab[np.argsort(topic_dist)][:-n_top_words:-1]
-#         print('Topic {}: {}'.format(i, ' '.join(topic_words)))
+    
+    topic_word = gibbs1.topic_word_
+    n_top_words = 20
+    words = [item[0] for item in vocab]
+    words_bag = [item[1] for item in vocab]
+    for i, topic_dist in enumerate(topic_word):
+        sorted_idx = np.argsort(topic_dist)[:-n_top_words:-1]
+        print('Topic {}: '.format(i)),
+        for j in sorted_idx:
+            w = words[j]
+            b = words_bag[j]
+            print (w + '(bag ' + str(b) + ') '), 
+        print
 #           
 #     # now run gibbs again on another df with the few selected topics above
 #     gen = LdaDataGenerator(alpha, make_plot=True)
@@ -294,7 +318,7 @@ def main():
 #                                         previous_vocab=gibbs1.selected_vocab, vocab_prefix='gibbs2', 
 #                                         df_outfile='input/test2.csv', vocab_outfile='input/test2.words')
 #     # df2, vocab2 = gen.generate_from_file('input/test2.csv', 'input/test2.words')
-#     gibbs2 = CollapseGibbsLda(df2, vocab2, n_topics, alpha, beta, previous_model=gibbs1, silent=False)
+#     gibbs2 = CollapseGibbs_nbags_Lda(df2, vocab2, n_topics, alpha, beta, previous_model=gibbs1, silent=False)
 #     gibbs2.run(n_burn, n_samples, n_thin, use_native=True)
 #    
 #     gen._plot_nicely(gibbs2.doc_topic_.T, 'Inferred Topics X Docs', 'docs', 'topics', outfile='test2_doc_topic.png')
