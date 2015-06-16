@@ -106,14 +106,8 @@ class CollapseGibbsLda:
                 print "Total no. of topics = " + str(self.K)
                 
                 
-            else:
-                
-                # otherwise all previous topics were fixed -- for cross-validation
-                # assume the vocabs are the same during the training and testing stages
-                self.K = K
-                self.previous_ckn = self.previous_model.ckn
-                self.previous_ck = self.previous_model.ck
-                self.previous_K = K # old topics == new topics
+            else:                
+                raise ValueError("No previous topics have been selected")
                 
         else:
 
@@ -265,7 +259,7 @@ def main():
     print "\nUsing own LDA"
     gibbs1 = CollapseGibbsLda(df, vocab, n_topics, alpha, beta, random_state=random_state, previous_model=None, silent=False)
     start_time = time.time()
-    gibbs1.run(n_burn, n_samples, n_thin, use_native=False)
+    gibbs1.run(n_burn, n_samples, n_thin, use_native=True)
     print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
       
 #     # try saving model

@@ -45,12 +45,7 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
 
                     # for training
                     log_likelihood = np.log(ckn[:, n] + beta) - np.log(ck + N_beta)
-                
-                elif previous_K == K:
-                
-                    # for cross-validation
-                    log_likelihood = np.log(previous_ckn[:, n] + beta) - np.log(previous_ck + N_beta)
-                
+                                
                 else:
                     
                     # for testing on unseen data
@@ -102,14 +97,14 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                         ll += gammaln(ckn[k, n]+beta)
                     ll -= gammaln(ck[k] + N*beta)                        
 
-#                 ll += D * ( gammaln(K*alpha) - (gammaln(alpha)*K) )
-#                 for d in range(D):
-#                     for k in range(K):
-#                         ll += gammaln(cdk[d, k]+alpha)
-#                     ll -= gammaln(cd[d] + K*alpha)                
+                ll += D * ( gammaln(K*alpha) - (gammaln(alpha)*K) )
+                for d in range(D):
+                    for k in range(K):
+                        ll += gammaln(cdk[d, k]+alpha)
+                    ll -= gammaln(cd[d] + K*alpha)                
                 
                 all_lls.append(ll)      
-                if not silent: print(" Log likelihood = %.3f " % ll)                        
+                if not silent: print(" Log joint likelihood = %.3f " % ll)                        
             else:                
                 if not silent: print
         else:

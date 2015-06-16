@@ -51,13 +51,7 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                     # for training
                     for bi in bag_indices:
                         log_likelihood += np.log(bags[bi].ckn[:, n] + beta[bi]) - np.log(bags[bi].ck + N_beta[bi])
-                
-                elif previous_K == K:
-                
-                    # for cross-validation
-                    for bi in bag_indices:
-                        log_likelihood += np.log(bags[bi].previous_ckn[:, n] + beta[bi]) - np.log(bags[bi].previous_ck + N_beta[bi])
-                
+                                
                 else:
                     
                     log_likelihood = 0
@@ -110,10 +104,16 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                     for k in range(K):
                         for n in range(N):
                             ll += gammaln(bags[bi].ckn[k, n]+beta[bi])
-                        ll -= gammaln(bags[bi].ck[k] + N*beta[bi])                        
+                        ll -= gammaln(bags[bi].ck[k] + N*beta[bi])    
+                        
+                ll += D * ( gammaln(K*alpha) - (gammaln(alpha)*K) )
+                for d in range(D):
+                    for k in range(K):
+                        ll += gammaln(cdk[d, k]+alpha)
+                    ll -= gammaln(cd[d] + K*alpha)                                            
 
                 all_lls.append(ll)      
-                if not silent: print(" Log likelihood = %.3f " % ll)                        
+                if not silent: print(" Log joint likelihood = %.3f " % ll)                        
             
             else:                
                 if not silent: print

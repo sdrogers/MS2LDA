@@ -56,9 +56,9 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
         if s > n_burn:
             thin += 1
             if thin%n_thin==0:    
-                ll = _nb_ll(D, N, K, alpha, beta, ckn, ck)
+                ll = _nb_ll(D, N, K, alpha, beta, ckn, ck, cdk, cd)
                 all_lls.append(ll)      
-                if not silent: print(" Log likelihood = %.3f " % ll)                        
+                if not silent: print(" Log joint likelihood = %.3f " % ll)                        
             else:                
                 if not silent: print
         else:
@@ -163,12 +163,17 @@ def _nb_get_new_index(d, n, k, cdk, cd,
     
     return k
 
-@jit(float64(int64, int64, int64, float64, float64, int64[:, :], int64[:]), nopython=True)
-def _nb_ll(D, N, K, alpha, beta, ckn, ck):
+@jit(float64(int64, int64, int64, float64, float64, int64[:, :], int64[:], int64[:, :], int64[:]), nopython=True)
+def _nb_ll(D, N, K, alpha, beta, ckn, ck, cdk, cd):
     ll = K * ( math.lgamma(N*beta) - (math.lgamma(beta)*N) )
     for k in range(K):
         for n in range(N):
             ll += math.lgamma(ckn[k, n]+beta)
         ll -= math.lgamma(ck[k] + N*beta)
     ll += D * ( math.lgamma(K*alpha) - (math.lgamma(alpha)*K) )
+    for d in range(D):
+        for k in range(K):
+            ll += math.lgamma(cdk[d, k]+alpha)
+        ll -= math.lgamma(cd[d] + K*alpha)                
+    
     return ll
