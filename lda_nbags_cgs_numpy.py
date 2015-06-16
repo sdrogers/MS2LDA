@@ -96,22 +96,16 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
         
             thin += 1
             if thin%n_thin==0:    
-
+                
+                ll = 0
                 for bi in bag_indices:
-                    ll = K * ( gammaln(N*beta[bi]) - (gammaln(beta[bi])*N) )
-                    for k in range(K):
-                        for n in range(N):
-                            ll += gammaln(bags[bi].ckn[k, n]+beta[bi])
-                        ll -= gammaln(bags[bi].ck[k] + N*beta[bi])    
-                        
-                ll += D * ( gammaln(K*alpha) - (gammaln(alpha)*K) )
-                for d in range(D):
-                    for k in range(K):
-                        ll += gammaln(cdk[d, k]+alpha)
-                    ll -= gammaln(cd[d] + K*alpha)                                            
-
+                    ckn = bags[bi].ckn
+                    ck = bags[bi].ck
+                    beta_bi = beta[bi]
+                    ll += p_w_z(N, K, beta_bi, ckn, ck)
+                ll += p_z(D, K, alpha, cdk, cd)                  
                 all_lls.append(ll)      
-                print(" Log joint likelihood = %.3f " % ll)                        
+                print(" Log joint likelihood = %.3f " % ll)                                          
             
             else:                
                 print
@@ -119,6 +113,7 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
         else:
             print
 
+    # update phi
     phi = None
     for bi in bag_indices:            
         # update phi for each bag
@@ -137,3 +132,19 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
     all_lls = np.array(all_lls)
 
     return phi, theta, all_lls
+
+def p_w_z(N, K, beta, ckn, ck):
+    val = K * ( gammaln(N*beta) - (gammaln(beta)*N) )
+    for k in range(K):
+        for n in range(N):
+            val += gammaln(ckn[k, n]+beta)
+        val -= gammaln(ck[k] + N*beta)      
+    return val
+
+def p_z(D, K, alpha, cdk, cd):
+    val = D * ( gammaln(K*alpha) - (gammaln(alpha)*K) )
+    for d in range(D):
+        for k in range(K):
+            val += gammaln(cdk[d, k]+alpha)
+        val -= gammaln(cd[d] + K*alpha)      
+    return val

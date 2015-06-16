@@ -96,10 +96,12 @@ def _nb_get_new_index(d, n, k, cdk, cd,
     ckn[k, n] -= 1
     ck[k] -= 1
 
+    # numpy: 
     # log_likelihood = np.log(ckn[:, n] + beta) - np.log(ck + N*beta)
     # log_prior = np.log(cdk[d, :] + alpha) - np.log(cd[d] + K*alpha)        
     # log_post = log_likelihood + log_prior
     
+    # compute likelihood, prior, posterior
     for i in range(len(post)):
 
         # we risk underflowing by not working in log space here
@@ -118,6 +120,7 @@ def _nb_get_new_index(d, n, k, cdk, cd,
 #         prior = math.log(temp_cdk[i] + alpha) - math.log(cd[d] + K_alpha)
 #         post[i] = likelihood + prior
 
+    # numpy:
     # post = np.exp(log_post - log_post.max())
     # post = post / post.sum()
 
@@ -140,7 +143,8 @@ def _nb_get_new_index(d, n, k, cdk, cd,
 #         sum_post += post[i]
 #     for i in range(len(post)):
 #         post[i] = post[i] / sum_post
-                            
+                      
+    # numpy:      
     # k = np.random.multinomial(1, post).argmax()
     total = 0
     for i in range(len(post)):

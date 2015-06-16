@@ -81,15 +81,24 @@ class LdaDataGenerator:
                 df.to_csv(df_outfile)        
 
             print "Generating vocabularies"
+            
+            # initialises vocab to either previous vocab or a blank list
             if previous_vocab is not None:
                 vocab = previous_vocab.tolist()
             else:
                 vocab = []
+
+            # add new words
             for n in range(vocab_size):
                 if vocab_prefix is None:
-                    vocab.append("word_" + str(n))
+                    word = "word_" + str(n)
                 else:
-                    vocab.append(vocab_prefix + "_word_" + str(n))                    
+                    word = vocab_prefix + "_word_" + str(n)
+                word_type = np.random.randint(3)
+                tup = (word, word_type)
+                vocab.append(tup)
+            
+            # save to txt
             vocab = np.array(vocab)
             if vocab_outfile is not None:
                 np.savetxt(vocab_outfile, vocab, fmt='%s')

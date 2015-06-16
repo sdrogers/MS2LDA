@@ -36,6 +36,8 @@ import numpy as np
 import pandas as pd
 import pylab as plt
 
+from lda_cgs_numpy import sample_numpy
+from lda_cgs_numba import sample_numba
 
 class CollapseGibbsLda:
     
@@ -169,11 +171,9 @@ class CollapseGibbsLda:
         sampler_func = None
         if not use_native:
             print "Using Numpy for LDA sampling"
-            from lda_cgs_numpy import sample_numpy
             sampler_func = sample_numpy
         else:
-            print "Using JIT for LDA sampling"
-            from lda_cgs_numba import sample_numba
+            print "Using Numba for LDA sampling"
             sampler_func = sample_numba
 
         # this will modify the various count matrices (Z, cdk, ckn, cd, ck) inside
@@ -254,7 +254,7 @@ def main():
     # try saving model
     selected_topics = [0, 1, 2, 3, 4, 5]
     gibbs1.save(selected_topics, 'input/gibbs1.p', 'input/gibbs1.selected.words')
-   
+    
     # try loading model
     gibbs1 = CollapseGibbsLda.load('input/gibbs1.p')
     if hasattr(gibbs1, 'selected_topics'):
