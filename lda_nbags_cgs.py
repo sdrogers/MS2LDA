@@ -24,7 +24,7 @@ import pylab as plt
 
 class CollapseGibbs_nbags_Lda(object):
     
-    def __init__(self, df, vocab, K, alpha, beta, random_state=None, previous_model=None, silent=False):
+    def __init__(self, df, vocab, K, alpha, beta, random_state=None, previous_model=None):
         """
         Initialises the collapsed Gibbs sampling for LDA
         
@@ -34,11 +34,9 @@ class CollapseGibbs_nbags_Lda(object):
         - alpha: symmetric prior on document-topic assignment
         - beta: symmetric prior on word-topic assignment
         - previous_model: previous LDA run, if any
-        - silent: keep quiet and not print the progress
         """
         
         print "CGS LDA initialising"
-        self.silent = silent
         self.df = df.replace(np.nan, 0)
         self.alpha = alpha            
 
@@ -200,15 +198,12 @@ class CollapseGibbs_nbags_Lda(object):
             sampler_func = sample_numba
 
         # this will modify the various count matrices (Z, cdk, ckn, cd, ck) inside
-        self.topic_word_, self.doc_topic_, self.all_lls = sampler_func(
+        self.topic_word_, self.doc_topic_, self.loglikelihoods_ = sampler_func(
                 self.random_state, n_burn, n_samples, n_thin,
                 self.D, self.N, self.K, self.document_indices, self.vocab_type,
                 self.alpha, self.beta,
-                self.Z, 
-                self.cdk, self.cd, 
-                self.bags, self.bag_indices, self.previous_K,
-                self.silent)
-        self.loglikelihoods_ = self.all_lls
+                self.Z, self.cdk, self.cd, self.previous_K,
+                self.bag_indices, self.bags)        
         
     @classmethod
     def load(cls, filename):
@@ -288,7 +283,7 @@ def main():
 #     print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
 
     print "\nUsing own LDA"
-    gibbs1 = CollapseGibbs_nbags_Lda(df, vocab, n_topics, alpha, beta, random_state=random_state, previous_model=None, silent=False)
+    gibbs1 = CollapseGibbs_nbags_Lda(df, vocab, n_topics, alpha, beta, random_state=random_state, previous_model=None)
     start_time = time.time()
     gibbs1.run(n_burn, n_samples, n_thin, use_native=False)
     print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
@@ -326,7 +321,7 @@ def main():
 #                                         previous_vocab=gibbs1.selected_vocab, vocab_prefix='gibbs2', 
 #                                         df_outfile='input/test2.csv', vocab_outfile='input/test2.words')
 #     # df2, vocab2 = gen.generate_from_file('input/test2.csv', 'input/test2.words')
-#     gibbs2 = CollapseGibbs_nbags_Lda(df2, vocab2, n_topics, alpha, beta, previous_model=gibbs1, silent=False)
+#     gibbs2 = CollapseGibbs_nbags_Lda(df2, vocab2, n_topics, alpha, beta, previous_model=gibbs1)
 #     gibbs2.run(n_burn, n_samples, n_thin, use_native=True)
 #    
 #     gen._plot_nicely(gibbs2.doc_topic_.T, 'Inferred Topics X Docs', 'docs', 'topics', outfile='test2_doc_topic.png')

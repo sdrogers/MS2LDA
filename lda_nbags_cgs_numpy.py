@@ -8,9 +8,8 @@ import numpy as np
 def sample_numpy(random_state, n_burn, n_samples, n_thin, 
             D, N, K, document_indices, vocab_type,
             alpha, beta, 
-            Z, cdk, cd, 
-            bags, bag_indices, previous_K,
-            silent):
+            Z, cdk, cd, previous_K, 
+            bag_indices, bags):
 
     all_lls = []
     thin = 0
@@ -19,15 +18,14 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
     for samp in range(n_samples):
     
         s = samp+1        
-        if not silent:
-            if s >= n_burn:
-                print("Sample " + str(s) + " "),
-            else:
-                print("Burn-in " + str(s) + " "),
+        if s >= n_burn:
+            print("Sample " + str(s) + " "),
+        else:
+            print("Burn-in " + str(s) + " "),
             
         for d in range(D):
 
-            if not silent and d%10==0:                        
+            if d%10==0:                        
                 sys.stdout.write('.')
                 sys.stdout.flush()
             
@@ -113,13 +111,13 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                     ll -= gammaln(cd[d] + K*alpha)                                            
 
                 all_lls.append(ll)      
-                if not silent: print(" Log joint likelihood = %.3f " % ll)                        
+                print(" Log joint likelihood = %.3f " % ll)                        
             
             else:                
-                if not silent: print
+                print
         
         else:
-            if not silent: print
+            print
 
     # get ckn and ck for all bags                
     first_bag = bag_indices[0]

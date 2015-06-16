@@ -52,8 +52,7 @@ class CrossValidatorLda:
                         training_df = training_df.append(folds[j])
 
             print "Run training gibbs " + str(training_df.shape)
-            training_gibbs = CollapseGibbsLda(training_df, self.vocab, self.K, self.alpha, self.beta, 
-                                              silent=False)
+            training_gibbs = CollapseGibbsLda(training_df, self.vocab, self.K, self.alpha, self.beta)
             training_gibbs.run(n_burn, n_samples, n_thin, use_native=True)
             
             print "Run testing importance sampling " + str(testing_df.shape)
