@@ -119,14 +119,6 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
         else:
             print
 
-    # get ckn and ck for all bags                
-    first_bag = bag_indices[0]
-    ckn = np.zeros_like(bags[first_bag].ckn)
-    ck = np.zeros_like(bags[first_bag].ck)    
-    for bi in bag_indices:
-        ckn += bags[bi].ckn
-        ck += bags[bi].ck
-
     phi = None
     for bi in bag_indices:            
         # update phi for each bag

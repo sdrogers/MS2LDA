@@ -45,16 +45,16 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
                 random_number = random_state.rand()                
                 k = Z[(d, pos)]                
                 k = _nb_get_new_index(d, n, k, cdk, cd, 
-                                      ckn, ck, previous_ckn, previous_ck, previous_K,
-                                      N, K, alpha, beta, 
+                                      N, K, previous_K, alpha, beta, 
                                       N_beta, K_alpha,
-                                      post, cumsum, random_number)
+                                      post, cumsum, random_number,
+                                      ckn, ck, previous_ckn, previous_ck)
                 Z[(d, pos)] = k
 
         if s > n_burn:
             thin += 1
             if thin%n_thin==0:    
-                ll = _nb_ll(D, N, K, alpha, beta, ckn, ck, cdk, cd)
+                ll = _nb_ll(D, N, K, alpha, beta, cdk, cd, ckn, ck)
                 all_lls.append(ll)      
                 print(" Log joint likelihood = %.3f " % ll)                        
             else:                
@@ -75,16 +75,16 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
 
 @jit(int64(
            int64, int64, int64, int64[:, :], int64[:], 
-           int64[:, :], int64[:], int64[:, :], int64[:], int64,
-           int64, int64, float64, float64,
+           int64, int64, int64, float64, float64,
            float64, float64,
            float64[:], float64[:], float64,
+           int64[:, :], int64[:], int64[:, :], int64[:]
 ), nopython=True)
 def _nb_get_new_index(d, n, k, cdk, cd, 
-                      ckn, ck, previous_ckn, previous_ck, previous_K,
-                      N, K, alpha, beta, 
+                      N, K, previous_K, alpha, beta, 
                       N_beta, K_alpha,                      
-                      post, cumsum, random_number):
+                      post, cumsum, random_number, 
+                      ckn, ck, previous_ckn, previous_ck):
 
     temp_ckn = ckn[:, n]
     temp_previous_ckn = previous_ckn[:, n]
@@ -162,7 +162,7 @@ def _nb_get_new_index(d, n, k, cdk, cd,
     return k
 
 @jit(float64(int64, int64, int64, float64, float64, int64[:, :], int64[:], int64[:, :], int64[:]), nopython=True)
-def _nb_ll(D, N, K, alpha, beta, ckn, ck, cdk, cd):
+def _nb_ll(D, N, K, alpha, beta, cdk, cd, ckn, ck):
     ll = K * ( math.lgamma(N*beta) - (math.lgamma(beta)*N) )
     for k in range(K):
         for n in range(N):

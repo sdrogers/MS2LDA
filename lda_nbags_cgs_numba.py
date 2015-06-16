@@ -9,8 +9,8 @@ import numpy as np
 def sample_numba(random_state, n_burn, n_samples, n_thin, 
             D, N, K, document_indices, 
             alpha, beta, 
-            Z, cdk, ckn, cd, ck,
-            previous_ckn, previous_ck, previous_K):
+            Z, cdk, cd, previous_K,
+            bag_indices, bags):    
 
     all_lls = []
     thin = 0
