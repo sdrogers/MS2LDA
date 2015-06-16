@@ -40,8 +40,7 @@ class CollapseGibbs_nbags_Lda(object):
         print "CGS LDA initialising"
         self.silent = silent
         self.df = df.replace(np.nan, 0)
-        self.alpha = alpha
-        self.beta = beta
+        self.alpha = alpha            
 
         self.D = df.shape[0]    # total no of docs
         self.N = df.shape[1]    # total no of words
@@ -61,6 +60,15 @@ class CollapseGibbs_nbags_Lda(object):
         for bi in self.bag_indices:
             new_bag = BagOfWord()
             self.bags.append(new_bag)
+
+        if hasattr(beta, "__len__"):
+            # beta is an np array, must be the same length as the number of bags
+            assert(len(beta)==self.n_bags)
+            self.beta = beta
+        else:
+            # beta is a scalar, convert it into np array
+            self.beta = np.array([beta])
+            self.beta = np.repeat(self.beta, self.n_bags)
 
         # set total no of topics
         self.cv = False

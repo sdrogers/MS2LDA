@@ -95,12 +95,19 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
         if s > n_burn:
             thin += 1
             if thin%n_thin==0:    
+
                 ll = K * ( gammaln(N*beta) - (gammaln(beta)*N) )
                 for k in range(K):
                     for n in range(N):
                         ll += gammaln(ckn[k, n]+beta)
                     ll -= gammaln(ck[k] + N*beta)                        
-                ll += D * ( gammaln(K*alpha) - (gammaln(alpha)*K) )
+
+#                 ll += D * ( gammaln(K*alpha) - (gammaln(alpha)*K) )
+#                 for d in range(D):
+#                     for k in range(K):
+#                         ll += gammaln(cdk[d, k]+alpha)
+#                     ll -= gammaln(cd[d] + K*alpha)                
+                
                 all_lls.append(ll)      
                 if not silent: print(" Log likelihood = %.3f " % ll)                        
             else:                

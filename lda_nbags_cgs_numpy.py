@@ -50,13 +50,13 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
 
                     # for training
                     for bi in bag_indices:
-                        log_likelihood += np.log(bags[bi].ckn[:, n] + beta) - np.log(bags[bi].ck + N_beta)
+                        log_likelihood += np.log(bags[bi].ckn[:, n] + beta[bi]) - np.log(bags[bi].ck + N_beta[bi])
                 
                 elif previous_K == K:
                 
                     # for cross-validation
                     for bi in bag_indices:
-                        log_likelihood += np.log(bags[bi].previous_ckn[:, n] + beta) - np.log(bags[bi].previous_ck + N_beta)
+                        log_likelihood += np.log(bags[bi].previous_ckn[:, n] + beta[bi]) - np.log(bags[bi].previous_ck + N_beta[bi])
                 
                 else:
                     
@@ -64,8 +64,8 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                     for bi in bag_indices:
                     
                         # for testing on unseen data
-                        log_likelihood_previous = np.log(bags[bi].previous_ckn[:, n] + beta) - np.log(bags[bi].previous_ck + N_beta)
-                        log_likelihood_current = np.log(bags[bi].ckn[:, n] + beta) - np.log(bags[bi].ck + N_beta)    
+                        log_likelihood_previous = np.log(bags[bi].previous_ckn[:, n] + beta[bi]) - np.log(bags[bi].previous_ck + N_beta[bi])
+                        log_likelihood_current = np.log(bags[bi].ckn[:, n] + beta[bi]) - np.log(bags[bi].ck + N_beta[bi])    
     
                         # The combined likelihood: 
                         # front is from previous topic-word distribution
@@ -105,22 +105,13 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
             thin += 1
             if thin%n_thin==0:    
 
-                ll = K * ( gammaln(N*beta) - (gammaln(beta)*N) )
-
-                # get ckn and ck for all bags                
-                first_bag = bag_indices[0]
-                ckn = np.zeros_like(bags[first_bag].ckn)
-                ck = np.zeros_like(bags[first_bag].ck)    
                 for bi in bag_indices:
-                    ckn += bags[bi].ckn
-                    ck += bags[bi].ck
+                    ll = K * ( gammaln(N*beta[bi]) - (gammaln(beta[bi])*N) )
+                    for k in range(K):
+                        for n in range(N):
+                            ll += gammaln(bags[bi].ckn[k, n]+beta[bi])
+                        ll -= gammaln(bags[bi].ck[k] + N*beta[bi])                        
 
-                for k in range(K):
-                    for n in range(N):
-                        ll += gammaln(ckn[k, n]+beta)
-                    ll -= gammaln(ck[k] + N*beta)                        
-
-                ll += D * ( gammaln(K*alpha) - (gammaln(alpha)*K) )
                 all_lls.append(ll)      
                 if not silent: print(" Log likelihood = %.3f " % ll)                        
             
@@ -137,14 +128,22 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
     for bi in bag_indices:
         ckn += bags[bi].ckn
         ck += bags[bi].ck
-            
-    # update phi
-    phi = ckn + beta
-    phi /= np.sum(phi, axis=1)[:, np.newaxis]
+
+    phi = None
+    for bi in bag_indices:            
+        # update phi for each bag
+        current_phi = bags[bi].ckn + beta[bi]
+        current_phi /= np.sum(current_phi, axis=1)[:, np.newaxis]
+        # accumulate the product
+        if phi is None:
+            phi = current_phi
+        else:
+            phi = np.multiply(phi, current_phi)
 
     # update theta
     theta = cdk + alpha 
     theta /= np.sum(theta, axis=1)[:, np.newaxis]
 
     all_lls = np.array(all_lls)
+
     return phi, theta, all_lls
