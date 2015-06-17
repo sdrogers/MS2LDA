@@ -9,6 +9,7 @@ from numpy.random.mtrand import RandomState
 from pandas.core.frame import DataFrame
 from scipy.sparse import coo_matrix
 
+from lda_nbags_cgs import CollapseGibbs_nbags_Lda, print_topic_words
 from lda_cgs import CollapseGibbsLda
 import matplotlib.patches as mpatches
 import networkx as nx
@@ -27,7 +28,7 @@ except Exception:
 class Ms2Lda:
     
     def __init__(self, fragment_filename, neutral_loss_filename, mzdiff_filename, 
-                 ms1_filename, ms2_filename, relative_intensity=False):
+                 ms1_filename, ms2_filename, relative_intensity=True):
         
         self.fragment_data = pd.read_csv(fragment_filename, index_col=0)
         self.neutral_loss_data = pd.read_csv(neutral_loss_filename, index_col=0)
@@ -37,8 +38,8 @@ class Ms2Lda:
             self.mzdiff_data = None
         self.ms1 = pd.read_csv(ms1_filename, index_col=0)
         self.ms2 = pd.read_csv(ms2_filename, index_col=0)
-            
         self.relative_intensity = relative_intensity
+            
         self.EPSILON = 0.05
         
     def preprocess(self):
@@ -46,33 +47,17 @@ class Ms2Lda:
         self.ms2['fragment_bin_id'] = self.ms2['fragment_bin_id'].astype(str)
         self.ms2['loss_bin_id'] = self.ms2['loss_bin_id'].astype(str)
 
-        if self.relative_intensity: 
-
-            # discretise the fragment and neutral loss intensities values
-            # values are already normalised from 0 .. 1 during feature extraction
-            self.data = self.fragment_data.append(self.neutral_loss_data)
-            self.data *= 100 # so just convert to 0 .. 100
-        
-            # then scale mzdiff counts from 0 .. 100 too, and append it to data    
-            if self.mzdiff_data is not None:
-                self.mzdiff_data *= 100
-                self.data = self.data.append(self.mzdiff_data)
-        
-        else: # absolute intensity values
-
-            # discretise the fragment and neutral loss intensities values
-            # log and scale it from 0 .. 100
-            self.data = self.fragment_data.append(self.neutral_loss_data)
-            self.data = np.log10(self.data)
-            self.data /= self.data.max().max()
-            self.data *= 100
-        
-            # then scale mzdiff counts from 0 .. 100 too, and append it to data    
-            if self.mzdiff_data is not None:
-                self.mzdiff_data /= self.mzdiff_data.max().max()
-                self.mzdiff_data *= 100
-                self.data = self.data.append(self.mzdiff_data)
-        
+        # discretise the fragment and neutral loss intensities values by converting it to 0 .. 100
+        # values are already normalised from 0 .. 1 during feature extraction
+        self.fragment_data *= 100
+        self.neutral_loss_data *= 100
+        self.data = self.fragment_data.append(self.neutral_loss_data)
+    
+        # then scale mzdiff counts from 0 .. 100 too, and append it to data    
+        if self.mzdiff_data is not None:
+            self.mzdiff_data *= 100
+            self.data = self.data.append(self.mzdiff_data)
+                
         # get rid of NaNs, transpose the data and floor it
         self.data = self.data.replace(np.nan,0)
         self.data = self.data.transpose()
@@ -90,6 +75,46 @@ class Ms2Lda:
         print "Data shape " + str(npdata.shape)
         df = DataFrame(npdata)
 
+        return df, vocab
+
+    def preprocess_alternative(self):
+
+        self.ms2['fragment_bin_id'] = self.ms2['fragment_bin_id'].astype(str)
+        self.ms2['loss_bin_id'] = self.ms2['loss_bin_id'].astype(str)
+
+        # discretise the fragment and neutral loss intensities values by converting it to 0 .. 100
+        # values are already normalised from 0 .. 1 during feature extraction
+        self.fragment_data *= 100
+        self.neutral_loss_data *= 100
+        self.mzdiff_data *= 100
+        self.data = self.fragment_data.append(self.neutral_loss_data)
+        self.data = self.data.append(self.mzdiff_data)
+                
+        # get rid of NaNs, transpose the data and floor it
+        self.data = self.data.replace(np.nan,0)
+        self.data = self.data.transpose()
+        sd = coo_matrix(self.data)
+        sd = sd.floor()  
+        npdata = np.array(sd.todense(), dtype='int64')
+        print "Data shape " + str(npdata.shape)
+        df = DataFrame(npdata)
+
+        # build the vocab
+        all_words = self.data.columns.values
+        vocab = []
+        for word in all_words:
+            if word.startswith('fragment'):
+                word_type = 0
+            elif word.startswith('loss'):
+                word_type = 1
+            elif word.startswith('mzdiff'):
+                word_type = 2
+            else:
+                raise ValueError("Unknown word type")
+            tup = (word, word_type)
+            vocab.append(tup)
+        vocab = np.array(vocab)
+        
         return df, vocab
 
     def run_lda(self, df, vocab, n_topics, n_samples, n_burn, n_thin, alpha, beta, 
@@ -110,6 +135,21 @@ class Ms2Lda:
             self.model.fit(df.as_matrix())
         stop = timeit.default_timer()
         print "DONE. Time=" + str(stop-start)
+
+    def run_lda_alternative(self, df, vocab, n_topics, n_samples, n_burn, n_thin, alpha, beta, previous_model=None):    
+                        
+        print "Fitting model..."
+        self.n_topics = n_topics
+        sys.stdout.flush()
+        self.model = CollapseGibbs_nbags_Lda(df, vocab, n_topics, alpha, beta, previous_model=previous_model)
+        self.n_topics = self.model.K # might change if previous_model is used
+        start = timeit.default_timer()
+        self.model.run(n_burn, n_samples, n_thin, use_native=True)
+        stop = timeit.default_timer()
+        print "DONE. Time=" + str(stop-start)        
+        plt.plot(self.model.loglikelihoods_)
+        plt.show()
+        print_topic_words(self.model.topic_word_, 20, vocab)
         
     def _natural_sort(self, l): 
         convert = lambda text: int(text) if text.isdigit() else text.lower() 
@@ -770,8 +810,8 @@ class Ms2Lda:
             
         return topic_counts                
             
-def main():
-        
+def test_lda():
+
     if len(sys.argv)>1:
         n_topics = int(sys.argv[1])
     else:
@@ -787,7 +827,7 @@ def main():
     relative_intensity = True
     fragment_filename = 'input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
     neutral_loss_filename = 'input/relative_intensities/Beer_3_T10_POS_losses_rel.csv'
-    mzdiff_filename = None    
+    mzdiff_filename = 'input/relative_intensities/Beer_3_T10_POS_mzdiffs_rel.csv'    
     ms1_filename = 'input/relative_intensities/Beer_3_T10_POS_ms1_rel.csv'
     ms2_filename = 'input/relative_intensities/Beer_3_T10_POS_ms2_rel.csv'
  
@@ -796,33 +836,65 @@ def main():
     df, vocab = ms2lda.preprocess()    
     ms2lda.run_lda(df, vocab, n_topics, n_samples, n_burn, n_thin, 
                    alpha, beta, use_own_model=True, use_native=True)
-    ms2lda.write_results('beer3pos')
-
-    # save some topics from beer3pos lda
+#     ms2lda.write_results('beer3pos')
+# 
+#     # save some topics from beer3pos lda
+#     
+#     selected_topics = [0, 1, 2, 3, 4, 5]    
+#     ms2lda.save_model(selected_topics, 'input/beer3pos.model.p', 'input/beer3pos.selected.words')
+#     ms2lda.plot_lda_fragments(consistency=0.50)
+# 
+#     # test on beer2pos
+#     
+#     old_model = CollapseGibbsLda.load('input/beer3pos.model.p')
+#     if hasattr(old_model, 'selected_topics'):
+#         print "Persistent topics = " + str(old_model.selected_topics)
+#  
+#     relative_intensity = True
+#     fragment_filename = 'input/relative_intensities/Beer_2_T10_POS_fragments_rel.csv'
+#     neutral_loss_filename = 'input/relative_intensities/Beer_2_T10_POS_losses_rel.csv'
+#     mzdiff_filename = None    
+#     ms1_filename = 'input/relative_intensities/Beer_2_T10_POS_ms1_rel.csv'
+#     ms2_filename = 'input/relative_intensities/Beer_2_T10_POS_ms2_rel.csv'
+#  
+#     ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename, 
+#                 ms1_filename, ms2_filename, relative_intensity)    
+#     df, vocab = ms2lda.preprocess()    
+#     ms2lda.run_lda(df, vocab, n_topics, n_samples, n_burn, n_thin, 
+#                    alpha, beta, use_own_model=True, use_native=True, previous_model=old_model)
+#     ms2lda.write_results('beer2pos')
+#     ms2lda.plot_lda_fragments(consistency=0.50)
     
-    selected_topics = [0, 1, 2, 3, 4, 5]    
-    ms2lda.save_model(selected_topics, 'input/beer3pos.model.p', 'input/beer3pos.selected.words')
-    ms2lda.plot_lda_fragments(consistency=0.50)
+def test_lda_alternative():
 
-    # test on beer2pos
-    
-    old_model = CollapseGibbsLda.load('input/beer3pos.model.p')
-    if hasattr(old_model, 'selected_topics'):
-        print "Persistent topics = " + str(old_model.selected_topics)
- 
+    if len(sys.argv)>1:
+        n_topics = int(sys.argv[1])
+    else:
+        n_topics = 125
+    n_samples = 10
+    n_burn = 0
+    n_thin = 1
+    alpha = 0.1
+    beta = 0.01
+
     relative_intensity = True
-    fragment_filename = 'input/relative_intensities/Beer_2_T10_POS_fragments_rel.csv'
-    neutral_loss_filename = 'input/relative_intensities/Beer_2_T10_POS_losses_rel.csv'
-    mzdiff_filename = None    
-    ms1_filename = 'input/relative_intensities/Beer_2_T10_POS_ms1_rel.csv'
-    ms2_filename = 'input/relative_intensities/Beer_2_T10_POS_ms2_rel.csv'
+    fragment_filename = 'input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
+    neutral_loss_filename = 'input/relative_intensities/Beer_3_T10_POS_losses_rel.csv'
+    mzdiff_filename = 'input/relative_intensities/Beer_3_T10_POS_mzdiffs_rel.csv'    
+    ms1_filename = 'input/relative_intensities/Beer_3_T10_POS_ms1_rel.csv'
+    ms2_filename = 'input/relative_intensities/Beer_3_T10_POS_ms2_rel.csv'
  
     ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename, 
                 ms1_filename, ms2_filename, relative_intensity)    
-    df, vocab = ms2lda.preprocess()    
-    ms2lda.run_lda(df, vocab, n_topics, n_samples, n_burn, n_thin, 
-                   alpha, beta, use_own_model=True, use_native=True, previous_model=old_model)
-    ms2lda.write_results('beer2pos')
-    ms2lda.plot_lda_fragments(consistency=0.50)
-
+    df, vocab = ms2lda.preprocess_alternative()   
+    ms2lda.run_lda_alternative(df, vocab, n_topics, n_samples, n_burn, n_thin, 
+                   alpha, beta)
+    ms2lda.write_results('beer3pos_alternative')
+    ms2lda.plot_lda_fragments(consistency=0.50)    
+            
+def main():
+        
+    # test_lda()
+    test_lda_alternative()
+    
 if __name__ == "__main__": main()

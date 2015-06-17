@@ -1,10 +1,16 @@
 import math
 import sys
 
+import numba as nb
 from numba import jit
 from numba.types import int64, float64
 
 import numpy as np
+
+bag_of_word_dtype = np.dtype([('bag1', np.int64),
+                 ('bag2', np.int64),
+                 ('bag3', np.int64)])
+numba_bag_of_word_dtype = nb.from_dtype(bag_of_word_dtype)
 
 def sample_numba(random_state, n_burn, n_samples, n_thin, 
             D, N, K, document_indices, vocab_type,
@@ -23,12 +29,15 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
     N_beta = N * beta
     K_alpha = K * alpha    
 
-    # not sure if it's possible to pass a variable number of arguments to Numba's JIT'ed function??!!
-    # so we create all these separate variables ...
-    ckn0, ck0, previous_ckn0, previous_ck0 = _get_count_matrices(0, bags)
-    ckn1, ck1, previous_ckn1, previous_ck1 = _get_count_matrices(1, bags)
-    ckn2, ck2, previous_ckn2, previous_ck2 = _get_count_matrices(2, bags)
+    # each of this is a structured array of type bag_of_word
+    ckn = np.zeros_like(bags[0].ckn, dtype=bag_of_word_dtype)
+    ck = np.zeros_like(bags[0].ck, dtype=bag_of_word_dtype)
+    previous_ckn = np.zeros_like(bags[0].previous_ckn, dtype=bag_of_word_dtype)
+    previous_ck = np.zeros_like(bags[0].previous_ck, dtype=bag_of_word_dtype)
 
+    # transfer the counts from the bags to the structured arrays
+    _populate_count_matrices(bags, ckn, ck, previous_ckn, previous_ck)    
+    
     # loop over samples
     for samp in range(n_samples):
     
@@ -55,9 +64,7 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
                                       N, K, previous_K, alpha, beta, 
                                       N_beta, K_alpha,
                                       post, cumsum, random_number, b,
-                                      ckn0, ck0, previous_ckn0, previous_ck0,
-                                      ckn1, ck1, previous_ckn1, previous_ck1,
-                                      ckn2, ck2, previous_ckn2, previous_ck2)
+                                      ckn, ck, previous_ckn, previous_ck)
                 Z[(d, pos)] = k
 
         if s > n_burn:
@@ -65,12 +72,9 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
             thin += 1
             if thin%n_thin==0:    
 
-                ll = 0
-                for bi in bag_indices:
-                    ckn = bags[bi].ckn
-                    ck = bags[bi].ck
-                    beta_bi = beta[bi]
-                    ll += _nb_p_w_z(N, K, beta_bi, ckn, ck)
+                ll = _nb_p_w_z(N, K, beta, ckn['bag1'], ck['bag1'])
+                ll += _nb_p_w_z(N, K, beta, ckn['bag2'], ck['bag2'])
+                ll += _nb_p_w_z(N, K, beta, ckn['bag3'], ck['bag3'])                
                 ll += _nb_p_z(D, K, alpha, cdk, cd)                  
                 all_lls.append(ll)      
                 print(" Log joint likelihood = %.3f " % ll)                        
@@ -82,16 +86,11 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
             print
             
     # update phi
-    phi = None
-    for bi in bag_indices:            
-        # update phi for each bag
-        current_phi = bags[bi].ckn + beta[bi]
-        current_phi /= np.sum(current_phi, axis=1)[:, np.newaxis]
-        # accumulate the product
-        if phi is None:
-            phi = current_phi
-        else:
-            phi = np.multiply(phi, current_phi)
+    all_ckn = ckn['bag1']
+    all_ckn += ckn['bag2']
+    all_ckn += ckn['bag3']
+    phi = all_ckn + beta
+    phi /= np.sum(phi, axis=1)[:, np.newaxis]
 
     # update theta
     theta = cdk + alpha 
@@ -100,79 +99,77 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
     all_lls = np.array(all_lls)            
     return phi, theta, all_lls
 
-def _get_count_matrices(b, bags):
-    ckn = bags[b].ckn
-    ck = bags[b].ck
-    previous_ckn = bags[b].previous_ckn
-    previous_ck = bags[b].previous_ck
-    return ckn, ck, previous_ckn, previous_ck
+def _populate_count_matrices(bags, ckn, ck, previous_ckn, previous_ck):
+    ckn['bag1'] = bags[0].ckn
+    ckn['bag2'] = bags[1].ckn
+    ckn['bag3'] = bags[2].ckn
+    ck['bag1'] = bags[0].ck
+    ck['bag2'] = bags[1].ck
+    ck['bag3'] = bags[2].ck
+    previous_ckn['bag1'] = bags[0].previous_ckn
+    previous_ckn['bag2'] = bags[1].previous_ckn
+    previous_ckn['bag3'] = bags[2].previous_ckn
+    previous_ck['bag1'] = bags[0].previous_ck
+    previous_ck['bag2'] = bags[1].previous_ck
+    previous_ck['bag3'] = bags[2].previous_ck
 
 @jit(int64(
            int64, int64, int64, int64[:, :], int64[:], 
-           int64, int64, int64, float64, float64[:],
-           float64[:], float64,
+           int64, int64, int64, float64, float64,
+           float64, float64,
            float64[:], float64[:], float64, int64,
-           int64[:, :], int64[:], int64[:, :], int64[:],
-           int64[:, :], int64[:], int64[:, :], int64[:],
-           int64[:, :], int64[:], int64[:, :], int64[:]
+           numba_bag_of_word_dtype[:, :], numba_bag_of_word_dtype[:], numba_bag_of_word_dtype[:, :], numba_bag_of_word_dtype[:]
 ), nopython=True)
 def _nb_get_new_index(d, n, k, cdk, cd, 
                       N, K, previous_K, alpha, beta, 
                       N_beta, K_alpha,                      
                       post, cumsum, random_number, b,
-                      ckn0, ck0, previous_ckn0, previous_ck0,
-                      ckn1, ck1, previous_ckn1, previous_ck1,
-                      ckn2, ck2, previous_ckn2, previous_ck2):
+                      ckn, ck, previous_ckn, previous_ck):
 
-    temp_ckn0 = ckn0[:, n]
-    temp_previous_ckn0 = previous_ckn0[:, n]
-    temp_ckn1 = ckn1[:, n]
-    temp_previous_ckn1 = previous_ckn1[:, n]
-    temp_ckn2 = ckn2[:, n]
-    temp_previous_ckn2 = previous_ckn2[:, n]
-    
+    temp_ckn = ckn[:, n]
+    temp_previous_ckn = previous_ckn[:, n]    
     temp_cdk = cdk[d, :]
 
     # remove from model
     cdk[d, k] -= 1
     cd[d] -= 1
     if b == 0: 
-        ckn0[k, n] -= 1
-        ck0[k] -= 1
+        ckn[k, n].bag1 -= 1
+        ck[k].bag1 -= 1
     elif b == 1:
-        ckn1[k, n] -= 1
-        ck1[k] -= 1
+        ckn[k, n].bag2 -= 1
+        ck[k].bag2 -= 1
     else:
-        ckn2[k, n] -= 1
-        ck2[k] -= 1        
+        ckn[k, n].bag3 -= 1
+        ck[k].bag3 -= 1        
 
     # compute likelihood, prior, posterior
     for i in range(len(post)):
 
         # we risk underflowing by not working in log space here
         if i < previous_K:
-            temp0 = (temp_previous_ckn0[i] + beta[0]) / (previous_ck0[i] + N_beta[0])
-            temp1 = (temp_previous_ckn1[i] + beta[1]) / (previous_ck1[i] + N_beta[1])
-            temp2 = (temp_previous_ckn2[i] + beta[2]) / (previous_ck2[i] + N_beta[2])
+            temp0 = (temp_previous_ckn[i].bag1 + beta) / (previous_ck[i].bag1 + N_beta)
+            temp1 = (temp_previous_ckn[i].bag2 + beta) / (previous_ck[i].bag2 + N_beta)
+            temp2 = (temp_previous_ckn[i].bag3 + beta) / (previous_ck[i].bag3 + N_beta)
             likelihood = temp0 * temp1 * temp2
         else:
-            temp0 = (temp_ckn0[i] + beta[0]) / (ck0[i] + N_beta[0])
-            temp1 = (temp_ckn1[i] + beta[1]) / (ck1[i] + N_beta[1])
-            temp2 = (temp_ckn2[i] + beta[2]) / (ck2[i] + N_beta[2])
+            temp0 = (temp_ckn[i].bag1 + beta) / (ck[i].bag1 + N_beta)
+            temp1 = (temp_ckn[i].bag2 + beta) / (ck[i].bag2 + N_beta)
+            temp2 = (temp_ckn[i].bag3 + beta) / (ck[i].bag3 + N_beta)
             likelihood = temp0 * temp1 * temp2
         prior = (temp_cdk[i] + alpha) / (cd[d] + K_alpha)
         post[i] = likelihood * prior
 
         # better but slower code
 #         if i < previous_K:
-#             temp0 = math.log(temp_previous_ckn0[i] + beta[0]) - math.log(previous_ck0[i] + N_beta[0])
-#             temp1 = math.log(temp_previous_ckn1[i] + beta[1]) - math.log(previous_ck1[i] + N_beta[1])
-#             temp2 = math.log(temp_previous_ckn2[i] + beta[2]) - math.log(previous_ck2[i] + N_beta[2])
+#             temp0 = math.log(temp_previous_ckn[i].bag1 + beta) - math.log(previous_ck[i].bag1 + N_beta)
+#             temp1 = math.log(temp_previous_ckn[i].bag2 + beta) - math.log(previous_ck[i].bag2 + N_beta)
+#             temp2 = math.log(temp_previous_ckn[i].bag3 + beta) - math.log(previous_ck[i].bag3 + N_beta)
 #             likelihood = temp0 + temp1 + temp2
 #         else:
-#             temp0 = math.log(temp_ckn0[i] + beta[0]) - math.log(ck0[i] + N_beta[0])
-#             temp1 = math.log(temp_ckn1[i] + beta[1]) - math.log(ck1[i] + N_beta[1])
-#             temp2 = math.log(temp_ckn2[i] + beta[2]) - math.log(ck2[i] + N_beta[2])
+#             temp0 = math.log(temp_ckn[i].bag1 + beta) - math.log(ck[i].bag1 + N_beta)
+#             temp1 = math.log(temp_ckn[i].bag2 + beta) - math.log(ck[i].bag2 + N_beta)
+#             temp2 = math.log(temp_ckn[i].bag3 + beta) - math.log(ck[i].bag3 + N_beta)
 #             likelihood = temp0 + temp1 + temp2
 #         prior = math.log(temp_cdk[i] + alpha) - math.log(cd[d] + K_alpha)
 #         post[i] = likelihood + prior
@@ -214,14 +211,14 @@ def _nb_get_new_index(d, n, k, cdk, cd,
     cdk[d, k] += 1
     cd[d] += 1
     if b == 0: 
-        ckn0[k, n] += 1
-        ck0[k] += 1
+        ckn[k, n].bag1 += 1
+        ck[k].bag1 += 1
     elif b == 1:
-        ckn1[k, n] += 1
-        ck1[k] += 1
+        ckn[k, n].bag2 += 1
+        ck[k].bag2 += 1
     else:
-        ckn2[k, n] += 1
-        ck2[k] += 1      
+        ckn[k, n].bag3 += 1
+        ck[k].bag3 += 1      
     
     return k
 

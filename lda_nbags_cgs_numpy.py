@@ -48,7 +48,7 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
 
                     # for training
                     for bi in bag_indices:
-                        log_likelihood += np.log(bags[bi].ckn[:, n] + beta[bi]) - np.log(bags[bi].ck + N_beta[bi])
+                        log_likelihood += np.log(bags[bi].ckn[:, n] + beta) - np.log(bags[bi].ck + N_beta)
                                 
                 else:
                     
@@ -56,8 +56,8 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                     for bi in bag_indices:
                     
                         # for testing on unseen data
-                        log_likelihood_previous = np.log(bags[bi].previous_ckn[:, n] + beta[bi]) - np.log(bags[bi].previous_ck + N_beta[bi])
-                        log_likelihood_current = np.log(bags[bi].ckn[:, n] + beta[bi]) - np.log(bags[bi].ck + N_beta[bi])    
+                        log_likelihood_previous = np.log(bags[bi].previous_ckn[:, n] + beta) - np.log(bags[bi].previous_ck + N_beta)
+                        log_likelihood_current = np.log(bags[bi].ckn[:, n] + beta) - np.log(bags[bi].ck + N_beta)    
     
                         # The combined likelihood: 
                         # front is from previous topic-word distribution
@@ -101,8 +101,7 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                 for bi in bag_indices:
                     ckn = bags[bi].ckn
                     ck = bags[bi].ck
-                    beta_bi = beta[bi]
-                    ll += p_w_z(N, K, beta_bi, ckn, ck)
+                    ll += p_w_z(N, K, beta, ckn, ck)
                 ll += p_z(D, K, alpha, cdk, cd)                  
                 all_lls.append(ll)      
                 print(" Log joint likelihood = %.3f " % ll)                                          
@@ -114,16 +113,14 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
             print
 
     # update phi
-    phi = None
+    all_ckn = None
     for bi in bag_indices:            
-        # update phi for each bag
-        current_phi = bags[bi].ckn + beta[bi]
-        current_phi /= np.sum(current_phi, axis=1)[:, np.newaxis]
-        # accumulate the product
-        if phi is None:
-            phi = current_phi
+        if all_ckn is None:
+            all_ckn = bags[bi].ckn
         else:
-            phi = np.multiply(phi, current_phi)
+            all_ckn += bags[bi].ckn
+    phi = all_ckn + beta
+    phi /= np.sum(phi, axis=1)[:, np.newaxis]
 
     # update theta
     theta = cdk + alpha 
