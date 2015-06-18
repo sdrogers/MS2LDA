@@ -118,7 +118,7 @@ class Ms2Lda:
         return df, vocab
 
     def run_lda(self, df, vocab, n_topics, n_samples, n_burn, n_thin, alpha, beta, 
-                use_own_model=False, use_native=False, previous_model=None):    
+                use_own_model=False, use_native=True, previous_model=None):    
                         
         print "Fitting model..."
         self.n_topics = n_topics
@@ -136,7 +136,8 @@ class Ms2Lda:
         stop = timeit.default_timer()
         print "DONE. Time=" + str(stop-start)
 
-    def run_lda_alternative(self, df, vocab, n_topics, n_samples, n_burn, n_thin, alpha, beta, previous_model=None):    
+    def run_lda_alternative(self, df, vocab, n_topics, n_samples, n_burn, n_thin, alpha, beta, 
+                            use_native=True, previous_model=None):    
                         
         print "Fitting model..."
         self.n_topics = n_topics
@@ -144,7 +145,7 @@ class Ms2Lda:
         self.model = CollapseGibbs_nbags_Lda(df, vocab, n_topics, alpha, beta, previous_model=previous_model)
         self.n_topics = self.model.K # might change if previous_model is used
         start = timeit.default_timer()
-        self.model.run(n_burn, n_samples, n_thin, use_native=True)
+        self.model.run(n_burn, n_samples, n_thin, use_native=use_native)
         stop = timeit.default_timer()
         print "DONE. Time=" + str(stop-start)        
         plt.plot(self.model.loglikelihoods_)
