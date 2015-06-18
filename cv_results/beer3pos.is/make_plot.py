@@ -9,7 +9,7 @@ print df
 X = df.ix[:, 1]
 Y = df.ix[:, 3]
 plt.plot(X, Y, linewidth=2, label='log marginal likelihood')
-plt.legend()
+plt.legend(loc='lower right')
 plt.grid()
 plt.xlabel('K')
 plt.ylabel('marg')
