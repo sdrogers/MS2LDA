@@ -72,9 +72,9 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
             thin += 1
             if thin%n_thin==0:    
 
-                ll = _nb_p_w_z(N, K, beta, ckn['bag1'], ck['bag1'])
-                ll += _nb_p_w_z(N, K, beta, ckn['bag2'], ck['bag2'])
-                ll += _nb_p_w_z(N, K, beta, ckn['bag3'], ck['bag3'])                
+                ll = _nb_p_w_z(N, K, beta[0], ckn['bag1'], ck['bag1'])
+                ll += _nb_p_w_z(N, K, beta[1], ckn['bag2'], ck['bag2'])
+                ll += _nb_p_w_z(N, K, beta[2], ckn['bag3'], ck['bag3'])                
                 ll += _nb_p_z(D, K, alpha, cdk, cd)                  
                 all_lls.append(ll)      
                 print(" Log joint likelihood = %.3f " % ll)                        
@@ -86,18 +86,20 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
             print
             
     # update phi
-    all_ckn = ckn['bag1']
-    all_ckn += ckn['bag2']
-    all_ckn += ckn['bag3']
-    phi = all_ckn + beta
-    phi /= np.sum(phi, axis=1)[:, np.newaxis]
+    phi1 = ckn['bag1'] + beta[0]
+    phi1 /= np.sum(phi1, axis=1)[:, np.newaxis]
+    phi2 = ckn['bag2'] + beta[1]
+    phi2 /= np.sum(phi2, axis=1)[:, np.newaxis]
+    phi3 = ckn['bag3'] + beta[2]
+    phi3 /= np.sum(phi3, axis=1)[:, np.newaxis]
+    phis = [phi1, phi2, phi3]
 
     # update theta
     theta = cdk + alpha 
     theta /= np.sum(theta, axis=1)[:, np.newaxis]
 
     all_lls = np.array(all_lls)            
-    return phi, theta, all_lls
+    return phis, theta, all_lls
 
 def _populate_count_matrices(bags, ckn, ck, previous_ckn, previous_ck):
     ckn['bag1'] = bags[0].ckn
@@ -115,8 +117,8 @@ def _populate_count_matrices(bags, ckn, ck, previous_ckn, previous_ck):
 
 @jit(int64(
            int64, int64, int64, int64[:, :], int64[:], 
-           int64, int64, int64, float64, float64,
-           float64, float64,
+           int64, int64, int64, float64, float64[:],
+           float64[:], float64,
            float64[:], float64[:], float64, int64,
            numba_bag_of_word_dtype[:, :], numba_bag_of_word_dtype[:], numba_bag_of_word_dtype[:, :], numba_bag_of_word_dtype[:]
 ), nopython=True)
@@ -148,28 +150,28 @@ def _nb_get_new_index(d, n, k, cdk, cd,
 
         # we risk underflowing by not working in log space here
         if i < previous_K:
-            temp0 = (temp_previous_ckn[i].bag1 + beta) / (previous_ck[i].bag1 + N_beta)
-            temp1 = (temp_previous_ckn[i].bag2 + beta) / (previous_ck[i].bag2 + N_beta)
-            temp2 = (temp_previous_ckn[i].bag3 + beta) / (previous_ck[i].bag3 + N_beta)
+            temp0 = (temp_previous_ckn[i].bag1 + beta[0]) / (previous_ck[i].bag1 + N_beta[0])
+            temp1 = (temp_previous_ckn[i].bag2 + beta[1]) / (previous_ck[i].bag2 + N_beta[1])
+            temp2 = (temp_previous_ckn[i].bag3 + beta[2]) / (previous_ck[i].bag3 + N_beta[2])
             likelihood = temp0 * temp1 * temp2
         else:
-            temp0 = (temp_ckn[i].bag1 + beta) / (ck[i].bag1 + N_beta)
-            temp1 = (temp_ckn[i].bag2 + beta) / (ck[i].bag2 + N_beta)
-            temp2 = (temp_ckn[i].bag3 + beta) / (ck[i].bag3 + N_beta)
+            temp0 = (temp_ckn[i].bag1 + beta[0]) / (ck[i].bag1 + N_beta[0])
+            temp1 = (temp_ckn[i].bag2 + beta[1]) / (ck[i].bag2 + N_beta[1])
+            temp2 = (temp_ckn[i].bag3 + beta[2]) / (ck[i].bag3 + N_beta[2])
             likelihood = temp0 * temp1 * temp2
         prior = (temp_cdk[i] + alpha) / (cd[d] + K_alpha)
         post[i] = likelihood * prior
 
         # better but slower code
 #         if i < previous_K:
-#             temp0 = math.log(temp_previous_ckn[i].bag1 + beta) - math.log(previous_ck[i].bag1 + N_beta)
-#             temp1 = math.log(temp_previous_ckn[i].bag2 + beta) - math.log(previous_ck[i].bag2 + N_beta)
-#             temp2 = math.log(temp_previous_ckn[i].bag3 + beta) - math.log(previous_ck[i].bag3 + N_beta)
+#             temp0 = math.log(temp_previous_ckn[i].bag1 + beta[0]) - math.log(previous_ck[i].bag1 + N_beta[0])
+#             temp1 = math.log(temp_previous_ckn[i].bag2 + beta[1]) - math.log(previous_ck[i].bag2 + N_beta[1])
+#             temp2 = math.log(temp_previous_ckn[i].bag3 + beta[2]) - math.log(previous_ck[i].bag3 + N_beta[2])
 #             likelihood = temp0 + temp1 + temp2
 #         else:
-#             temp0 = math.log(temp_ckn[i].bag1 + beta) - math.log(ck[i].bag1 + N_beta)
-#             temp1 = math.log(temp_ckn[i].bag2 + beta) - math.log(ck[i].bag2 + N_beta)
-#             temp2 = math.log(temp_ckn[i].bag3 + beta) - math.log(ck[i].bag3 + N_beta)
+#             temp0 = math.log(temp_ckn[i].bag1 + beta[0]) - math.log(ck[i].bag1 + N_beta[0])
+#             temp1 = math.log(temp_ckn[i].bag2 + beta[1]) - math.log(ck[i].bag2 + N_beta[1])
+#             temp2 = math.log(temp_ckn[i].bag3 + beta[2]) - math.log(ck[i].bag3 + N_beta[2])
 #             likelihood = temp0 + temp1 + temp2
 #         prior = math.log(temp_cdk[i] + alpha) - math.log(cd[d] + K_alpha)
 #         post[i] = likelihood + prior

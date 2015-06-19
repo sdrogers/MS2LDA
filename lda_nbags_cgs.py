@@ -41,7 +41,6 @@ class CollapseGibbs_nbags_Lda(object):
         print "CGS LDA initialising"
         self.df = df.replace(np.nan, 0)
         self.alpha = alpha            
-        self.beta = beta
 
         self.D = df.shape[0]    # total no of docs
         self.N = df.shape[1]    # total no of words
@@ -61,6 +60,15 @@ class CollapseGibbs_nbags_Lda(object):
         for bi in self.bag_indices:
             new_bag = BagOfWord()
             self.bags.append(new_bag)
+
+        if hasattr(beta, "__len__"):
+            # beta is an np array, must be the same length as the number of bags
+            assert(len(beta)==self.n_bags)
+            self.beta = beta
+        else:
+            # beta is a scalar, convert it into np array
+            self.beta = np.array([beta])
+            self.beta = np.repeat(self.beta, self.n_bags)
 
         # set total no of topics
         self.cv = False
@@ -258,9 +266,10 @@ def main():
     alpha = 0.1
     beta = 0.01    
     n_samples = 200
-    n_burn = 100
+    n_burn = 0
     n_thin = 1
-
+    EPSILON = 0.05
+    n_top_words = 20
     random_state = RandomState(1234567890)
 
     gen = LdaDataGenerator(alpha, make_plot=True)
@@ -285,13 +294,11 @@ def main():
 #         print "Kept topics = " + str(gibbs1.selected_topics)
    
     gen._plot_nicely(gibbs1.doc_topic_.T, 'Inferred Topics X Docs', 'docs', 'topics', outfile='test1_doc_topic.png')
-    gen._plot_nicely(gibbs1.topic_word_, 'Inferred Topics X Terms', 'terms', 'topics', outfile='test1_topic_word.png')
+    for b in range(gibbs1.n_bags):
+        gen._plot_nicely(gibbs1.topic_word_[b], 'Inferred Topics X Terms for bag ' + str(b), 'terms', 'topics', outfile='test1_topic_word.png')
     plt.plot(gibbs1.loglikelihoods_)
-    plt.show()
-    
-    topic_word = gibbs1.topic_word_
-    n_top_words = 20
-    print_topic_words(topic_word, n_top_words, vocab)
+    plt.show()    
+    print_topic_words(gibbs1.topic_word_, gibbs1.n_bags, n_top_words, n_topics, vocab, EPSILON)
 #            
 #     # now run gibbs again on another df with the few selected topics above
 #     gen = LdaDataGenerator(alpha, make_plot=True)
@@ -307,22 +314,35 @@ def main():
 #     gen._plot_nicely(gibbs2.topic_word_, 'Inferred Topics X Terms', 'terms', 'topics', outfile='test2_topic_word.png')
 #     plt.plot(gibbs2.loglikelihoods_)
 #     plt.show()
-#      
-#     topic_word = gibbs2.topic_word_
-#     n_top_words = 20
-#     print_topic_words(topic_word, n_top_words, vocab2)
+#     print_topic_words(gibbs2.topic_word_, gibbs2.n_bags, n_top_words, n_topics, vocab, EPSILON)
         
-def print_topic_words(topic_word, n_top_words, vocab):
+def print_topic_words(topic_words, n_bags, n_top_words, n_topics, vocab, EPSILON=0.05):
+
     words = [item[0] for item in vocab]
     words_bag = [item[1] for item in vocab]
-    for i, topic_dist in enumerate(topic_word):
-        sorted_idx = np.argsort(topic_dist)[:-n_top_words:-1]
-        print('Topic {}: '.format(i)),
-        for j in sorted_idx:
-            w = words[j]
-            b = words_bag[j]
-            print (w + '(bag ' + str(b) + ') '), 
-        print    
+    
+    # for all topics
+    for k in range(n_topics):
+
+        print('Topic {}'.format(k))
+        
+        # for each bag in the topic
+        for b in range(n_bags):
+            
+            # get topic-word distribution of the bag
+            topic_dists = topic_words[b]
+            topic_dist = topic_dists[k]
+            
+            # print top words in each bag
+            sorted_idx = np.argsort(topic_dist)[:-n_top_words:-1]
+            print('\tbag {}: '.format(b)),
+            for j in sorted_idx:
+                w = words[j]
+                word_bag = words_bag[j]
+                val = topic_dist[j]
+                if val > EPSILON:
+                    print (w + ' (word_bag ' + str(word_bag) + ', ' + str(val) + ') '), 
+            print    
 
 if __name__ == "__main__":
     main()
