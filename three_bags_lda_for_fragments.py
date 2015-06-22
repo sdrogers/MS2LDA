@@ -7,9 +7,9 @@ from scipy.sparse import coo_matrix
 from lda_for_fragments import Ms2Lda
 from lda_nbags_cgs import CollapseGibbs_nbags_Lda, print_topic_words
 import numpy as np
-import pylab as plt
 import pandas as pd
-
+import pylab as plt
+from visualisation.pylab.three_bags_lda_for_fragments_viz import ThreeBags_Ms2Lda_Viz
 
 class ThreeBags_Ms2Lda(Ms2Lda):
     
@@ -68,7 +68,7 @@ class ThreeBags_Ms2Lda(Ms2Lda):
         plt.plot(self.model.loglikelihoods_)
         plt.show()
         print_topic_words(self.model.topic_word_, self.model.n_bags, 20, n_topics, vocab, self.EPSILON)      
-        
+                
     def write_results(self, results_prefix):
 
         previous_model = self.model.previous_model
@@ -131,7 +131,7 @@ class ThreeBags_Ms2Lda(Ms2Lda):
         
             # make sure that columns in topicdf are in the correct order
             # because many times we'd index the columns in the dataframes directly by their positions
-            cols = self.topicdfs.columns.tolist()
+            cols = topicdf.columns.tolist()
             sorted_cols = self._natural_sort(cols)
             topicdf = topicdf[sorted_cols]        
     
@@ -141,6 +141,7 @@ class ThreeBags_Ms2Lda(Ms2Lda):
                 else: return x
             topicdf = topicdf.applymap(f)
             topicdf.to_csv(outfile)
+            self.topicdfs.append(topicdf)
     
         # create topic-docs output file
         doc = self.model.doc_topic_
@@ -173,7 +174,11 @@ class ThreeBags_Ms2Lda(Ms2Lda):
         self.docdf = self.docdf.replace(np.nan, 0)
         outfile = self._get_outfile(results_prefix, '_docs.csv') 
         print "Writing topic docs to " + outfile
-        self.docdf.transpose().to_csv(outfile)                      
+        self.docdf.transpose().to_csv(outfile)   
+        
+    def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", selected_topics=None):
+        plotter = ThreeBags_Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdfs, EPSILON=self.EPSILON)
+        plotter.plot_lda_fragments(consistency=0.50, sort_by=sort_by, selected_topics=selected_topics)                                    
     
 def test_lda():
 
@@ -181,7 +186,7 @@ def test_lda():
         n_topics = int(sys.argv[1])
     else:
         n_topics = 125
-    n_samples = 10
+    n_samples = 100
     n_burn = 0
     n_thin = 1
     alpha = 0.1

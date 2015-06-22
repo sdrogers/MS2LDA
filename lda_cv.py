@@ -91,8 +91,8 @@ def run_synthetic(parallel=True):
 
     K = 50
     print "Cross-validation for K=" + str(K)
-    alpha = 0.1
-    beta = 0.01    
+    alpha = 50.0/K
+    beta = 0.1
     n_docs = 200
     vocab_size = 500
     document_length = 50
@@ -132,8 +132,8 @@ def run_beer3():
     n_samples = 500
     n_burn = 250
     n_thin = 5
-    alpha = 0.1
-    beta = 0.01
+    alpha = 50.0/K
+    beta = 0.1
     is_num_samples = 10000
     is_iters = 1000
      
@@ -166,8 +166,8 @@ def run_urine37():
     n_samples = 500
     n_burn = 250
     n_thin = 5
-    alpha = 0.1
-    beta = 0.01
+    alpha = 50.0/K
+    beta = 0.1
     is_num_samples = 10000
     is_iters = 1000
      

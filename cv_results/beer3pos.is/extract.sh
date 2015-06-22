@@ -1,3 +1,3 @@
 #!/bin/bash
 
-grep 'log_marginal_likelihood' LDA* > results.csv
+grep 'log_marginal_likelihood' LDA* > results/results.csv

@@ -7,7 +7,7 @@ from numpy.random.mtrand import RandomState
 from pandas.core.frame import DataFrame
 from scipy.sparse import coo_matrix
 
-from justin.visualisation.pylab.lda_for_fragments_viz import Ms2Lda_Viz
+from visualisation.pylab.lda_for_fragments_viz import Ms2Lda_Viz
 from lda_cgs import CollapseGibbsLda
 import numpy as np
 import pandas as pd
@@ -200,7 +200,7 @@ class Ms2Lda(object):
         self.model.save(topic_indices, model_out, words_out)
         
     def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", selected_topics=None):
-        plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdf)
+        plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdfs)
         plotter.plot_lda_fragments(consistency=0.50, sort_by=sort_by, selected_topics=selected_topics)         
         
     def _natural_sort(self, l): 
