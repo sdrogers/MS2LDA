@@ -5,11 +5,12 @@ from pandas.core.frame import DataFrame
 from scipy.sparse import coo_matrix
 
 from lda_for_fragments import Ms2Lda
-from lda_nbags_cgs import CollapseGibbs_nbags_Lda, print_topic_words
+from lda_nbags_cgs import CollapseGibbs_nbags_Lda
 import numpy as np
 import pandas as pd
 import pylab as plt
 from visualisation.pylab.three_bags_lda_for_fragments_viz import ThreeBags_Ms2Lda_Viz
+
 
 class ThreeBags_Ms2Lda(Ms2Lda):
     
@@ -67,7 +68,7 @@ class ThreeBags_Ms2Lda(Ms2Lda):
         print "DONE. Time=" + str(stop-start)        
         plt.plot(self.model.loglikelihoods_)
         plt.show()
-        print_topic_words(self.model.topic_word_, self.model.n_bags, 20, n_topics, vocab, self.EPSILON)      
+        # print_topic_words(self.model.topic_word_, self.model.n_bags, 20, n_topics, vocab, self.EPSILON)      
                 
     def write_results(self, results_prefix):
 
@@ -189,8 +190,8 @@ def test_lda():
     n_samples = 100
     n_burn = 0
     n_thin = 1
-    alpha = 0.1
-    beta = 0.01
+    alpha = 50.0/n_topics
+    beta = 0.1
 
     relative_intensity = True
     fragment_filename = 'input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'

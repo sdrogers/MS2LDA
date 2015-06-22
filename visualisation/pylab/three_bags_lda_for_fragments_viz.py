@@ -52,8 +52,9 @@ class ThreeBags_Ms2Lda_Viz(object):
     def _get_words_for_plot(self, k, topicdfs, bag_idx):
         
         # argsort topic-words for fragments in descending order by p(w|d)
-        word_dist = self.topicdfs[0].transpose().iloc[[k]].as_matrix().flatten()                          
-        column_values = np.array(self.topicdfs[0].transpose().columns.values)    
+        topicdf_bag = self.topicdfs[bag_idx]
+        word_dist = topicdf_bag.transpose().iloc[[k]].as_matrix().flatten()                          
+        column_values = np.array(topicdf_bag.transpose().columns.values)    
         idx = np.argsort(word_dist)[::-1] 
         topic_w = np.array(column_values)[idx]
         topic_p = np.array(word_dist)[idx]    

@@ -38,52 +38,58 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
     # transfer the counts from the bags to the structured arrays
     _populate_count_matrices(bags, ckn, ck, previous_ckn, previous_ck)    
     
-    # loop over samples
-    for samp in range(n_samples):
+    # prepare the input matrices
+    print "Preparing words"
+    all_d = []
+    all_pos = []
+    all_n = []
+    total_words = 0
+    max_pos = 0
+    for d in range(D):
+        word_locs = document_indices[d]
+        for pos, n in word_locs:
+            total_words += 1
+            all_d.append(d)
+            all_pos.append(pos)
+            all_n.append(n)
+            if pos > max_pos:
+                max_pos = pos
+    all_d = np.array(all_d, dtype=np.int64)
+    all_pos = np.array(all_pos, dtype=np.int64)
+    all_n = np.array(all_n, dtype=np.int64)
+    vocab_type = np.array(vocab_type, dtype=np.int)
     
+    print "Preparing Z matrix"    
+    Z_mat = np.empty((D, max_pos+1), dtype=np.int64)
+    for d in range(D):
+        word_locs = document_indices[d]
+        for pos, n in word_locs:
+            k = Z[(d, pos)]
+            Z_mat[d, pos] = k
+
+    print "Preparing random matrix for total_words " + str(total_words)    
+    all_random = np.empty((n_samples, total_words), dtype=np.double)
+    for samp in range(n_samples):
+        all_random[samp, :] = random_state.rand(total_words)
+    
+    print "DONE"
+
+    # lls_count should be replaced by a single formula!
+    lls_count = 0    
+    for samp in range(n_samples):
         s = samp+1        
-        if s >= n_burn:
-            print("Sample " + str(s) + " "),
-        else:
-            print("Burn-in " + str(s) + " "),
-
-        # loop over documents
-        for d in range(D):
-
-            if d%10==0:                        
-                sys.stdout.write('.')
-                sys.stdout.flush()
-
-            # loop over words, not so easy to JIT due to rng and Z
-            word_locs = document_indices[d]
-            for pos, n in word_locs:
-                random_number = random_state.rand()                
-                k = Z[(d, pos)]         
-                b = vocab_type[n]   
-                k = _nb_get_new_index(d, n, k, cdk, cd, 
-                                      N, K, previous_K, alpha, beta, 
-                                      N_beta, K_alpha,
-                                      post, cumsum, random_number, b,
-                                      ckn, ck, previous_ckn, previous_ck)
-                Z[(d, pos)] = k
-
         if s > n_burn:
-        
             thin += 1
             if thin%n_thin==0:    
+                lls_count += 1
 
-                ll = _nb_p_w_z(N, K, beta[0], ckn['bag1'], ck['bag1'])
-                ll += _nb_p_w_z(N, K, beta[1], ckn['bag2'], ck['bag2'])
-                ll += _nb_p_w_z(N, K, beta[2], ckn['bag3'], ck['bag3'])                
-                ll += _nb_p_z(D, K, alpha, cdk, cd)                  
-                all_lls.append(ll)      
-                print(" Log joint likelihood = %.3f " % ll)                        
-            
-            else:                
-                print
-        
-        else:
-            print
+    all_lls = np.zeros(lls_count)
+    _nb_do_sampling(n_samples, n_burn, n_thin, total_words, all_d, all_pos, all_n, all_random, Z_mat, all_lls, vocab_type,
+                      cdk, cd, 
+                      D, N, K, previous_K, alpha, beta, 
+                      N_beta, K_alpha,                      
+                      post, cumsum,
+                      ckn, ck, previous_ckn, previous_ck)
             
     # update phi
     phi1 = ckn['bag1'] + beta[0]
@@ -241,3 +247,62 @@ def _nb_p_z(D, K, alpha, cdk, cd):
             ll += math.lgamma(cdk[d, k]+alpha)
         ll -= math.lgamma(cd[d] + K*alpha)
     return ll
+  
+# @jit(int64(int64, int64, int64, int64, int64[:], int64[:], int64[:], float64[:, :], int64[:, :], int64[:], int64[:],
+#            int64[:, :], int64[:], 
+#            int64, int64, int64, int64, float64, float64[:],
+#            float64[:], float64,
+#            float64[:], float64[:],
+#            numba_bag_of_word_dtype[:, :], numba_bag_of_word_dtype[:], numba_bag_of_word_dtype[:, :], numba_bag_of_word_dtype[:]
+# ), nopython=True)   
+@jit(nopython=True)   
+def _nb_do_sampling(n_samples, n_burn, n_thin, total_words, all_d, all_pos, all_n, all_random, Z_mat, all_lls, vocab_type,
+                      cdk, cd, 
+                      D, N, K, previous_K, alpha, beta, 
+                      N_beta, K_alpha,                      
+                      post, cumsum,
+                      ckn, ck, previous_ckn, previous_ck):
+    
+    counter = 0
+    thin = 0
+    
+    # loop over samples
+    for samp in range(n_samples):
+    
+        # loop over documents and all words in the document
+        for w in range(total_words):
+            
+            d = all_d[w]
+            pos = all_pos[w]
+            n = all_n[w]
+            random_number = all_random[samp, w]
+        
+            # assign new k
+            k = Z_mat[d, pos]         
+            b = vocab_type[n]   
+            k = _nb_get_new_index(d, n, k, cdk, cd, 
+                                  N, K, previous_K, alpha, beta, 
+                                  N_beta, K_alpha,
+                                  post, cumsum, random_number, b,
+                                  ckn, ck, previous_ckn, previous_ck)
+            Z_mat[d, pos] = k
+
+        s = samp+1        
+        if s > n_burn:
+        
+            thin += 1
+            if thin%n_thin==0:    
+
+                ll = _nb_p_w_z(N, K, beta[0], ckn.bag1, ck.bag1)
+                ll += _nb_p_w_z(N, K, beta[1], ckn.bag2, ck.bag2)
+                ll += _nb_p_w_z(N, K, beta[2], ckn.bag3, ck.bag3)                
+                ll += _nb_p_z(D, K, alpha, cdk, cd)                  
+                all_lls[counter] = ll   
+                counter += 1   
+                print(ll)                        
+            
+            else:                
+                print
+        
+        else:
+            print    

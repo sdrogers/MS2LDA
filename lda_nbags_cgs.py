@@ -263,8 +263,8 @@ def main():
     vocab_size = 200 * multiplier
     document_length = 50 * multiplier
 
-    alpha = 0.1
-    beta = 0.01    
+    alpha = 50.0/n_topics
+    beta = 0.1
     n_samples = 200
     n_burn = 0
     n_thin = 1
