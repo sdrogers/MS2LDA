@@ -66,31 +66,36 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
         for pos, n in word_locs:
             k = Z[(d, pos)]
             Z_mat[d, pos] = k
-
-    print "Preparing random matrix for total_words " + str(total_words)    
-    all_random = np.empty((n_samples, total_words), dtype=np.double)
-    for samp in range(n_samples):
-        all_random[samp, :] = random_state.rand(total_words)
     
     print "DONE"
 
-    # lls_count should be replaced by a single formula!
-    lls_count = 0    
+    # loop over samples
+    all_lls = []
     for samp in range(n_samples):
+
         s = samp+1        
-        if s > n_burn:
+        if s >= n_burn:
+            print("Sample " + str(s) + " "),
+        else:
+            print("Burn-in " + str(s) + " "),    
+
+        all_random = random_state.rand(total_words)
+        ll = _nb_do_sampling(s, n_burn, total_words, all_d, all_pos, all_n, all_random, Z_mat, vocab_type,
+                          cdk, cd, 
+                          D, N, K, previous_K, alpha, beta, 
+                          N_beta, K_alpha,                      
+                          post, cumsum,
+                          ckn, ck, previous_ckn, previous_ck)
+        if s > n_burn:        
             thin += 1
             if thin%n_thin==0:    
-                lls_count += 1
-
-    all_lls = np.zeros(lls_count)
-    _nb_do_sampling(n_samples, n_burn, n_thin, total_words, all_d, all_pos, all_n, all_random, Z_mat, all_lls, vocab_type,
-                      cdk, cd, 
-                      D, N, K, previous_K, alpha, beta, 
-                      N_beta, K_alpha,                      
-                      post, cumsum,
-                      ckn, ck, previous_ckn, previous_ck)
-            
+                all_lls.append(ll)      
+                print(" Log joint likelihood = %.3f " % ll)
+            else:                
+                print
+        else:
+            print
+                
     # update phi
     phi1 = ckn['bag1'] + beta[0]
     phi1 /= np.sum(phi1, axis=1)[:, np.newaxis]
@@ -256,53 +261,36 @@ def _nb_p_z(D, K, alpha, cdk, cd):
 #            numba_bag_of_word_dtype[:, :], numba_bag_of_word_dtype[:], numba_bag_of_word_dtype[:, :], numba_bag_of_word_dtype[:]
 # ), nopython=True)   
 @jit(nopython=True)   
-def _nb_do_sampling(n_samples, n_burn, n_thin, total_words, all_d, all_pos, all_n, all_random, Z_mat, all_lls, vocab_type,
+def _nb_do_sampling(s, n_burn, total_words, all_d, all_pos, all_n, all_random, Z_mat, vocab_type,
                       cdk, cd, 
                       D, N, K, previous_K, alpha, beta, 
                       N_beta, K_alpha,                      
                       post, cumsum,
                       ckn, ck, previous_ckn, previous_ck):
     
-    counter = 0
-    thin = 0
+    # loop over documents and all words in the document
+    for w in range(total_words):
+        
+        d = all_d[w]
+        pos = all_pos[w]
+        n = all_n[w]
+        random_number = all_random[w]
     
-    # loop over samples
-    for samp in range(n_samples):
-    
-        # loop over documents and all words in the document
-        for w in range(total_words):
-            
-            d = all_d[w]
-            pos = all_pos[w]
-            n = all_n[w]
-            random_number = all_random[samp, w]
-        
-            # assign new k
-            k = Z_mat[d, pos]         
-            b = vocab_type[n]   
-            k = _nb_get_new_index(d, n, k, cdk, cd, 
-                                  N, K, previous_K, alpha, beta, 
-                                  N_beta, K_alpha,
-                                  post, cumsum, random_number, b,
-                                  ckn, ck, previous_ckn, previous_ck)
-            Z_mat[d, pos] = k
+        # assign new k
+        k = Z_mat[d, pos]         
+        b = vocab_type[n]   
+        k = _nb_get_new_index(d, n, k, cdk, cd, 
+                              N, K, previous_K, alpha, beta, 
+                              N_beta, K_alpha,
+                              post, cumsum, random_number, b,
+                              ckn, ck, previous_ckn, previous_ck)
+        Z_mat[d, pos] = k
 
-        s = samp+1        
-        if s > n_burn:
-        
-            thin += 1
-            if thin%n_thin==0:    
+    ll = 0
+    if s > n_burn:    
+        ll += _nb_p_w_z(N, K, beta[0], ckn.bag1, ck.bag1)
+        ll += _nb_p_w_z(N, K, beta[1], ckn.bag2, ck.bag2)
+        ll += _nb_p_w_z(N, K, beta[2], ckn.bag3, ck.bag3)                
+        ll += _nb_p_z(D, K, alpha, cdk, cd)                          
 
-                ll = _nb_p_w_z(N, K, beta[0], ckn.bag1, ck.bag1)
-                ll += _nb_p_w_z(N, K, beta[1], ckn.bag2, ck.bag2)
-                ll += _nb_p_w_z(N, K, beta[2], ckn.bag3, ck.bag3)                
-                ll += _nb_p_z(D, K, alpha, cdk, cd)                  
-                all_lls[counter] = ll   
-                counter += 1   
-                print(ll)                        
-            
-            else:                
-                print
-        
-        else:
-            print    
+    return ll
