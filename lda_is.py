@@ -1,10 +1,32 @@
-import sys
-import numpy as np
+import timeit
+
+from numba.decorators import jit
+from numba.types import int64
 from numpy.random import rand
-from scipy.special import gammaln
 from scipy.misc import logsumexp
-import scipy.io as sio
+from scipy.special import gammaln
+
+import numpy as np
 import pylab as plt
+import scipy.io as sio
+
+@jit(int64[:, :](int64, int64[:, :], int64), nopython=True)
+def count_member(num_samples, samples, T):
+    
+    Nk = np.zeros((T, num_samples), dtype=np.int64) # T x num_samples    
+    for s in range(num_samples):
+        
+        # temp = np.bincount(samples[:, s], minlength=T)
+        # Nk[:, s] = temp
+
+        # faster bincount
+        temp = np.zeros(T, dtype=np.int64)
+        for k in samples[:, s]:
+            temp[k] += 1
+        for k in range(T):
+            Nk[k, s] = temp[k]
+    
+    return Nk
 
 # this is a Numpy port of the Matlab's importance sampling method to approximate LDA marginal likelihood,
 # as described in Wallach, et al. (2009). "Evaluation methods for topic models."
@@ -45,9 +67,7 @@ def ldae_is_variants(words, topics, topic_prior, num_samples=1000, variant=3, va
         samples[n, :] = sampled_idx
 
     # Do a bin count for each topic within a sample
-    Nk = np.zeros((T, num_samples), dtype=np.int64) # T x num_samples
-    for s in range(num_samples):
-        Nk[:, s] = np.bincount(samples[:, s], minlength=T)
+    Nk = count_member(num_samples, samples, T)
 
     # Evaluate P(z, v) at samples and compare to q-distribution
     log_pz = np.sum(gammaln(Nk+topic_prior), 0) + \
@@ -117,8 +137,11 @@ def main():
 
     results = []
     for x in range(30):
+        start = timeit.default_timer()
         is_pseudopost = ldae_is_variants(words, topics, topic_prior, num_samples, variant, variant_iters)
         print "is_pseudopost = " + str(is_pseudopost)
+        stop = timeit.default_timer()
+        print "DONE. Time=" + str(stop-start)        
         results.append(is_pseudopost)
 
     results = np.array(results)
