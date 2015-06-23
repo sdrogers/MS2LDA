@@ -199,8 +199,12 @@ class Ms2Lda(object):
     def save_model(self, topic_indices, model_out, words_out):
         self.model.save(topic_indices, model_out, words_out)
         
+    def rank_topics(self, sort_by="h_index", selected_topics=None, top_N=None):
+        plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdf)
+        return plotter.rank_topics(sort_by=sort_by, selected_topics=selected_topics, top_N=top_N)
+        
     def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", selected_topics=None):
-        plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdfs)
+        plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdf)
         plotter.plot_lda_fragments(consistency=0.50, sort_by=sort_by, selected_topics=selected_topics)         
         
     def _natural_sort(self, l): 
@@ -241,8 +245,8 @@ def test_lda():
     df, vocab = ms2lda.preprocess()    
     ms2lda.run_lda(df, vocab, n_topics, n_samples, n_burn, n_thin, 
                    alpha, beta, use_own_model=True, use_native=True)
-#     ms2lda.write_results('beer3pos')
-#     ms2lda.plot_lda_fragments(consistency=0.50)
+    ms2lda.write_results('beer3pos')
+    ms2lda.plot_lda_fragments(consistency=0.50)
 
 # 
 #     # save some topics from beer3pos lda
