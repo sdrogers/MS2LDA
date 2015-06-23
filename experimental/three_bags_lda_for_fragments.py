@@ -4,12 +4,12 @@ import timeit
 from pandas.core.frame import DataFrame
 from scipy.sparse import coo_matrix
 
-from lda_for_fragments import Ms2Lda
+from justin.experimental.three_bags_lda_for_fragments_viz import ThreeBags_Ms2Lda_Viz
+from justin.lda_for_fragments import Ms2Lda
 from lda_nbags_cgs import CollapseGibbs_nbags_Lda
 import numpy as np
 import pandas as pd
 import pylab as plt
-from visualisation.pylab.three_bags_lda_for_fragments_viz import ThreeBags_Ms2Lda_Viz
 
 
 class ThreeBags_Ms2Lda(Ms2Lda):
@@ -187,18 +187,18 @@ def test_lda():
         n_topics = int(sys.argv[1])
     else:
         n_topics = 125
-    n_samples = 100
+    n_samples = 10
     n_burn = 0
     n_thin = 1
     alpha = 50.0/n_topics
     beta = 0.1
 
     relative_intensity = True
-    fragment_filename = 'input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
-    neutral_loss_filename = 'input/relative_intensities/Beer_3_T10_POS_losses_rel.csv'
-    mzdiff_filename = 'input/relative_intensities/Beer_3_T10_POS_mzdiffs_rel.csv'    
-    ms1_filename = 'input/relative_intensities/Beer_3_T10_POS_ms1_rel.csv'
-    ms2_filename = 'input/relative_intensities/Beer_3_T10_POS_ms2_rel.csv'
+    fragment_filename = '../input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
+    neutral_loss_filename = '../input/relative_intensities/Beer_3_T10_POS_losses_rel.csv'
+    mzdiff_filename = '../input/relative_intensities/Beer_3_T10_POS_mzdiffs_rel.csv'    
+    ms1_filename = '../input/relative_intensities/Beer_3_T10_POS_ms1_rel.csv'
+    ms2_filename = '../input/relative_intensities/Beer_3_T10_POS_ms2_rel.csv'
  
     ms2lda = ThreeBags_Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename, 
                 ms1_filename, ms2_filename, relative_intensity)    

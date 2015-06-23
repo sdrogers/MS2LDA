@@ -1,6 +1,6 @@
 """
 An implementation of a collapsed Gibbs sampling for Latent Dirichlet Allocation [1]
-but with n-bags of words for each topic
+but with n-bags of words for each word type
 
 [1] Blei, David M., Andrew Y. Ng, and Michael I. Jordan. "Latent dirichlet allocation." 
 the Journal of machine Learning research 3 (2003): 993-1022.
@@ -8,20 +8,19 @@ the Journal of machine Learning research 3 (2003): 993-1022.
 """
 
 import cPickle
-from collections import namedtuple, OrderedDict
 import sys
 import time
 
 from numpy import int64
 from numpy.random import RandomState
 
+from justin.lda_generate_data import LdaDataGenerator
+import justin.lda_utils as utils
 from lda_bag_of_words import BagOfWord
-from lda_generate_data import LdaDataGenerator
-import lda_utils as utils
+from lda_nbags_cgs_numpy import sample_numpy
 import numpy as np
 import pylab as plt
 
-from lda_nbags_cgs_numpy import sample_numpy
 
 class CollapseGibbs_nbags_Lda(object):
     
