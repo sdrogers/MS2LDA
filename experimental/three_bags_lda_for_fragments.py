@@ -4,7 +4,7 @@ import timeit
 from pandas.core.frame import DataFrame
 from scipy.sparse import coo_matrix
 
-from justin.experimental.three_bags_lda_for_fragments_viz import ThreeBags_Ms2Lda_Viz
+from three_bags_lda_for_fragments_viz import ThreeBags_Ms2Lda_Viz
 from justin.lda_for_fragments import Ms2Lda
 from lda_nbags_cgs import CollapseGibbs_nbags_Lda
 import numpy as np
@@ -20,10 +20,14 @@ class ThreeBags_Ms2Lda(Ms2Lda):
         self.ms2['loss_bin_id'] = self.ms2['loss_bin_id'].astype(str)
 
         # discretise the fragment and neutral loss intensities values by converting it to 0 .. 100
-        # values are already normalised from 0 .. 1 during feature extraction
         self.fragment_data *= 100
         self.neutral_loss_data *= 100
+        
+        # make mzdiff values to be within 0 .. 100 as well
+        max_mzdiff_count = self.mzdiff_data.max().max()
+        self.mzdiff_data /= max_mzdiff_count
         self.mzdiff_data *= 100
+        
         self.data = self.fragment_data.append(self.neutral_loss_data)
         self.data = self.data.append(self.mzdiff_data)
                 

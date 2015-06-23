@@ -71,6 +71,7 @@ class CrossValidatorLda:
                 doc_marg = ldae_is_variants(words, topics, topic_prior, 
                                          num_samples=is_num_samples, variant=3, variant_iters=is_iters)
                 print "\td = " + str(d) + " doc_marg=" + str(doc_marg)
+                sys.stdout.flush()                
                 marg += doc_marg              
                 n_words += len(words)
 
