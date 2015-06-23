@@ -241,8 +241,8 @@ def test_lda():
     df, vocab = ms2lda.preprocess()    
     ms2lda.run_lda(df, vocab, n_topics, n_samples, n_burn, n_thin, 
                    alpha, beta, use_own_model=True, use_native=True)
-    ms2lda.write_results('beer3pos')
-    ms2lda.plot_lda_fragments(consistency=0.50)
+#     ms2lda.write_results('beer3pos')
+#     ms2lda.plot_lda_fragments(consistency=0.50)
 
 # 
 #     # save some topics from beer3pos lda

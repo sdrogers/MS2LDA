@@ -11,9 +11,6 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
             alpha, beta, 
             Z, cdk, cd, previous_K,
             ckn, ck, previous_ckn, previous_ck):
-
-    all_lls = []
-    thin = 0
     
     # prepare some K-length vectors to hold the intermediate results during loop
     post = np.empty(K, dtype=np.float64)
@@ -23,7 +20,39 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
     N_beta = N * beta
     K_alpha = K * alpha    
 
+    # prepare the input matrices
+    print "Preparing words"
+    all_d = []
+    all_pos = []
+    all_n = []
+    total_words = 0
+    max_pos = 0
+    for d in range(D):
+        word_locs = document_indices[d]
+        for pos, n in word_locs:
+            total_words += 1
+            all_d.append(d)
+            all_pos.append(pos)
+            all_n.append(n)
+            if pos > max_pos:
+                max_pos = pos
+    all_d = np.array(all_d, dtype=np.int64)
+    all_pos = np.array(all_pos, dtype=np.int64)
+    all_n = np.array(all_n, dtype=np.int64)
+
+    print "Preparing Z matrix"    
+    Z_mat = np.empty((D, max_pos+1), dtype=np.int64)
+    for d in range(D):
+        word_locs = document_indices[d]
+        for pos, n in word_locs:
+            k = Z[(d, pos)]
+            Z_mat[d, pos] = k
+    
+    print "DONE"
+
     # loop over samples
+    all_lls = []
+    thin = 0
     for samp in range(n_samples):
     
         s = samp+1        
@@ -32,29 +61,17 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
         else:
             print("Burn-in " + str(s) + " "),
 
-        # loop over documents
-        for d in range(D):
-
-            if d%10==0:                        
-                sys.stdout.write('.')
-                sys.stdout.flush()
-
-            # loop over words, not so easy to JIT due to rng and Z
-            word_locs = document_indices[d]
-            for pos, n in word_locs:
-                random_number = random_state.rand()                
-                k = Z[(d, pos)]                
-                k = _nb_get_new_index(d, n, k, cdk, cd, 
-                                      N, K, previous_K, alpha, beta, 
-                                      N_beta, K_alpha,
-                                      post, cumsum, random_number,
-                                      ckn, ck, previous_ckn, previous_ck)
-                Z[(d, pos)] = k
-
+        all_random = random_state.rand(total_words)
+        ll = _nb_do_sampling(s, n_burn, total_words, all_d, all_pos, all_n, all_random, Z_mat,
+                          cdk, cd, 
+                          D, N, K, previous_K, alpha, beta, 
+                          N_beta, K_alpha,                      
+                          post, cumsum,
+                          ckn, ck, previous_ckn, previous_ck)
+            
         if s > n_burn:
             thin += 1
             if thin%n_thin==0:    
-                ll = _nb_ll(D, N, K, alpha, beta, cdk, cd, ckn, ck)
                 all_lls.append(ll)      
                 print(" Log joint likelihood = %.3f " % ll)                        
             else:                
@@ -178,4 +195,35 @@ def _nb_ll(D, N, K, alpha, beta, cdk, cd, ckn, ck):
             ll += math.lgamma(cdk[d, k]+alpha)
         ll -= math.lgamma(cd[d] + K*alpha)                
     
+    return ll
+
+@jit(nopython=True)   
+def _nb_do_sampling(s, n_burn, total_words, all_d, all_pos, all_n, all_random, Z_mat,
+                      cdk, cd, 
+                      D, N, K, previous_K, alpha, beta, 
+                      N_beta, K_alpha,                      
+                      post, cumsum,
+                      ckn, ck, previous_ckn, previous_ck):
+    
+    # loop over documents and all words in the document
+    for w in range(total_words):
+        
+        d = all_d[w]
+        pos = all_pos[w]
+        n = all_n[w]
+        random_number = all_random[w]
+    
+        # assign new k
+        k = Z_mat[d, pos]         
+        k = _nb_get_new_index(d, n, k, cdk, cd, 
+                              N, K, previous_K, alpha, beta, 
+                              N_beta, K_alpha,
+                              post, cumsum, random_number,
+                              ckn, ck, previous_ckn, previous_ck)
+        Z_mat[d, pos] = k
+
+    ll = 0
+    if s > n_burn:    
+        ll = _nb_ll(D, N, K, alpha, beta, cdk, cd, ckn, ck)                
+
     return ll

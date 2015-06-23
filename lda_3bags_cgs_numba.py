@@ -17,9 +17,6 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
             alpha, beta, 
             Z, cdk, cd, previous_K, 
             bag_indices, bags):
-
-    all_lls = []
-    thin = 0
     
     # prepare some K-length vectors to hold the intermediate results during loop
     post = np.empty(K, dtype=np.float64)
@@ -71,6 +68,7 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
 
     # loop over samples
     all_lls = []
+    thin = 0
     for samp in range(n_samples):
 
         s = samp+1        

@@ -22,7 +22,6 @@ import numpy as np
 import pylab as plt
 
 from lda_nbags_cgs_numpy import sample_numpy
-from lda_3bags_cgs_numba import sample_numba
 
 class CollapseGibbs_nbags_Lda(object):
     
@@ -190,11 +189,18 @@ class CollapseGibbs_nbags_Lda(object):
             # not quite sure how to write a generic numba version for any number of bags ...
             if (len(self.bag_indices)==3):
                 print "Using Numba for 3-bags LDA sampling"
-                sampler_func = sample_numba
+                from lda_3bags_cgs_numba import sample_numba
+            elif (len(self.bag.indices)==2):
+                print "Using Numba for 2-bags LDA sampling"
+                from lda_2bags_cgs_numba import sample_numba                
+            elif (len(self.bag.indices)==1):
+                print "Using Numba for 1-bag LDA sampling"
+                from lda_1bags_cgs_numba import sample_numba                            
             else:
                 # fallback to the numpy version for now
                 print "FALLBACK to using Numpy for q-bags LDA sampling"                
                 sampler_func = sample_numpy
+            sampler_func = sample_numba
 
         # this will modify the various count matrices (Z, cdk, ckn, cd, ck) inside
         self.topic_word_, self.doc_topic_, self.loglikelihoods_ = sampler_func(
