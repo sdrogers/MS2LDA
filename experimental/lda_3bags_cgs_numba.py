@@ -1,21 +1,18 @@
 import math
 
-import numba as nb
 from numba import jit
-from numba.types import int64, float64
+from numba.types import int32, float64
 
 import numpy as np
 
-bag_of_word_dtype = np.dtype([('bag1', np.int64),
-                 ('bag2', np.int64),
-                 ('bag3', np.int64)])
-numba_bag_of_word_dtype = nb.from_dtype(bag_of_word_dtype)
-
+from lda_3bags_model import numba_bag_of_word_dtype
+    
 def sample_numba(random_state, n_burn, n_samples, n_thin, 
-            D, N, K, document_indices, vocab_type,
+            D, N, K, document_indices, 
             alpha, beta, 
-            Z, cdk, cd, previous_K, 
-            bag_indices, bags):
+            Z, cdk, cd, previous_K,
+            ckn, ck, previous_ckn, previous_ck, 
+            vocab_type, bag_labels):      
     
     # prepare some K-length vectors to hold the intermediate results during loop
     post = np.empty(K, dtype=np.float64)
@@ -24,15 +21,6 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
     # precompute repeated constants
     N_beta = N * beta
     K_alpha = K * alpha    
-
-    # each of this is a structured array of type bag_of_word
-    ckn = np.zeros_like(bags[0].ckn, dtype=bag_of_word_dtype)
-    ck = np.zeros_like(bags[0].ck, dtype=bag_of_word_dtype)
-    previous_ckn = np.zeros_like(bags[0].previous_ckn, dtype=bag_of_word_dtype)
-    previous_ck = np.zeros_like(bags[0].previous_ck, dtype=bag_of_word_dtype)
-
-    # transfer the counts from the bags to the structured arrays
-    _populate_count_matrices(bags, ckn, ck, previous_ckn, previous_ck)    
     
     # prepare the input matrices
     print "Preparing words"
@@ -50,13 +38,13 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
             all_n.append(n)
             if pos > max_pos:
                 max_pos = pos
-    all_d = np.array(all_d, dtype=np.int64)
-    all_pos = np.array(all_pos, dtype=np.int64)
-    all_n = np.array(all_n, dtype=np.int64)
+    all_d = np.array(all_d, dtype=np.int32)
+    all_pos = np.array(all_pos, dtype=np.int32)
+    all_n = np.array(all_n, dtype=np.int32)
     vocab_type = np.array(vocab_type, dtype=np.int)
     
     print "Preparing Z matrix"    
-    Z_mat = np.empty((D, max_pos+1), dtype=np.int64)
+    Z_mat = np.empty((D, max_pos+1), dtype=np.int32)
     for d in range(D):
         word_locs = document_indices[d]
         for pos, n in word_locs:
@@ -94,13 +82,13 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
             print
                 
     # update phi
-    phi1 = ckn['bag1'] + beta[0]
-    phi1 /= np.sum(phi1, axis=1)[:, np.newaxis]
-    phi2 = ckn['bag2'] + beta[1]
-    phi2 /= np.sum(phi2, axis=1)[:, np.newaxis]
-    phi3 = ckn['bag3'] + beta[2]
-    phi3 /= np.sum(phi3, axis=1)[:, np.newaxis]
-    phis = [phi1, phi2, phi3]
+    phis = []
+    for bi in range(len(bag_labels)):  
+        bag_label = bag_labels[bi]         
+        bag_ckn = ckn[bag_label]
+        phi = bag_ckn + beta[bi]
+        phi /= np.sum(phi, axis=1)[:, np.newaxis]
+        phis.append(phi)
 
     # update theta
     theta = cdk + alpha 
@@ -109,25 +97,11 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
     all_lls = np.array(all_lls)            
     return phis, theta, all_lls
 
-def _populate_count_matrices(bags, ckn, ck, previous_ckn, previous_ck):
-    ckn['bag1'] = bags[0].ckn
-    ckn['bag2'] = bags[1].ckn
-    ckn['bag3'] = bags[2].ckn
-    ck['bag1'] = bags[0].ck
-    ck['bag2'] = bags[1].ck
-    ck['bag3'] = bags[2].ck
-    previous_ckn['bag1'] = bags[0].previous_ckn
-    previous_ckn['bag2'] = bags[1].previous_ckn
-    previous_ckn['bag3'] = bags[2].previous_ckn
-    previous_ck['bag1'] = bags[0].previous_ck
-    previous_ck['bag2'] = bags[1].previous_ck
-    previous_ck['bag3'] = bags[2].previous_ck
-
-@jit(int64(
-           int64, int64, int64, int64[:, :], int64[:], 
-           int64, int64, int64, float64, float64[:],
+@jit(int32(
+           int32, int32, int32, int32[:, :], int32[:], 
+           int32, int32, int32, float64, float64[:],
            float64[:], float64,
-           float64[:], float64[:], float64, int64,
+           float64[:], float64[:], float64, int32,
            numba_bag_of_word_dtype[:, :], numba_bag_of_word_dtype[:], numba_bag_of_word_dtype[:, :], numba_bag_of_word_dtype[:]
 ), nopython=True)
 def _nb_get_new_index(d, n, k, cdk, cd, 
@@ -232,7 +206,7 @@ def _nb_get_new_index(d, n, k, cdk, cd,
     
     return k
 
-@jit(float64(int64, int64, float64, int64[:, :], int64[:]), nopython=True)
+@jit(float64(int32, int32, float64, int32[:, :], int32[:]), nopython=True)
 def _nb_p_w_z(N, K, beta, ckn, ck):
     ll = K * ( math.lgamma(N*beta) - (math.lgamma(beta)*N) )
     for k in range(K):
@@ -241,7 +215,7 @@ def _nb_p_w_z(N, K, beta, ckn, ck):
         ll -= math.lgamma(ck[k] + N*beta)
     return ll
 
-@jit(float64(int64, int64, float64, int64[:, :], int64[:]), nopython=True)
+@jit(float64(int32, int32, float64, int32[:, :], int32[:]), nopython=True)
 def _nb_p_z(D, K, alpha, cdk, cd):
     ll = D * ( math.lgamma(K*alpha) - (math.lgamma(alpha)*K) )
     for d in range(D):
@@ -250,9 +224,9 @@ def _nb_p_z(D, K, alpha, cdk, cd):
         ll -= math.lgamma(cd[d] + K*alpha)
     return ll
   
-# @jit(int64(int64, int64, int64, int64, int64[:], int64[:], int64[:], float64[:, :], int64[:, :], int64[:], int64[:],
-#            int64[:, :], int64[:], 
-#            int64, int64, int64, int64, float64, float64[:],
+# @jit(int32(int32, int32, int32, int32, int32[:], int32[:], int32[:], float64[:, :], int32[:, :], int32[:], int32[:],
+#            int32[:, :], int32[:], 
+#            int32, int32, int32, int32, float64, float64[:],
 #            float64[:], float64,
 #            float64[:], float64[:],
 #            numba_bag_of_word_dtype[:, :], numba_bag_of_word_dtype[:], numba_bag_of_word_dtype[:, :], numba_bag_of_word_dtype[:]

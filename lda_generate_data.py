@@ -52,7 +52,8 @@ class LdaDataGenerator:
         
         def generate_input_df(self, n_topics, vocab_size, document_length, n_docs, 
                               previous_vocab=None, vocab_prefix=None, 
-                              df_outfile=None, vocab_outfile=None):
+                              df_outfile=None, vocab_outfile=None, 
+                              n_bags=1):
                         
             print "Generating input DF"
                         
@@ -94,9 +95,13 @@ class LdaDataGenerator:
                     word = "word_" + str(n)
                 else:
                     word = vocab_prefix + "_word_" + str(n)
-                word_type = np.random.randint(3)
-                tup = (word, word_type)
-                vocab.append(tup)
+                # if more than one bag, then initialise word type too
+                if n_bags > 1:
+                    word_type = np.random.randint(n_bags)
+                    tup = (word, word_type)
+                    vocab.append(tup)
+                else:
+                    vocab.append(word)
             
             # save to txt
             vocab = np.array(vocab)

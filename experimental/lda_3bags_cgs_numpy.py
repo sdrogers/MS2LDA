@@ -6,10 +6,11 @@ import numpy as np
 
 
 def sample_numpy(random_state, n_burn, n_samples, n_thin, 
-            D, N, K, document_indices, vocab_type,
+            D, N, K, document_indices, 
             alpha, beta, 
-            Z, cdk, cd, previous_K, 
-            bag_indices, bags):
+            Z, cdk, cd, previous_K,
+            ckn, ck, previous_ckn, previous_ck, 
+            vocab_type, bag_labels):    
 
     all_lls = []
     thin = 0
@@ -33,13 +34,16 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
             for pos, n in word_locs:
                 
                 b = vocab_type[n]
+                initial_bag_label = bag_labels[b]
                 
                 # remove word from model
                 k = Z[(d, pos)]
                 cdk[d, k] -= 1
                 cd[d] -= 1    
-                bags[b].ckn[k, n] -= 1
-                bags[b].ck[k] -= 1
+                bag_ckn = ckn[initial_bag_label]
+                bag_ck = ck[initial_bag_label]
+                bag_ckn[k, n] -= 1
+                bag_ck[k] -= 1
 
                 log_prior = np.log(cdk[d, :] + alpha) - np.log(cd[d] + K_alpha)
                 log_likelihood = np.zeros_like(log_prior)
@@ -47,17 +51,26 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                 if previous_K == 0:
 
                     # for training
-                    for bi in bag_indices:
-                        log_likelihood += np.log(bags[bi].ckn[:, n] + beta[bi]) - np.log(bags[bi].ck + N_beta[bi])
+                    for bi in range(len(bag_labels)):
+                        bag_label = bag_labels[bi]
+                        bag_ckn = ckn[bag_label]
+                        bag_ck = ck[bag_label]
+                        log_likelihood += np.log(bag_ckn[:, n] + beta[bi]) - np.log(bag_ck + N_beta[bi])
                                 
                 else:
                     
                     log_likelihood = 0
-                    for bi in bag_indices:
+                    for bi in range(len(bag_labels)):
+
+                        bag_label = bag_labels[bi]
+                        bag_previous_ckn = previous_ckn[bag_label]
+                        bag_previous_ck = previous_ck[bag_label]
+                        bag_ckn = ckn[bag_label]
+                        bag_ck = ck[bag_label]
                     
                         # for testing on unseen data
-                        log_likelihood_previous = np.log(bags[bi].previous_ckn[:, n] + beta[bi]) - np.log(bags[bi].previous_ck + N_beta[bi])
-                        log_likelihood_current = np.log(bags[bi].ckn[:, n] + beta[bi]) - np.log(bags[bi].ck + N_beta[bi])    
+                        log_likelihood_previous = np.log(bag_previous_ckn[:, n] + beta[bi]) - np.log(bag_previous_ck + N_beta[bi])
+                        log_likelihood_current = np.log(bag_ckn[:, n] + beta[bi]) - np.log(bag_ck + N_beta[bi])    
     
                         # The combined likelihood from previous and current
                         log_likelihood = log_likelihood_previous + log_likelihood_current
@@ -84,8 +97,10 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                 # reassign word back into model
                 cdk[d, k] += 1
                 cd[d] += 1
-                bags[b].ckn[k, n] += 1
-                bags[b].ck[k] += 1
+                bag_ckn = ckn[initial_bag_label]
+                bag_ck = ck[initial_bag_label]
+                bag_ckn[k, n] += 1
+                bag_ck[k] += 1
                 Z[(d, pos)] = k
 
         if s > n_burn:
@@ -94,11 +109,12 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
             if thin%n_thin==0:    
                 
                 ll = 0
-                for bi in bag_indices:
-                    ckn = bags[bi].ckn
-                    ck = bags[bi].ck
+                for bi in range(len(bag_labels)):
+                    bag_label = bag_labels[bi]
+                    bag_ckn = ckn[bag_label]
+                    bag_ck = ck[bag_label]
                     beta_bi = beta[bi]
-                    ll += p_w_z(N, K, beta_bi, ckn, ck)
+                    ll += p_w_z(N, K, beta_bi, bag_ckn, bag_ck)
                 ll += p_z(D, K, alpha, cdk, cd)                  
                 all_lls.append(ll)      
                 print(" Log joint likelihood = %.3f " % ll)                                          
@@ -111,8 +127,10 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
 
     # update phi
     phis = []
-    for bi in bag_indices:            
-        phi = bags[bi].ckn + beta[bi]
+    for bi in range(len(bag_labels)):  
+        bag_label = bag_labels[bi]         
+        bag_ckn = ckn[bag_label]
+        phi = bag_ckn + beta[bi]
         phi /= np.sum(phi, axis=1)[:, np.newaxis]
         phis.append(phi)
         
@@ -121,7 +139,6 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
     theta /= np.sum(theta, axis=1)[:, np.newaxis]
 
     all_lls = np.array(all_lls)
-
     return phis, theta, all_lls
 
 def p_w_z(N, K, beta, ckn, ck):

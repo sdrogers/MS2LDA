@@ -25,12 +25,10 @@ class Ms2Lda(object):
     def __init__(self, fragment_filename, neutral_loss_filename, mzdiff_filename, 
                  ms1_filename, ms2_filename, relative_intensity=True):
         
-        self.fragment_data = pd.read_csv(fragment_filename, index_col=0)
-        self.neutral_loss_data = pd.read_csv(neutral_loss_filename, index_col=0)
-        if mzdiff_filename is not None:
-            self.mzdiff_data = pd.read_csv(mzdiff_filename, index_col=0)
-        else:
-            self.mzdiff_data = None
+        self.fragment_data = self._load_dataframe(fragment_filename)
+        self.neutral_loss_data = self._load_dataframe(neutral_loss_filename)
+        self.mzdiff_data = self._load_dataframe(mzdiff_filename)
+
         self.ms1 = pd.read_csv(ms1_filename, index_col=0)
         self.ms2 = pd.read_csv(ms2_filename, index_col=0)
         self.relative_intensity = relative_intensity
@@ -212,6 +210,12 @@ class Ms2Lda(object):
         alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
         return sorted(l, key = alphanum_key)
     
+    def _load_dataframe(self, filename):
+        loaded_df = None
+        if filename is not None:
+            loaded_df = pd.read_csv(filename, index_col=0)
+        return loaded_df
+    
     def _get_outfile(self, results_prefix, doctype):
         parent_dir = 'results/' + results_prefix
         outfile = parent_dir + '/' + results_prefix + doctype
@@ -225,11 +229,11 @@ def test_lda():
         n_topics = int(sys.argv[1])
     else:
         n_topics = 125
-    n_samples = 20
+    n_samples = 200
     n_burn = 0
     n_thin = 1
-    alpha = 0.1
-    beta = 0.01
+    alpha = 50.0/n_topics
+    beta = 0.1
 
     # train on beer3pos
     

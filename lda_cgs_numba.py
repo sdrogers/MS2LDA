@@ -2,7 +2,7 @@ import math
 import sys
 
 from numba import jit
-from numba.types import int64, float64
+from numba.types import int32, float64
 
 import numpy as np
 
@@ -36,12 +36,12 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
             all_n.append(n)
             if pos > max_pos:
                 max_pos = pos
-    all_d = np.array(all_d, dtype=np.int64)
-    all_pos = np.array(all_pos, dtype=np.int64)
-    all_n = np.array(all_n, dtype=np.int64)
+    all_d = np.array(all_d, dtype=np.int32)
+    all_pos = np.array(all_pos, dtype=np.int32)
+    all_n = np.array(all_n, dtype=np.int32)
 
     print "Preparing Z matrix"    
-    Z_mat = np.empty((D, max_pos+1), dtype=np.int64)
+    Z_mat = np.empty((D, max_pos+1), dtype=np.int32)
     for d in range(D):
         word_locs = document_indices[d]
         for pos, n in word_locs:
@@ -90,12 +90,12 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
     all_lls = np.array(all_lls)            
     return phi, theta, all_lls
 
-@jit(int64(
-           int64, int64, int64, int64[:, :], int64[:], 
-           int64, int64, int64, float64, float64,
+@jit(int32(
+           int32, int32, int32, int32[:, :], int32[:], 
+           int32, int32, int32, float64, float64,
            float64, float64,
            float64[:], float64[:], float64,
-           int64[:, :], int64[:], int64[:, :], int64[:]
+           int32[:, :], int32[:], int32[:, :], int32[:]
 ), nopython=True)
 def _nb_get_new_index(d, n, k, cdk, cd, 
                       N, K, previous_K, alpha, beta, 
@@ -182,7 +182,7 @@ def _nb_get_new_index(d, n, k, cdk, cd,
     
     return k
 
-@jit(float64(int64, int64, int64, float64, float64, int64[:, :], int64[:], int64[:, :], int64[:]), nopython=True)
+@jit(float64(int32, int32, int32, float64, float64, int32[:, :], int32[:], int32[:, :], int32[:]), nopython=True)
 def _nb_ll(D, N, K, alpha, beta, cdk, cd, ckn, ck):
     ll = K * ( math.lgamma(N*beta) - (math.lgamma(beta)*N) )
     for k in range(K):

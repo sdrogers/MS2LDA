@@ -6,7 +6,7 @@ from scipy.sparse import coo_matrix
 
 from three_bags_lda_for_fragments_viz import ThreeBags_Ms2Lda_Viz
 from justin.lda_for_fragments import Ms2Lda
-from lda_nbags_cgs import CollapseGibbs_nbags_Lda
+from lda_3bags_cgs import CollapseGibbs_3bags_Lda
 import numpy as np
 import pandas as pd
 import pylab as plt
@@ -19,18 +19,24 @@ class ThreeBags_Ms2Lda(Ms2Lda):
         self.ms2['fragment_bin_id'] = self.ms2['fragment_bin_id'].astype(str)
         self.ms2['loss_bin_id'] = self.ms2['loss_bin_id'].astype(str)
 
+        self.data = pd.DataFrame()
+
         # discretise the fragment and neutral loss intensities values by converting it to 0 .. 100
-        self.fragment_data *= 100
-        self.neutral_loss_data *= 100
+        if self.fragment_data is not None:
+            self.fragment_data *= 100
+            self.data = self.data.append(self.fragment_data)
+        
+        if self.neutral_loss_data is not None:
+            self.neutral_loss_data *= 100
+            self.data = self.data.append(self.neutral_loss_data)
         
         # make mzdiff values to be within 0 .. 100 as well
-        max_mzdiff_count = self.mzdiff_data.max().max()
-        self.mzdiff_data /= max_mzdiff_count
-        self.mzdiff_data *= 100
+        if self.mzdiff_data is not None:
+            max_mzdiff_count = self.mzdiff_data.max().max()
+            self.mzdiff_data /= max_mzdiff_count
+            self.mzdiff_data *= 100
+            self.data = self.data.append(self.mzdiff_data)            
         
-        self.data = self.fragment_data.append(self.neutral_loss_data)
-        self.data = self.data.append(self.mzdiff_data)
-                
         # get rid of NaNs, transpose the data and floor it
         self.data = self.data.replace(np.nan,0)
         self.data = self.data.transpose()
@@ -64,7 +70,7 @@ class ThreeBags_Ms2Lda(Ms2Lda):
         print "Fitting model..."
         self.n_topics = n_topics
         sys.stdout.flush()
-        self.model = CollapseGibbs_nbags_Lda(df, vocab, n_topics, alpha, beta, previous_model=previous_model)
+        self.model = CollapseGibbs_3bags_Lda(df, vocab, n_topics, alpha, beta, previous_model=previous_model)
         self.n_topics = self.model.K # might change if previous_model is used
         start = timeit.default_timer()
         self.model.run(n_burn, n_samples, n_thin, use_native=use_native)
@@ -191,7 +197,7 @@ def test_lda():
         n_topics = int(sys.argv[1])
     else:
         n_topics = 125
-    n_samples = 10
+    n_samples = 200
     n_burn = 0
     n_thin = 1
     alpha = 50.0/n_topics
@@ -201,6 +207,8 @@ def test_lda():
     fragment_filename = '../input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
     neutral_loss_filename = '../input/relative_intensities/Beer_3_T10_POS_losses_rel.csv'
     mzdiff_filename = '../input/relative_intensities/Beer_3_T10_POS_mzdiffs_rel.csv'    
+    # mzdiff_filename = None
+
     ms1_filename = '../input/relative_intensities/Beer_3_T10_POS_ms1_rel.csv'
     ms2_filename = '../input/relative_intensities/Beer_3_T10_POS_ms2_rel.csv'
  
