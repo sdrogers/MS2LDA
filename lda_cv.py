@@ -98,8 +98,8 @@ class CrossValidatorLda:
 def run_cv(df, vocab, k, alpha, beta):    
 
     cv = CrossValidatorLda(df, vocab, k, alpha, beta)
-    cv.cross_validate_is(n_folds=4, n_burn=100, n_samples=200, n_thin=5, 
-                         is_num_samples=1000, is_iters=1)
+    cv.cross_validate_is(n_folds=4, n_burn=0, n_samples=200, n_thin=1, 
+                         is_num_samples=1000, is_iters=1000)
     
     res = Cv_Results(cv.mean_margs, cv.mean_perplexities)
     return res
@@ -170,7 +170,7 @@ def run_beer3():
     n_thin = 1
     alpha = 50.0/K
     beta = 0.1
-    is_num_samples = 10000
+    is_num_samples = 1000
     is_iters = 1000
      
     relative_intensity = True
@@ -204,7 +204,7 @@ def run_urine37():
     n_thin = 1
     alpha = 50.0/K
     beta = 0.1
-    is_num_samples = 10000
+    is_num_samples = 1000
     is_iters = 1000
      
     relative_intensity = True

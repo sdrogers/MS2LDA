@@ -1,26 +1,26 @@
 import timeit
 
 from numba.decorators import jit
-from numba.types import int64
+from numba.types import int32, float64
 from numpy.random import rand
-from scipy.misc import logsumexp
 from scipy.special import gammaln
+from scipy.misc import logsumexp
 
 import numpy as np
 import pylab as plt
 import scipy.io as sio
 
-@jit(int64[:, :](int64, int64[:, :], int64), nopython=True)
+@jit(int32[:, :](int32, int32[:, :], int32), nopython=True)
 def count_member(num_samples, samples, T):
     
-    Nk = np.zeros((T, num_samples), dtype=np.int64) # T x num_samples    
+    Nk = np.zeros((T, num_samples), dtype=np.int32) # T x num_samples    
     for s in range(num_samples):
         
         # temp = np.bincount(samples[:, s], minlength=T)
         # Nk[:, s] = temp
 
         # faster bincount
-        temp = np.zeros(T, dtype=np.int64)
+        temp = np.zeros(T, dtype=np.int32)
         for k in samples[:, s]:
             temp[k] += 1
         for k in range(T):
@@ -59,11 +59,12 @@ def ldae_is_variants(words, topics, topic_prior, num_samples=1000, variant=3, va
                 qq = qstar / np.sum(qstar, 0)
 
     # Drawing samples from the q-distribution
-    samples = np.zeros((Nd, num_samples), dtype=np.int64)
+    samples = np.zeros((Nd, num_samples), dtype=np.int32)
     for n in range(Nd):
         probs = qq[:, n]
-        temp = np.random.multinomial(1, probs, size=num_samples)
-        sampled_idx = np.argmax(temp, axis=1)
+        cs = np.cumsum(probs)
+        random_numbers = np.random.random(num_samples)
+        sampled_idx = np.digitize(random_numbers, cs)
         samples[n, :] = sampled_idx
 
     # Do a bin count for each topic within a sample
@@ -112,7 +113,7 @@ def generate_synthetic():
 
     # make the words
     words = np.floor(rand(Nd) * V)
-    words = words.astype(np.int64)
+    words = words.astype(np.int32)
 
     return words, topics, topic_prior
 
@@ -120,7 +121,7 @@ def generate_from_matlab(matfile):
     mat_contents = sio.loadmat(matfile)
     topic_prior = mat_contents['topic_prior']
     words = mat_contents['words']
-    words = words.astype(np.int64)
+    words = words.astype(np.int32)
     words = words-1 # because matlab indexes from 1 ..
     words = words.flatten()
     topics = mat_contents['topics']
