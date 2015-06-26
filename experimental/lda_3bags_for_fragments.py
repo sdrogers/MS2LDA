@@ -4,7 +4,7 @@ import timeit
 from pandas.core.frame import DataFrame
 from scipy.sparse import coo_matrix
 
-from three_bags_lda_for_fragments_viz import ThreeBags_Ms2Lda_Viz
+from lda_3bags_for_fragments_viz import ThreeBags_Ms2Lda_Viz
 from justin.lda_for_fragments import Ms2Lda
 from lda_3bags_cgs import CollapseGibbs_3bags_Lda
 import numpy as np
@@ -196,7 +196,7 @@ def test_lda():
     if len(sys.argv)>1:
         n_topics = int(sys.argv[1])
     else:
-        n_topics = 125
+        n_topics = 250
     n_samples = 200
     n_burn = 0
     n_thin = 1
@@ -206,8 +206,8 @@ def test_lda():
     relative_intensity = True
     fragment_filename = '../input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
     neutral_loss_filename = '../input/relative_intensities/Beer_3_T10_POS_losses_rel.csv'
-    mzdiff_filename = '../input/relative_intensities/Beer_3_T10_POS_mzdiffs_rel.csv'    
-    # mzdiff_filename = None
+    # mzdiff_filename = '../input/relative_intensities/Beer_3_T10_POS_mzdiffs_rel.csv'    
+    mzdiff_filename = None
 
     ms1_filename = '../input/relative_intensities/Beer_3_T10_POS_ms1_rel.csv'
     ms2_filename = '../input/relative_intensities/Beer_3_T10_POS_ms2_rel.csv'

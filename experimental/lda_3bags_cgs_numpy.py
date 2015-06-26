@@ -59,6 +59,7 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                                 
                 else:
                     
+                    # for testing on unseen data
                     log_likelihood = 0
                     for bi in range(len(bag_labels)):
 
@@ -68,13 +69,18 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                         bag_ckn = ckn[bag_label]
                         bag_ck = ck[bag_label]
                     
-                        # for testing on unseen data
                         log_likelihood_previous = np.log(bag_previous_ckn[:, n] + beta[bi]) - np.log(bag_previous_ck + N_beta[bi])
                         log_likelihood_current = np.log(bag_ckn[:, n] + beta[bi]) - np.log(bag_ck + N_beta[bi])    
-    
-                        # The combined likelihood from previous and current
-                        log_likelihood = log_likelihood_previous + log_likelihood_current
-                                
+
+                        # The combined likelihood: 
+                        # front is from previous topic-word distribution
+                        # back is from current topic-word distribution
+                        # Because of the values from the hyperparameter, we cannot do
+                        # log_likelihood += log_likelihood_previous + log_likelihood_current  
+                        front = log_likelihood_previous[0:previous_K]
+                        back = log_likelihood_current[previous_K:]
+                        log_likelihood += np.hstack((front, back))
+                            
                 # sample new k from the posterior distribution log_post
                 log_post = log_likelihood + log_prior
                 post = np.exp(log_post - log_post.max())

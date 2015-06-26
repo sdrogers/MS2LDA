@@ -53,6 +53,8 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                     # The combined likelihood: 
                     # front is from previous topic-word distribution
                     # back is from current topic-word distribution
+                    # Because of the values from the hyperparameter, we cannot do
+                    # log_likelihood = log_likelihood_previous + log_likelihood_current  
                     front = log_likelihood_previous[0:previous_K]
                     back = log_likelihood_current[previous_K:]
                     log_likelihood = np.hstack((front, back))
