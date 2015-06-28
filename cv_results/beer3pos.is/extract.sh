@@ -1,3 +1,3 @@
 #!/bin/bash
 
-grep 'log_marginal_likelihood' LDA* > results/results.csv
+grep 'log_evidence' LDA* > results.csv

@@ -61,8 +61,8 @@ class CrossValidatorLda:
             # loop over all testing documents
             topics = training_gibbs.topic_word_
             topic_prior = np.ones((self.K, 1))
-            topic_prior = topic_prior * self.alpha
             topic_prior = topic_prior / np.sum(topic_prior)            
+            topic_prior = topic_prior * self.alpha
             marg = 0         
             n_words = 0
             for d in range(testing_df.shape[0]):
@@ -108,10 +108,10 @@ def run_synthetic(parallel=True):
 
     K = 50
     print "Cross-validation for K=" + str(K)
-#     alpha = 50.0/K
-#     beta = 0.1
-    alpha = 0.1
-    beta = 0.01    
+    alpha = 50.0/K
+    beta = 0.1
+#     alpha = 0.1
+#     beta = 0.01    
     n_docs = 200
     vocab_size = 500
     document_length = 50
