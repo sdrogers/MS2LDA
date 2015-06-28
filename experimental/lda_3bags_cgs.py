@@ -230,8 +230,8 @@ class CollapseGibbs_3bags_Lda(object):
         total_words = self.selected_ckn.shape[1]
         all_bags_non_zero_pos = set(range(total_words)) - all_bags_zero_pos
                 
-        all_bags_zero_pos = list(all_bags_zero_pos)
-        all_bags_non_zero_pos = list(all_bags_non_zero_pos)
+        all_bags_zero_pos = sorted(list(all_bags_zero_pos))
+        all_bags_non_zero_pos = sorted(list(all_bags_non_zero_pos))
 
         # delete words with all zeros counts from the matrix
         self.selected_ckn = np.delete(self.selected_ckn, all_bags_zero_pos, 1)
@@ -276,9 +276,9 @@ def main():
     random_state = RandomState(1234567890)
 
     gen = LdaDataGenerator(alpha, make_plot=True)
-#     df, vocab = gen.generate_input_df(n_topics, vocab_size, document_length, n_docs, 
-#                                       previous_vocab=None, vocab_prefix='gibbs1', 
-#                                       df_outfile='input/test1.csv', vocab_outfile='input/test1.words', n_bags=3)
+    df, vocab = gen.generate_input_df(n_topics, vocab_size, document_length, n_docs, 
+                                      previous_vocab=None, vocab_prefix='gibbs1', 
+                                      df_outfile='input/test1.csv', vocab_outfile='input/test1.words', n_bags=3)
     df, vocab = gen.generate_from_file('input/test1.csv', 'input/test1.words')
 
     print "\nUsing own LDA"
