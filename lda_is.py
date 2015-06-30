@@ -50,7 +50,7 @@ def ldae_is_variants(words, topics, topic_prior, num_samples=1000, variant=3, va
         if variant == 3:
             for i in range(variant_iters):
                 # Now create pseudo-counts from qq and recompute qq using them
-                temp = topic_prior[0] + np.sum(qq, 1)
+                temp = topic_prior.flatten() + np.sum(qq, 1)
                 temp = temp[:, None]
                 pseudo_counts = temp - qq
 
