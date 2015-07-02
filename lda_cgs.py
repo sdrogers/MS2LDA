@@ -38,7 +38,6 @@ import numpy as np
 import pandas as pd
 import pylab as plt
 from scipy.special import psi
-from justin.lda_utils import psi_inverse
 
 
 class CollapseGibbsLda:
@@ -158,7 +157,7 @@ class CollapseGibbsLda:
                 word_locs.append((pos, n))
             self.document_indices[d] = word_locs
             
-    def estimate_posterior_alpha(self, n_iter=100):
+    def get_posterior_alpha(self, n_iter=100):
         """
         Estimate posterior alpha of the Dirichlet-Multinomial for doc-topic using the last sample
         see Minka, T. P. (2003). Estimating a Dirichlet distribution. Annals of Physics, 2000(8), 1-13. http://doi.org/10.1007/s00256-007-0299-1
@@ -227,7 +226,7 @@ class CollapseGibbsLda:
                 self.ckn, self.ck, self.previous_ckn, self.previous_ck)
         
         # update posterior alpha from the last sample  
-        self.posterior_alpha = self.estimate_posterior_alpha()   
+        self.posterior_alpha = self.get_posterior_alpha()   
                         
     @classmethod
     def load(cls, filename):
@@ -295,8 +294,7 @@ def main():
     start_time = time.time()
     gibbs1.run(n_burn, n_samples, n_thin, use_native=True)
     print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
-    print 'alpha'
-    print gibbs1.alpha
+    print gibbs1.posterior_alpha
       
 #     # try saving model
 #     selected_topics = [0, 2, 4, 6, 8]
