@@ -38,6 +38,7 @@ import numpy as np
 import pandas as pd
 import pylab as plt
 from scipy.special import psi
+from justin.lda_utils import psi_inverse
 
 
 class CollapseGibbsLda:
@@ -185,17 +186,36 @@ class CollapseGibbsLda:
                 self.Z, self.cdk, self.cd, self.previous_K,
                 self.ckn, self.ck, self.previous_ckn, self.previous_ck)
         
-        # update alpha, see 
-        # - http://stats.stackexchange.com/questions/126268/how-do-you-estimate-alpha-parameter-of-a-latent-dirichlet-allocation-model
-        # - https://gist.github.com/ChangUk/a741e0ccf5737954956e
+        # update alpha, see Minka, T. P. (2003). Estimating a Dirichlet distribution. 
+        # Annals of Physics, 2000(8), 1-13. http://doi.org/10.1007/s00256-007-0299-1
         self.alpha = np.ones(self.K) * self.alpha
-        numerator = 0
-        denominator = 0
-        for d in range(self.D):
-            numerator += psi(self.cdk[d] + self.alpha) - psi(self.alpha)
-            denominator += psi(np.sum(self.cdk[d] + self.alpha)) - psi(np.sum(self.alpha))
-        self.alpha *= numerator / denominator
-        
+        temp = np.log(self.doc_topic_)
+        log_pk = np.sum(temp, axis=0)
+        log_pk /= self.D
+         
+        # initialise old and new alphas before iteration
+        alpha_old = self.alpha
+        alpha_new = np.zeros_like(alpha_old)
+        n_iter = 20
+        for i in range(n_iter):
+
+            # this is for a Dirichlet prior!
+#             psi_sum_alpha_old = psi(np.sum(alpha_old))
+#             for k in range(self.K):
+#                 initial_x = alpha_old[k]
+#                 y = psi_sum_alpha_old+log_pk[k]
+#                 alpha_new[k] = psi_inverse(initial_x, y)
+
+            # this is for Dirichlet-Multinomial
+            numerator = 0
+            denominator = 0
+            for d in range(self.D):
+                numerator += psi(self.cdk[d] + alpha_old) - psi(alpha_old)
+                denominator += psi(np.sum(self.cdk[d] + alpha_old)) - psi(np.sum(alpha_old))
+            alpha_new = alpha_old * (numerator/denominator)
+            alpha_old = alpha_new
+        self.alpha = alpha_new
+                
     @classmethod
     def load(cls, filename):
         f = file(filename, 'rb')
