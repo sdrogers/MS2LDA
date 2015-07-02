@@ -58,11 +58,12 @@ class CrossValidatorLda:
             training_gibbs.run(n_burn, n_samples, n_thin, use_native=True)
             
             print "Run testing importance sampling " + str(testing_df.shape)
-            # loop over all testing documents
             topics = training_gibbs.topic_word_
-            topic_prior = np.ones((self.K, 1))
-            topic_prior = topic_prior / np.sum(topic_prior)            
-            topic_prior = topic_prior * self.K * self.alpha
+            # use posterior alpha instead of prior, this is inferred from the last sample of training_gibbs
+#             topic_prior = np.ones((self.K, 1))
+#             topic_prior = topic_prior / np.sum(topic_prior)            
+#             topic_prior = topic_prior * self.K * self.alpha
+            topic_prior = training_gibbs.posterior_alpha[:, None]
             marg = 0         
             n_words = 0
             for d in range(testing_df.shape[0]):

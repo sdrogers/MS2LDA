@@ -157,6 +157,46 @@ class CollapseGibbsLda:
             for pos, n in enumerate(word_idx):
                 word_locs.append((pos, n))
             self.document_indices[d] = word_locs
+            
+    def estimate_posterior_alpha(self, n_iter=100):
+        """
+        Estimate posterior alpha of the Dirichlet-Multinomial for doc-topic using the last sample
+        see Minka, T. P. (2003). Estimating a Dirichlet distribution. Annals of Physics, 2000(8), 1-13. http://doi.org/10.1007/s00256-007-0299-1
+        """
+         
+        # initialise old and new alphas before iteration
+        alpha_old = np.ones(self.K) * self.alpha
+        alpha_new = np.zeros_like(alpha_old)
+        for i in range(n_iter):
+
+#             # unvectorised version
+#             for k in range(self.K):
+#                  
+#                 # compute numerator
+#                 nik = self.cdk[:, k]
+#                 alpha_k = alpha_old[k]
+#                 numerator = np.sum(psi(nik+alpha_k)-psi(alpha_k))
+#                  
+#                 # compute denumerator
+#                 ni = self.cd
+#                 sum_alpha = np.sum(alpha_old)
+#                 denumerator = np.sum(psi(ni+sum_alpha)-psi(sum_alpha))
+#                  
+#                 # compute new alpha[k]
+#                 alpha_new[k] = alpha_old[k] * (numerator/denumerator)
+
+            # nicely vectorised
+            numerator = 0
+            denominator = 0
+            for d in range(self.D):
+                numerator += psi(self.cdk[d] + alpha_old) - psi(alpha_old)
+                denominator += psi(np.sum(self.cdk[d] + alpha_old)) - psi(np.sum(alpha_old))
+            alpha_new = alpha_old * (numerator/denominator)
+            
+            # set alpha_new to alpha_old for the next iteration update
+            alpha_old = alpha_new  
+
+        return alpha_new
                                                     
     def run(self, n_burn, n_samples, n_thin, use_native=False):
         """ 
@@ -186,36 +226,9 @@ class CollapseGibbsLda:
                 self.Z, self.cdk, self.cd, self.previous_K,
                 self.ckn, self.ck, self.previous_ckn, self.previous_ck)
         
-        # update alpha, see Minka, T. P. (2003). Estimating a Dirichlet distribution. 
-        # Annals of Physics, 2000(8), 1-13. http://doi.org/10.1007/s00256-007-0299-1
-        self.alpha = np.ones(self.K) * self.alpha
-        temp = np.log(self.doc_topic_)
-        log_pk = np.sum(temp, axis=0)
-        log_pk /= self.D
-         
-        # initialise old and new alphas before iteration
-        alpha_old = self.alpha
-        alpha_new = np.zeros_like(alpha_old)
-        n_iter = 20
-        for i in range(n_iter):
-
-            # this is for a Dirichlet prior!
-#             psi_sum_alpha_old = psi(np.sum(alpha_old))
-#             for k in range(self.K):
-#                 initial_x = alpha_old[k]
-#                 y = psi_sum_alpha_old+log_pk[k]
-#                 alpha_new[k] = psi_inverse(initial_x, y)
-
-            # this is for Dirichlet-Multinomial
-            numerator = 0
-            denominator = 0
-            for d in range(self.D):
-                numerator += psi(self.cdk[d] + alpha_old) - psi(alpha_old)
-                denominator += psi(np.sum(self.cdk[d] + alpha_old)) - psi(np.sum(alpha_old))
-            alpha_new = alpha_old * (numerator/denominator)
-            alpha_old = alpha_new
-        self.alpha = alpha_new
-                
+        # update posterior alpha from the last sample  
+        self.posterior_alpha = self.estimate_posterior_alpha()   
+                        
     @classmethod
     def load(cls, filename):
         f = file(filename, 'rb')
@@ -255,21 +268,6 @@ class CollapseGibbsLda:
             for item in self.selected_vocab:
                 f.write("{}\n".format(item))                
         print "Words written to " + words_out            
-
-    def plot_topic_distributions(self, pred_topic):
-                
-        ind = np.arange(self.K)  # the x locations for the groups
-        width = 0.35       # the width of the bars
-        fig, ax = plt.subplots()
-        rects = ax.bar(ind, pred_topic, width)
-        
-        # add some text for labels, title and axes ticks
-        ax.set_ylabel('Predictive Probability')
-        ax.set_xlabel('Topics')
-        ax.set_title('Predictive distributions of topics')
-        ax.set_xticks(ind+width)
-        ax.set_xticklabels(ind)
-        plt.show()    
                                     
 def main():
 
