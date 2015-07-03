@@ -64,6 +64,7 @@ class CrossValidatorLda:
 #             topic_prior = topic_prior / np.sum(topic_prior)            
 #             topic_prior = topic_prior * self.K * self.alpha
             topic_prior = training_gibbs.posterior_alpha[:, None]
+            print 'topic_prior = ' + str(topic_prior)
             marg = 0         
             n_words = 0
             for d in range(testing_df.shape[0]):
@@ -166,7 +167,7 @@ def run_beer3():
         
     print "Cross-validation for K=" + str(K)
     n_folds = 4
-    n_samples = 500
+    n_samples = 50
     n_burn = 0
     n_thin = 1
     alpha = 50.0/K
