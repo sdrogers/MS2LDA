@@ -38,7 +38,7 @@ import numpy as np
 import pandas as pd
 import pylab as plt
 from scipy.special import psi
-from lda_utils import estimate_alpha
+from lda_utils import estimate_alpha_from_theta
 
 
 class CollapseGibbsLda:
@@ -162,7 +162,7 @@ class CollapseGibbsLda:
         """
         Estimate the concentration parameter alpha from the thetas in the last sample
         """
-        alpha_new = estimate_alpha(self.D, self.K, self.alpha, self.doc_topic_, n_iter=100)      
+        alpha_new = estimate_alpha_from_theta(self.D, self.K, self.alpha, self.doc_topic_, n_iter=100)      
         return alpha_new
                                                     
     def run(self, n_burn, n_samples, n_thin, use_native=False):

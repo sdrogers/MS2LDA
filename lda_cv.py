@@ -167,13 +167,13 @@ def run_beer3():
         
     print "Cross-validation for K=" + str(K)
     n_folds = 4
-    n_samples = 50
+    n_samples = 10
     n_burn = 0
     n_thin = 1
     alpha = 50.0/K
     beta = 0.1
     is_num_samples = 1000
-    is_iters = 1000
+    is_iters = 1
      
     relative_intensity = True
     fragment_filename = current_path + '/input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
@@ -237,7 +237,7 @@ def main():
         run_urine37()
     else:
         print "Data = Synthetic"
-        run_synthetic(parallel=True)        
+        run_synthetic(parallel=False)        
 
 if __name__ == "__main__":
     main()

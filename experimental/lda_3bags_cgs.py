@@ -182,18 +182,14 @@ class CollapseGibbs_3bags_Lda(object):
 
         # select the sampler function to use
         sampler_func = None
+        if (self.n_bags>3):
+            raise ValueError("Bags more than 3 not supported yet!")
         if not use_native:
             print "Using Numpy for q-bags LDA sampling"
             sampler_func = sample_numpy
         else:
-            # not quite sure how to write a generic numba version for any number of bags ...
-            if (self.n_bags<=3):
-                print "Using Numba for 3-bags LDA sampling"
-                sampler_func = sample_numba                
-            else:
-                # fallback to the numpy version for now
-                print "FALLBACK to using Numpy for q-bags LDA sampling"                
-                sampler_func = sample_numpy
+            print "Using Numba for 3-bags LDA sampling"
+            sampler_func = sample_numba                
 
         # this will modify the various count matrices (Z, cdk, ckn, cd, ck) inside
         self.topic_word_, self.doc_topic_, self.loglikelihoods_ = sampler_func(
@@ -288,9 +284,9 @@ def main():
     random_state = RandomState(1234567890)
 
     gen = LdaDataGenerator(alpha, make_plot=True)
-    df, vocab = gen.generate_input_df(n_topics, vocab_size, document_length, n_docs, 
-                                      previous_vocab=None, vocab_prefix='gibbs1', 
-                                      df_outfile='input/test1.csv', vocab_outfile='input/test1.words', n_bags=3)
+#     df, vocab = gen.generate_input_df(n_topics, vocab_size, document_length, n_docs, 
+#                                       previous_vocab=None, vocab_prefix='gibbs1', 
+#                                       df_outfile='input/test1.csv', vocab_outfile='input/test1.words', n_bags=3)
     df, vocab = gen.generate_from_file('input/test1.csv', 'input/test1.words')
 
     print "\nUsing own LDA"
@@ -309,15 +305,15 @@ def main():
 #     if hasattr(gibbs1, 'selected_topics'):
 #         print "Kept topics = " + str(gibbs1.selected_topics)
 #    
-#     gen._plot_nicely(gibbs1.doc_topic_.T, 'Inferred Topics X Docs', 'docs', 'topics', outfile='test1_doc_topic.png')
-#     for b in range(gibbs1.n_bags):
-#         gen._plot_nicely(gibbs1.topic_word_[b], 'Inferred Topics X Terms for bag ' + str(b), 'terms', 'topics', outfile='test1_topic_word.png')
-#     plt.plot(gibbs1.loglikelihoods_)
-#     plt.show()    
-#     
-#     EPSILON = 0.05
-#     n_top_words = 20    
-#     print_topic_words(gibbs1.topic_word_, gibbs1.n_bags, n_top_words, n_topics, vocab, EPSILON)
+    gen._plot_nicely(gibbs1.doc_topic_.T, 'Inferred Topics X Docs', 'docs', 'topics', outfile='test1_doc_topic.png')
+    for b in range(gibbs1.n_bags):
+        gen._plot_nicely(gibbs1.topic_word_[b], 'Inferred Topics X Terms for bag ' + str(b), 'terms', 'topics', outfile='test1_topic_word.png')
+    plt.plot(gibbs1.loglikelihoods_)
+    plt.show()    
+     
+    EPSILON = 0.05
+    n_top_words = 20    
+    print_topic_words(gibbs1.topic_word_, gibbs1.n_bags, n_top_words, n_topics, vocab, EPSILON)
 #             
 #     # now run gibbs again on another df with the few selected topics above
 #     gen = LdaDataGenerator(alpha, make_plot=True)

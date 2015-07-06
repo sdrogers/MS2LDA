@@ -32,7 +32,7 @@ def count_member(num_samples, samples, T):
 # as described in Wallach, et al. (2009). "Evaluation methods for topic models."
 def ldae_is_variants(words, topics, topic_prior, num_samples=1000, variant=3, variant_iters=1000):
 
-    (T, V) = topics[0].shape
+    (T, V) = topics.shape
     Nd = len(words)
     topic_alpha = np.sum(topic_prior)
 
@@ -43,12 +43,8 @@ def ldae_is_variants(words, topics, topic_prior, num_samples=1000, variant=3, va
         qq = qstar / np.sum(qstar, 0)
     else:
         # Take w_n into account when picking z_n
-        topic_word_dist0 = topics[0][:, words]
-        topic_word_dist1 = topics[1][:, words]
-        topic_word_dist2 = topics[2][:, words]
-        temp = np.multiply(topic_word_dist0, topic_word_dist1)
-        temp = np.multiply(temp, topic_word_dist2)
-        qstar = np.multiply(topic_prior, temp) # T x Nd
+        topic_word_dist = topics[:, words]
+        qstar = np.multiply(topic_prior, topic_word_dist) # T x Nd
         qq = qstar / np.sum(qstar, 0)
 
         if variant == 3:
@@ -58,12 +54,8 @@ def ldae_is_variants(words, topics, topic_prior, num_samples=1000, variant=3, va
                 temp = temp[:, None]
                 pseudo_counts = temp - qq
 
-                topic_word_dist0 = topics[0][:, words]
-                topic_word_dist1 = topics[1][:, words]
-                topic_word_dist2 = topics[2][:, words]
-                temp = np.multiply(topic_word_dist0, topic_word_dist1)
-                temp = np.multiply(temp, topic_word_dist2)
-                qstar = np.multiply(pseudo_counts, temp) # T x Nd
+                topic_word_dist = topics[:, words]
+                qstar = np.multiply(pseudo_counts, topic_word_dist) # T x Nd
                 qq = qstar / np.sum(qstar, 0)
 
     # Drawing samples from the q-distribution
@@ -86,10 +78,8 @@ def ldae_is_variants(words, topics, topic_prior, num_samples=1000, variant=3, va
     for n in range(Nd):
         sampled_topic_idx = samples[n, :]
         word_idx = words[n]
-        topic_word_prob0 = topics[0][sampled_topic_idx, word_idx]
-        topic_word_prob1 = topics[1][sampled_topic_idx, word_idx]
-        topic_word_prob2 = topics[2][sampled_topic_idx, word_idx]
-        log_w_given_z = log_w_given_z + np.log(topic_word_prob0) + np.log(topic_word_prob1) + np.log(topic_word_prob2)
+        topic_word_prob = topics[sampled_topic_idx, word_idx]
+        log_w_given_z = log_w_given_z + np.log(topic_word_prob)
     log_joint = log_pz + log_w_given_z      # length is num_samples
 
     log_qq = np.zeros(num_samples)          # length is num_samples
@@ -104,3 +94,62 @@ def ldae_is_variants(words, topics, topic_prior, num_samples=1000, variant=3, va
     # log_evidence = np.log(np.sum(np.exp(log_weights))) - np.log(len(log_weights))
     log_evidence = logsumexp(log_weights) - np.log(len(log_weights))
     return log_evidence
+
+def generate_synthetic():
+
+    T = 3;
+    V = 5;
+    Nd = 7;
+
+    # make some topics distributions
+    topics = rand(T, V)
+    rowsum = np.sum(topics, 1)
+    for i in range(T):
+        topics[i, :] = topics[i, :] / rowsum[i] # normalise each row to sum to 1
+
+    # make the prior for the topics
+    topic_prior = rand(T, 1)
+    topic_prior = topic_prior / np.sum(topic_prior)
+
+    # make the words
+    words = np.floor(rand(Nd) * V)
+    words = words.astype(np.int32)
+
+    return words, topics, topic_prior
+
+def generate_from_matlab(matfile):    
+    mat_contents = sio.loadmat(matfile)
+    topic_prior = mat_contents['topic_prior']
+    words = mat_contents['words']
+    words = words.astype(np.int32)
+    words = words-1 # because matlab indexes from 1 ..
+    words = words.flatten()
+    topics = mat_contents['topics']
+    return words, topics, topic_prior
+
+def main():
+
+    num_samples = 1000000
+    variant = 3
+    variant_iters = 1000
+
+    words, topics, topic_prior = generate_synthetic()
+    # words, topics, topic_prior = generate_from_matlab('/home/joewandy/sampling codes/lda_eval_matlab_code_20120930/test.mat')
+
+    results = []
+    for x in range(30):
+        start = timeit.default_timer()
+        is_pseudopost = ldae_is_variants(words, topics, topic_prior, num_samples, variant, variant_iters)
+        print "is_pseudopost = " + str(is_pseudopost)
+        stop = timeit.default_timer()
+        print "DONE. Time=" + str(stop-start)        
+        results.append(is_pseudopost)
+
+    results = np.array(results)
+    print results
+    print np.mean(results)
+    plt.boxplot(results)
+    plt.show()
+
+if __name__ == "__main__":
+    main()

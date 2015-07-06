@@ -15,6 +15,7 @@ import lda_3bags_utils as utils
 import numpy as np
 import pylab as plt
 from collections import namedtuple
+from scipy.misc import logsumexp
 
 Cv_Results = namedtuple('Cv_Results', 'marg perp')
 class CrossValidatorLda:
@@ -58,19 +59,25 @@ class CrossValidatorLda:
             
             print "Run testing importance sampling " + str(testing_df.shape)
             topics = training_gibbs.topic_word_
+            topic_prior = np.ones((self.K, 1))
+            topic_prior = topic_prior / np.sum(topic_prior)            
+            topic_prior = topic_prior * self.K * self.alpha
             # use posterior alpha instead of prior, this is inferred from the last sample of training_gibbs
-#             topic_prior = np.ones((self.K, 1))
-#             topic_prior = topic_prior / np.sum(topic_prior)            
-#             topic_prior = topic_prior * self.K * self.alpha
-            topic_prior = training_gibbs.posterior_alpha[:, None]
+#            topic_prior = training_gibbs.posterior_alpha[:, None]
             print 'topic_prior = ' + str(topic_prior)
             marg = 0         
             n_words = 0
             for d in range(testing_df.shape[0]):
                 document = self.df.iloc[[d]]
                 words = utils.word_indices(document)
-                doc_marg = ldae_is_variants(words, topics, topic_prior, 
+                doc_marg1 = ldae_is_variants(words, topics[0], topic_prior, 
                                          num_samples=is_num_samples, variant=3, variant_iters=is_iters)
+                doc_marg2 = ldae_is_variants(words, topics[1], topic_prior, 
+                                         num_samples=is_num_samples, variant=3, variant_iters=is_iters)
+                doc_marg3 = ldae_is_variants(words, topics[2], topic_prior, 
+                                         num_samples=is_num_samples, variant=3, variant_iters=is_iters)
+                evidences = np.array([doc_marg1, doc_marg2, doc_marg3])
+                doc_marg = logsumexp(evidences)
                 print "\td = " + str(d) + " doc_marg=" + str(doc_marg)
                 sys.stdout.flush()                
                 marg += doc_marg              
@@ -117,7 +124,7 @@ def run_beer3():
         
     print "Cross-validation for K=" + str(K)
     n_folds = 4
-    n_samples = 20
+    n_samples = 10
     n_burn = 0
     n_thin = 1
     alpha = 50.0/K
