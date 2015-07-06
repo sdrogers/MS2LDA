@@ -22,6 +22,7 @@ from lda_3bags_cgs_numpy import sample_numpy
 import numpy as np
 import pylab as plt
 from lda_3bags_model import bag_of_word_dtype, bags
+from lda_3bags_utils import estimate_alpha
 
 class CollapseGibbs_3bags_Lda(object):
     
@@ -163,25 +164,10 @@ class CollapseGibbs_3bags_Lda(object):
             
     def get_posterior_alpha(self, n_iter=100):
         """
-        Estimate posterior alpha of the Dirichlet-Multinomial for doc-topic using the last sample
-        see Minka, T. P. (2003). Estimating a Dirichlet distribution. Annals of Physics, 2000(8), 1-13. http://doi.org/10.1007/s00256-007-0299-1
+        Estimate the concentration parameter alpha from the thetas in the last sample
         """
-         
-        # initialise old and new alphas before iteration
-        alpha_old = np.ones(self.K) * self.alpha
-        alpha_new = np.zeros_like(alpha_old)
-        for i in range(n_iter):
-            numerator = 0
-            denominator = 0
-            for d in range(self.D):
-                numerator += psi(self.cdk[d] + alpha_old) - psi(alpha_old)
-                denominator += psi(np.sum(self.cdk[d] + alpha_old)) - psi(np.sum(alpha_old))
-            alpha_new = alpha_old * (numerator/denominator)
-            
-            # set alpha_new to alpha_old for the next iteration update
-            alpha_old = alpha_new  
-
-        return alpha_new            
+        alpha_new = estimate_alpha(self.D, self.K, self.alpha, self.doc_topic_, n_iter=100)      
+        return alpha_new
                                                     
     def run(self, n_burn, n_samples, n_thin, use_native=False):
         """ 
