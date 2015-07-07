@@ -22,7 +22,7 @@ from lda_3bags_cgs_numpy import sample_numpy
 import numpy as np
 import pylab as plt
 from lda_3bags_model import bag_of_word_dtype, bags
-from lda_3bags_utils import estimate_alpha
+from justin.lda_utils import estimate_alpha_from_counts
 
 class CollapseGibbs_3bags_Lda(object):
     
@@ -166,7 +166,7 @@ class CollapseGibbs_3bags_Lda(object):
         """
         Estimate the concentration parameter alpha from the thetas in the last sample
         """
-        alpha_new = estimate_alpha(self.D, self.K, self.alpha, self.doc_topic_, n_iter=100)      
+        alpha_new = estimate_alpha_from_counts(self.D, self.K, self.alpha, self.cdk)      
         return alpha_new
                                                     
     def run(self, n_burn, n_samples, n_thin, use_native=False):

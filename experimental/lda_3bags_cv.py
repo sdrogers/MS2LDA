@@ -2,20 +2,21 @@
 Cross-validation for LDA
 """
 
+from collections import namedtuple
 import multiprocessing
 import os
 import sys
 
 from joblib import Parallel, delayed  
+from scipy.misc import logsumexp
 
-from lda_3bags_is import ldae_is_variants
 from lda_3bags_cgs import CollapseGibbs_3bags_Lda
 from lda_3bags_for_fragments import ThreeBags_Ms2Lda
-import lda_3bags_utils as utils
+from lda_3bags_is import ldae_is_variants
+import justin.lda_utils as utils
 import numpy as np
 import pylab as plt
-from collections import namedtuple
-from scipy.misc import logsumexp
+
 
 Cv_Results = namedtuple('Cv_Results', 'marg perp')
 class CrossValidatorLda:
