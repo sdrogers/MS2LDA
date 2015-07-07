@@ -3,6 +3,7 @@ import math
 from scipy.special import psi, polygamma
 
 import numpy as np
+import scipy.io as sio
 
 
 def word_indices(document):
@@ -44,8 +45,9 @@ def psi_inverse(initial_x, y, num_iter=5):
 
 def estimate_alpha_from_theta(D, K, initial_alpha, thetas, n_iter=100):
     """
-    Estimate posterior alpha of a Dirichlet from multinomial vectors drawn from the Dirichlet
-    see Huang, J. (2005). Maximum Likelihood Estimation of Dirichlet Distribution Parameters. Distribution, 40(2), 1-9. doi:10.1.1.93.2881
+    Estimate posterior alpha of a Dirichlet multinomial from samples of the multinomial vectors.
+    This implements the Newton's method as described in Huang, J. (2005). Maximum Likelihood Estimation of 
+    Dirichlet Distribution Parameters. Distribution, 40(2), 1-9. doi:10.1.1.93.2881
     """
      
     # initialise old and new alphas before iteration
@@ -69,32 +71,33 @@ def estimate_alpha_from_theta(D, K, initial_alpha, thetas, n_iter=100):
 
     return alpha_new
 
-def estimate_alpha_from_counts(D, K, initial_alpha, counts, n_iter=1000000):
+def generate_counts_from_matlab(matfile):    
+    mat_contents = sio.loadmat(matfile)
+    a = mat_contents['a'][0]
+    data = mat_contents['data']
+    return a, data
+
+def estimate_alpha_from_counts(D, K, initial_alpha, counts, n_iter=1000):
+    """
+    Estimate posterior alpha of a Dirichlet multinomial from samples of the multinomial counts.
+    This implements the fixed point update as described in Minka, T. P. (2003). Estimating a Dirichlet distribution. 
+    Annals of Physics, 2000(8), 1-13. http://doi.org/10.1007/s00256-007-0299-1
+    """
 
     counts = counts.astype(float)
-    ni = np.sum(counts, axis=0)
+    sdata = np.sum(counts, axis=1)
 
     # initialise old and new alphas before iteration
     alpha_old = np.ones(K) * initial_alpha
-    alpha_new = np.zeros_like(alpha_old)
-    n_iter = 20
     for i in range(n_iter):
 
-        for k in range(K):
-             
-            # compute numerator
-            nik = counts[:, k]
-            alpha_k = alpha_old[k]
-            # numerator = np.sum(psi(nik+alpha_k)-psi(alpha_k))
-            numerator = np.sum(nik/(nik-1+alpha_k)) # LOO approximation
-             
-            # compute denumerator
-            sum_alpha = np.sum(alpha_old)
-            # denumerator = np.sum(psi(ni+sum_alpha)-psi(sum_alpha))
-            denumerator = np.sum(ni/(ni-1+sum_alpha)) # LOO approximation
-             
-            # compute new alpha[k]
-            alpha_new[k] = alpha_old[k] * (numerator/denumerator)
+        sa = np.sum(alpha_old)
+        temp = np.tile(alpha_old, (D, 1))
+        g = np.sum(psi(counts + temp), axis=0) - D*psi(alpha_old)
+        h = np.sum(psi(sdata + sa)) - D*psi(sa)
+        alpha_new = alpha_old * (g/h)
+        if np.max(np.abs(alpha_new-alpha_old)) < 1e-6:
+            break
         
         # set alpha_new to alpha_old for the next iteration update
         alpha_old = alpha_new    
@@ -104,6 +107,8 @@ def estimate_alpha_from_counts(D, K, initial_alpha, counts, n_iter=1000000):
 def main():
     
     np.set_printoptions(suppress=True)
+
+    ### test psi inverse function ###
     
     print 'Test psi_inverse()'
     x = 0.84492
@@ -113,12 +118,14 @@ def main():
     x_inverse = psi_inverse(0.2, y, num_iter=5)
     print 'x_inverse = ' + str(x_inverse)
     print
+
+    ### generate some synthetic data ###
     
     print 'Test estimate_alpha()'
     D = 100
     K = 40
     alpha = 0.2
-    alpha_vec = [alpha] * K
+    alpha_vec = np.array([alpha] * K)
     print 'initial alpha = ' + str(alpha)
 
     thetas = np.empty((D, K))    
@@ -145,6 +152,14 @@ def main():
 
     alpha_hat = estimate_alpha_from_counts(D, K, alpha_vec, counts)
     print 'estimated alpha from counts = ' + str(alpha_hat)
+    print
+    
+    #### load from matlab to compare against polya_fit_simple.m in fastfit ####
+
+    a, data = generate_counts_from_matlab('/home/joewandy/fastfit/fastfit/test.mat')
+    D, K = data.shape
+    alpha_hat = estimate_alpha_from_counts(D, K, a, data)
+    print 'estimated alpha from counts from matlab = ' + str(alpha_hat)
     print
 
 if __name__ == "__main__":

@@ -59,11 +59,15 @@ class CrossValidatorLda:
             
             print "Run testing importance sampling " + str(testing_df.shape)
             topics = training_gibbs.topic_word_
-            # use posterior alpha instead of prior, this is inferred from the last sample of training_gibbs
+
+#             # use prior alpha
 #             topic_prior = np.ones((self.K, 1))
 #             topic_prior = topic_prior / np.sum(topic_prior)            
 #             topic_prior = topic_prior * self.K * self.alpha
+            
+            # use posterior alpha inferred from the last sample of training_gibbs
             topic_prior = training_gibbs.posterior_alpha[:, None]
+
             print 'topic_prior = ' + str(topic_prior)
             marg = 0         
             n_words = 0
@@ -100,8 +104,8 @@ class CrossValidatorLda:
 def run_cv(df, vocab, k, alpha, beta):    
 
     cv = CrossValidatorLda(df, vocab, k, alpha, beta)
-    cv.cross_validate_is(n_folds=4, n_burn=0, n_samples=200, n_thin=1, 
-                         is_num_samples=1000, is_iters=1000)
+    cv.cross_validate_is(n_folds=4, n_burn=0, n_samples=500, n_thin=1, 
+                         is_num_samples=10000, is_iters=1000)
     
     res = Cv_Results(cv.mean_margs, cv.mean_perplexities)
     return res
@@ -110,8 +114,6 @@ def run_synthetic(parallel=True):
 
     K = 50
     print "Cross-validation for K=" + str(K)
-#     alpha = 50.0/K
-#     beta = 0.1
     alpha = 0.1
     beta = 0.01    
     n_docs = 200
@@ -167,13 +169,13 @@ def run_beer3():
         
     print "Cross-validation for K=" + str(K)
     n_folds = 4
-    n_samples = 10
+    n_samples = 500
     n_burn = 0
     n_thin = 1
     alpha = 50.0/K
     beta = 0.1
-    is_num_samples = 1000
-    is_iters = 1
+    is_num_samples = 10000
+    is_iters = 1000
      
     relative_intensity = True
     fragment_filename = current_path + '/input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
@@ -206,7 +208,7 @@ def run_urine37():
     n_thin = 1
     alpha = 50.0/K
     beta = 0.1
-    is_num_samples = 1000
+    is_num_samples = 10000
     is_iters = 1000
      
     relative_intensity = True

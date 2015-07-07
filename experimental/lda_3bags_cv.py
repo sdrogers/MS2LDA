@@ -59,25 +59,23 @@ class CrossValidatorLda:
             
             print "Run testing importance sampling " + str(testing_df.shape)
             topics = training_gibbs.topic_word_
-            topic_prior = np.ones((self.K, 1))
-            topic_prior = topic_prior / np.sum(topic_prior)            
-            topic_prior = topic_prior * self.K * self.alpha
-            # use posterior alpha instead of prior, this is inferred from the last sample of training_gibbs
-#            topic_prior = training_gibbs.posterior_alpha[:, None]
+
+#             # use prior alpha
+#             topic_prior = np.ones((self.K, 1))
+#             topic_prior = topic_prior / np.sum(topic_prior)            
+#             topic_prior = topic_prior * self.K * self.alpha
+            
+            # use posterior alpha inferred from the last sample of training_gibbs
+            topic_prior = training_gibbs.posterior_alpha[:, None]
+
             print 'topic_prior = ' + str(topic_prior)
             marg = 0         
             n_words = 0
             for d in range(testing_df.shape[0]):
                 document = self.df.iloc[[d]]
                 words = utils.word_indices(document)
-                doc_marg1 = ldae_is_variants(words, topics[0], topic_prior, 
+                doc_marg = ldae_is_variants(words, self.vocab, topics, topic_prior, 
                                          num_samples=is_num_samples, variant=3, variant_iters=is_iters)
-                doc_marg2 = ldae_is_variants(words, topics[1], topic_prior, 
-                                         num_samples=is_num_samples, variant=3, variant_iters=is_iters)
-                doc_marg3 = ldae_is_variants(words, topics[2], topic_prior, 
-                                         num_samples=is_num_samples, variant=3, variant_iters=is_iters)
-                evidences = np.array([doc_marg1, doc_marg2, doc_marg3])
-                doc_marg = logsumexp(evidences)
                 print "\td = " + str(d) + " doc_marg=" + str(doc_marg)
                 sys.stdout.flush()                
                 marg += doc_marg              
@@ -106,8 +104,8 @@ class CrossValidatorLda:
 def run_cv(df, vocab, k, alpha, beta):    
 
     cv = CrossValidatorLda(df, vocab, k, alpha, beta)
-    cv.cross_validate_is(n_folds=4, n_burn=0, n_samples=200, n_thin=1, 
-                         is_num_samples=1000, is_iters=1000)
+    cv.cross_validate_is(n_folds=4, n_burn=0, n_samples=500, n_thin=1, 
+                         is_num_samples=10000, is_iters=1000)
     
     res = Cv_Results(cv.mean_margs, cv.mean_perplexities)
     return res
@@ -124,13 +122,13 @@ def run_beer3():
         
     print "Cross-validation for K=" + str(K)
     n_folds = 4
-    n_samples = 10
+    n_samples = 500
     n_burn = 0
     n_thin = 1
     alpha = 50.0/K
     beta = 0.1
-    is_num_samples = 1000
-    is_iters = 1
+    is_num_samples = 10000
+    is_iters = 1000
      
     relative_intensity = True
     fragment_filename = current_path + '/../input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
@@ -163,7 +161,7 @@ def run_urine37():
     n_thin = 1
     alpha = 50.0/K
     beta = 0.1
-    is_num_samples = 1000
+    is_num_samples = 10000
     is_iters = 1000
      
     relative_intensity = True
