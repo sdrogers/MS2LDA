@@ -1,14 +1,17 @@
 #!/bin/bash
 
-cd beer3pos.is
+cd /home/joewandy/git/metabolomics_tools/justin/cv_results/beer3pos.is
+./run.sh
 ./do_cv_local.sh
 
-cd ../urine37pos.is
+cd /home/joewandy/git/metabolomics_tools/justin/cv_results/urine37pos.is
+./run.sh
 ./do_cv_local.sh
 
-cd ../beer3pos.is.3bags
+cd /home/joewandy/git/metabolomics_tools/justin/cv_results/beer3pos.is.3bags
+./run.sh
 ./do_cv_local.sh
 
-cd ../urine37pos.is.3bags
+cd /home/joewandy/git/metabolomics_tools/justin/cv_results/urine37pos.is.3bags
+./run.sh
 ./do_cv_local.sh
-

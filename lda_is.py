@@ -10,6 +10,21 @@ import numpy as np
 import pylab as plt
 import scipy.io as sio
 
+
+@jit(int32[:](float64[:], float64[:]), nopython=True)
+def sample_cumsum(random_numbers, cs):
+    num_samples = len(random_numbers)
+    sampled_idx = np.empty(num_samples, int32)
+    for r in range(num_samples):
+        random_number = random_numbers[r]
+        k = 0
+        for k in range(len(cs)):
+            c = cs[k]
+            if random_number <= c:
+                break 
+        sampled_idx[r] = k
+    return sampled_idx
+
 @jit(int32[:, :](int32, int32[:, :], int32), nopython=True)
 def count_member(num_samples, samples, T):
     
@@ -64,7 +79,8 @@ def ldae_is_variants(words, topics, topic_prior, num_samples=1000, variant=3, va
         probs = qq[:, n]
         cs = np.cumsum(probs)
         random_numbers = np.random.random(num_samples)
-        sampled_idx = np.digitize(random_numbers, cs)
+        sampled_idx = sample_cumsum(random_numbers, cs)
+        # sampled_idx = np.digitize(random_numbers, cs)
         samples[n, :] = sampled_idx
 
     # Do a bin count for each topic within a sample

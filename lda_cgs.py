@@ -39,6 +39,7 @@ import pandas as pd
 import pylab as plt
 from scipy.special import psi
 from lda_utils import estimate_alpha_from_counts
+import visualisation.pyLDAvis as pyLDAvis
 
 
 class CollapseGibbsLda:
@@ -234,8 +235,39 @@ class CollapseGibbsLda:
         with open(words_out, 'w') as f:
             for item in self.selected_vocab:
                 f.write("{}\n".format(item))                
-        print "Words written to " + words_out            
-                                    
+        print "Words written to " + words_out    
+        
+    def visualise(self, notebook=False):
+        data = {}
+        data['topic_term_dists'] = self.topic_word_
+        data['doc_topic_dists'] = self.doc_topic_
+        data['doc_lengths'] = self.cd
+        data['vocab'] = self.vocab
+        data['term_frequency'] = np.sum(self.ckn, axis=0)    
+        vis_data = pyLDAvis.prepare(**data)   
+        pyLDAvis.show(vis_data)        
+        
+    def print_topic_words(self, EPSILON = 0.05):     
+        
+#         n_top_words = 20
+#         for i, topic_dist in enumerate(self.topic_word_):
+#             topic_words = self.vocab[np.argsort(topic_dist)][:-n_top_words:-1]
+#             print('Topic {}: {}'.format(i, ' '.join(topic_words)))        
+
+        for i, topic_dist in enumerate(self.topic_word_):
+    
+            ordering = np.argsort(topic_dist)
+            topic_words = np.array(self.vocab)[ordering][::-1]
+            dist = topic_dist[ordering][::-1]        
+            topic_name = 'Topic {}:'.format(i)
+            print topic_name,                    
+            for j in range(len(topic_words)):
+                if dist[j] > EPSILON:
+                    print('{} ({}),'.format(topic_words[j], dist[j])),
+                else:
+                    break
+            print
+                           
 def main():
 
     multiplier = 1
@@ -262,7 +294,9 @@ def main():
     start_time = time.time()
     gibbs1.run(n_burn, n_samples, n_thin, use_native=True)
     print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
-    print gibbs1.posterior_alpha
+    print gibbs1.posterior_alpha    
+    gibbs1.print_topic_words()
+    gibbs1.visualise(notebook=False)
       
 #     # try saving model
 #     selected_topics = [0, 2, 4, 6, 8]
@@ -278,12 +312,6 @@ def main():
 #     plt.plot(gibbs1.loglikelihoods_)
 #     plt.show()
 #     
-#     topic_word = gibbs1.topic_word_
-#     n_top_words = 20
-#     for i, topic_dist in enumerate(topic_word):
-#         topic_words = vocab[np.argsort(topic_dist)][:-n_top_words:-1]
-#         print('Topic {}: {}'.format(i, ' '.join(topic_words)))
-#             
 #     # now run gibbs again on another df with the few selected topics above
 #     gen = LdaDataGenerator(alpha, make_plot=True)
 # #     df2, vocab2 = gen.generate_input_df(n_topics, vocab_size, document_length, n_docs, 
