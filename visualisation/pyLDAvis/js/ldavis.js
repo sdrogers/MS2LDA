@@ -87,6 +87,8 @@ var LDAvis = function(to_select, data_or_file_name) {
     var lambdaZeroID = visID + "-lambdaZero";
     var sliderDivID = visID + "-sliderdiv";
     var lambdaLabelID = visID + "-lamlabel";
+    
+    var labels_visible = true; // initially labels are always visible
 
     //////////////////////////////////////////////////////////////////////////////
 
@@ -153,7 +155,6 @@ var LDAvis = function(to_select, data_or_file_name) {
         init_forms(topicID, lambdaID, visID);
 
         // When the value of lambda changes, update the visualization
-        console.log('lambda_select', lambda_select);
         d3.select(lambda_select)
             .on("mouseup", function() {
                 console.log('lambda_select mouseup');
@@ -182,6 +183,8 @@ var LDAvis = function(to_select, data_or_file_name) {
                 var value_new = Math.min(K, +value_old + 1).toFixed(0);
                 // increment the value in the input box
                 document.getElementById(topicID).value = value_new;
+                // input box above is now hidden, and we show value-1 in the other input box that's shown
+                document.getElementById(topicID + "_shown").value = parseInt(value_new)-1;
                 topic_off(document.getElementById(topicID + value_old));
                 topic_on(document.getElementById(topicID + value_new));
                 vis_state.topic = value_new;
@@ -198,6 +201,8 @@ var LDAvis = function(to_select, data_or_file_name) {
                 var value_new = Math.max(0, +value_old - 1).toFixed(0);
                 // increment the value in the input box
                 document.getElementById(topicID).value = value_new;
+                // input box above is now hidden, and we show value-1 in the other input box that's shown
+                document.getElementById(topicID + "_shown").value = parseInt(value_new)-1;
                 topic_off(document.getElementById(topicID + value_old));
                 topic_on(document.getElementById(topicID + value_new));
                 vis_state.topic = value_new;
@@ -229,7 +234,16 @@ var LDAvis = function(to_select, data_or_file_name) {
 
         d3.select("#" + topicHide)
             .on("click", function() {
-            	alert('hi');
+            	var textNodes = d3.select('#' + leftPanelID).selectAll(".txt");
+				if (labels_visible) {
+					textNodes.style('visibility', 'hidden');
+					labels_visible = false
+					this.innerHTML = 'Show labels';     						
+				} else {
+					textNodes.style('visibility', 'visible');
+					labels_visible = true
+					this.innerHTML = 'Hide labels';     											
+				}       
             });
 
         // create linear scaling to pixels (and add some padding on outer region of scatterplot)
@@ -355,7 +369,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             .attr('class', "circleGuideTitle")
             .style("text-anchor", "left")
             .style("fontWeight", "bold")
-            .text("Marginal topic distribtion");
+            .text("Marginal topic distribution");
         d3.select("#" + leftPanelID).append("text")
             .attr("x", cx2 + 10)
             .attr("y", mdsheight + 2 * newSmall)
@@ -389,13 +403,16 @@ var LDAvis = function(to_select, data_or_file_name) {
             .attr("y", function(d) {
                 return (yScale(+d.y) + 4);
             })
+            .attr("id", function(d) {
+                return (topicID + d.topics + '_label');
+            })            
             .attr("stroke", "black")
             .attr("opacity", 0.80)
             .style("text-anchor", "middle")
             .style("font-size", "11px")
             .style("fontWeight", 100)
             .text(function(d) {
-                return d.topics;
+                return d.topics-1;
             });
 
         // draw circles
@@ -434,6 +451,7 @@ var LDAvis = function(to_select, data_or_file_name) {
                 }
                 // make sure topic input box value and fragment reflects clicked selection
                 document.getElementById(topicID).value = vis_state.topic = d.topics;
+				document.getElementById(topicID+"_shown").value = d.topics-1;                
                 state_save(true);
                 topic_on(this);
             })
@@ -443,7 +461,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             });
 
         svg.append("text")
-            .text("Intertopic Distance Map (via multidimensional scaling)")
+            .text("Inter-topic Distance Map (via multidimensional scaling)")
             .attr("x", mdswidth/2 + margin.left)
             .attr("y", 30)
             .style("font-size", "16px")
@@ -610,7 +628,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 
             // topic input container:
             var topicDiv = document.createElement("div");
-            topicDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; width: " + mdswidth + "px; height: 50px; float: left");
+            topicDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; width: " + mdswidth*2 + "px; height: 50px; float: left");
             inputDiv.appendChild(topicDiv);
 
             var topicLabel = document.createElement("label");
@@ -621,13 +639,21 @@ var LDAvis = function(to_select, data_or_file_name) {
 
             var topicInput = document.createElement("input");
             topicInput.setAttribute("style", "width: 50px");
-            topicInput.type = "text";
+            topicInput.type = "hidden";
             topicInput.min = "0";
             topicInput.max = K; // assumes the data has already been read in
             topicInput.step = "1";
             topicInput.value = "0"; // a value of 0 indicates no topic is selected
             topicInput.id = topicID;
             topicDiv.appendChild(topicInput);
+
+            var topicInputShown = document.createElement("input");
+            topicInputShown.setAttribute("style", "width: 50px");
+            topicInputShown.setAttribute("disabled", "disabled");
+            topicInputShown.type = "text";
+            topicInputShown.value = "None"; // a value of 0 indicates no topic is selected
+            topicInputShown.id = topicID + "_shown";
+            topicDiv.appendChild(topicInputShown);
 
             var previous = document.createElement("button");
             previous.setAttribute("id", topicDown);
@@ -658,7 +684,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             var lambdaDivWidth = barwidth;
             var lambdaDiv = document.createElement("div");
             lambdaDiv.setAttribute("id", lambdaInputID);
-            lambdaDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; height: 50px; width: " + lambdaDivWidth + "px; float: right; margin-right: 30px");
+            lambdaDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; height: 50px; width: " + lambdaDivWidth + "px; float: right; margin-right: 30px; visibility: hidden");
             inputDiv.appendChild(lambdaDiv);
 
             var lambdaZero = document.createElement("div");
@@ -670,6 +696,7 @@ var LDAvis = function(to_select, data_or_file_name) {
                     .attr("x", 0)
                     .attr("y", 0)
                     .style("font-size", "14px")
+                    .style("visibility", "hidden")
                     .text("Slide to adjust relevance metric:");
             var yy = d3.select("#" + lambdaZeroID)
                     .append("text")
@@ -677,15 +704,16 @@ var LDAvis = function(to_select, data_or_file_name) {
                     .attr("y", -5)
                     .style("font-size", "10px")
                     .style("position", "absolute")
+                    .style("visibility", "hidden")
                     .text("(2)");
 
             var sliderDiv = document.createElement("div");
             sliderDiv.setAttribute("id", sliderDivID);
-            sliderDiv.setAttribute("style", "padding: 5px; height: 40px; width: 250px; float: right; margin-top: -5px; margin-right: 10px");
+            sliderDiv.setAttribute("style", "padding: 5px; height: 40px; width: 250px; float: right; margin-top: -5px; margin-right: 10px; visibility: hidden");
             lambdaDiv.appendChild(sliderDiv);
 
             var lambdaInput = document.createElement("input");
-            lambdaInput.setAttribute("style", "width: 250px; margin-left: 0px; margin-right: 0px");
+            lambdaInput.setAttribute("style", "width: 250px; margin-left: 0px; margin-right: 0px; visibility: hidden");
             lambdaInput.type = "range";
             lambdaInput.min = 0;
             lambdaInput.max = 1;
@@ -698,7 +726,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             var lambdaLabel = document.createElement("label");
             lambdaLabel.setAttribute("id", lambdaLabelID);
             lambdaLabel.setAttribute("for", lambdaID);
-            lambdaLabel.setAttribute("style", "height: 20px; width: 60px; font-family: sans-serif; font-size: 14px; margin-left: 80px");
+            lambdaLabel.setAttribute("style", "height: 20px; width: 60px; font-family: sans-serif; font-size: 14px; margin-left: 80px; visibility: hidden");
             lambdaLabel.innerHTML = "&#955 = <span id='" + lambdaID + "-value'>" + vis_state.lambda + "</span>";
             lambdaDiv.appendChild(lambdaLabel);
 
@@ -1027,7 +1055,12 @@ var LDAvis = function(to_select, data_or_file_name) {
             // change opacity and fill of the selected circle
             circle.style.opacity = highlight_opacity;
             circle.style.fill = color2;
-
+            
+            // show the label if necessary
+            if (!labels_visible) {
+	            var label = d3.select('#' + circle.id + '_label').style('visibility', 'visible');
+			}
+			
             // Remove 'old' bar chart title
             var text = d3.select(to_select + " .bubble-tool");
             text.remove();
@@ -1040,7 +1073,7 @@ var LDAvis = function(to_select, data_or_file_name) {
                 .attr("class", "bubble-tool") //  set class so we can remove it when highlight_off is called
                 .style("text-anchor", "middle")
                 .style("font-size", "16px")
-                .text("Top-" + R + " Most Relevant Terms for Topic " + topics + " (" + Freq + "% of tokens)");
+                .text("Top-" + R + " Most Relevant Terms for Topic " + (topics-1) + " (" + Freq + "% of tokens)");
 
             // grab the bar-chart data for this topic only:
             var dat2 = lamData.filter(function(d) {
@@ -1140,6 +1173,11 @@ var LDAvis = function(to_select, data_or_file_name) {
             // go back to original opacity/fill
             circle.style.opacity = base_opacity;
             circle.style.fill = color1;
+
+            // show the label if necessary
+            if (!labels_visible) {
+	            var label = d3.select('#' + circle.id + '_label').style('visibility', 'hidden');
+			}
 
             var title = d3.selectAll(to_select + " .bubble-tool")
                     .text("Top-" + R + " Most Salient Terms");
@@ -1378,6 +1416,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             }
             vis_state.term = "";
             document.getElementById(topicID).value = vis_state.topic = 0;
+			document.getElementById(topicID+"_shown").value = 'None';             
             state_save(true);
         }
 

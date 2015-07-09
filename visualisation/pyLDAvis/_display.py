@@ -161,6 +161,7 @@ def prepared_data_to_html(data, d3_url=None, ldavis_url=None, ldavis_css_url=Non
     d3_url = d3_url or urls.D3_URL
     ldavis_url = ldavis_url or urls.LDAVIS_URL
     ldavis_css_url = ldavis_css_url or urls.LDAVIS_CSS_URL
+    print 'Using visualisation script defined in ' + ldavis_url
 
     if use_http:
         d3_url = d3_url.replace('https://', 'http://')
