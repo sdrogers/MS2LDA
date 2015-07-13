@@ -237,7 +237,7 @@ class CollapseGibbsLda:
                 f.write("{}\n".format(item))                
         print "Words written to " + words_out    
         
-    def visualise(self, notebook=False):
+    def visualise(self, topic_plotter=None):
         data = {}
         data['topic_term_dists'] = self.topic_word_
         data['doc_topic_dists'] = self.doc_topic_
@@ -245,7 +245,7 @@ class CollapseGibbsLda:
         data['vocab'] = self.vocab
         data['term_frequency'] = np.sum(self.ckn, axis=0)    
         vis_data = pyLDAvis.prepare(**data)   
-        pyLDAvis.show(vis_data)        
+        pyLDAvis.show(vis_data, topic_plotter=topic_plotter)        
         
     def print_topic_words(self, EPSILON = 0.05):     
         
@@ -296,7 +296,7 @@ def main():
     print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
     print gibbs1.posterior_alpha    
     gibbs1.print_topic_words()
-    gibbs1.visualise(notebook=False)
+    gibbs1.visualise()
       
 #     # try saving model
 #     selected_topics = [0, 2, 4, 6, 8]

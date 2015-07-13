@@ -3,12 +3,18 @@
 """
 A Simple server used to serve LDAvis visualizations
 """
-import sys
-import threading
-import webbrowser
-import socket
 import itertools
 import random
+import socket
+import sys
+import threading
+from urllib import urlopen
+import urlparse
+import webbrowser
+import StringIO
+
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+
 
 IPYTHON_WARNING = """
 Note: if you're in the IPython notebook, pyLDAvis.show() is not the best command
@@ -25,14 +31,27 @@ except ImportError:
     # Python 3.x
     from http import server
 
+class GlobalVariable(object):
+    selected_topic_id = 0
+    ms1_idx = 0    
 
-def generate_handler(html, files=None):
+def generate_handler(html, files=None, topic_plotter=None):
+    
     if files is None:
         files = {}
+    
+    # add default logo to files
+    logo_url = 'http://www.jolicharts.com/wp-content/uploads/2013/08/D3JS.png'
+    logo_content_type = 'image/png'
+    logo_content = StringIO.StringIO(urlopen(logo_url).read()).read()
+    files['/images/default_logo.png'] = (logo_content_type, logo_content)
 
     class MyHandler(server.BaseHTTPRequestHandler):
+
         def do_GET(self):
             """Respond to a GET request."""
+
+            # serve main document        
             if self.path == '/':
                 self.send_response(200)
                 self.send_header("Content-type", "text/html")
@@ -42,14 +61,84 @@ def generate_handler(html, files=None):
                                  "</head><body>\n".encode())
                 self.wfile.write(html.encode())
                 self.wfile.write("</body></html>".encode())
-            elif self.path in files:
-                content_type, content = files[self.path]
+
+            # handle request for MS1 plots
+            elif self.path.startswith('/topic'):
+
+                # get everything after '?'                    
+                path, tmp = self.path.split('?', 1)
+                qs = urlparse.parse_qs(tmp)
+                action = qs['action'][0]
+                
+                if action == 'set':
+                    # keep track of the current topic that has been clicked
+                    circle_id = qs['circle_id'][0]
+                    topic_id = self._get_topic_id(circle_id)                    
+                    GlobalVariable.ms1_idx = 0
+                    GlobalVariable.selected_topic_id = topic_id
+                elif action == 'load':
+                    # return first ms1 plot in the topic while hovering
+                    circle_id = qs['circle_id'][0]
+                    topic_id = self._get_topic_id(circle_id)
+                    GlobalVariable.ms1_idx = 0
+                elif action == 'next':
+                    topic_id = GlobalVariable.selected_topic_id
+                    if topic_id in topic_plotter.topic_ms1_count:
+                        max_count = topic_plotter.topic_ms1_count[topic_id]
+                        if (GlobalVariable.ms1_idx + 1) < max_count:
+                            GlobalVariable.ms1_idx += 1
+                elif action == 'prev':
+                    topic_id = GlobalVariable.selected_topic_id
+                    if (GlobalVariable.ms1_idx - 1) >= 0:
+                        GlobalVariable.ms1_idx -= 1
+
+                # get the image content
+                fig = topic_plotter.plot_for_web(topic_id, GlobalVariable.ms1_idx)
+                if fig is not None:
+                    # topic has some ms1 plot
+                    canvas = FigureCanvas(fig)
+                    output = StringIO.StringIO()
+                    canvas.print_png(output)  
+                    content = output.getvalue()
+                    content_type = 'image/png'
+                else:
+                    # topic has no ms1 plots
+                    content_type, content = files['/images/default_logo.png']
+
+                # send image content to response
                 self.send_response(200)
                 self.send_header("Content-type", content_type)
                 self.end_headers()
-                self.wfile.write(content.encode())
+                self.wfile.write(content)                
+               
+            elif self.path in files:
+                                  
+                # handle other images request, serve the content without encode()
+                if self.path.startswith('/images'):
+                    content_type, content = files[self.path]
+                    self.send_response(200)
+                    self.send_header("Content-type", content_type)
+                    self.end_headers()
+                    self.wfile.write(content)
+                    
+                # serve any other content
+                else:
+                    content_type, content = files[self.path]
+                    self.send_response(200)
+                    self.send_header("Content-type", content_type)
+                    self.end_headers()
+                    self.wfile.write(content.encode())
+
             else:
                 self.send_error(404)
+
+        def _get_topic_id(self, circle_id):
+            # circle_id will look like this: 'ldavis_el55781404281730576168333350176-topic2' for topic 1
+            tokens = circle_id.split('-')
+            topic_str = tokens[1] # get e.g. 'topic2'
+            topic_id = topic_str[5:] # get rid of the front 'topic' bit from topic_str
+            topic_id = int(topic_id)-1 # since on the javascript side, we index from 1,.. internally
+            return topic_id
 
     return MyHandler
 
@@ -69,7 +158,8 @@ def find_open_port(ip, port, n=50):
 
 
 def serve(html, ip='127.0.0.1', port=8888, n_retries=50, files=None,
-          ipython_warning=True, open_browser=True, http_server=None):
+          ipython_warning=True, open_browser=True, http_server=None,
+          topic_plotter=None):
     """Start a server serving the given HTML, and (optionally) open a
     browser
 
@@ -94,7 +184,7 @@ def serve(html, ip='127.0.0.1', port=8888, n_retries=50, files=None,
         figure. The default is Python's basic HTTPServer.
     """
     port = find_open_port(ip, port, n_retries)
-    Handler = generate_handler(html, files)
+    Handler = generate_handler(html, files, topic_plotter)
 
     if http_server is None:
         srvr = server.HTTPServer((ip, port), Handler)

@@ -201,9 +201,12 @@ class Ms2Lda(object):
         plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdf)
         return plotter.rank_topics(sort_by=sort_by, selected_topics=selected_topics, top_N=top_N)
         
-    def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", selected_topics=None):
+    def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", selected_topics=None, interactive=False):
         plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdf)
-        plotter.plot_lda_fragments(consistency=0.50, sort_by=sort_by, selected_topics=selected_topics)         
+        plotter.plot_lda_fragments(consistency=0.50, sort_by=sort_by, 
+                                   selected_topics=selected_topics, interactive=interactive)
+        if interactive:
+            self.model.visualise(topic_plotter=plotter)
         
     def _natural_sort(self, l): 
         convert = lambda text: int(text) if text.isdigit() else text.lower() 
@@ -228,7 +231,8 @@ def test_lda():
     if len(sys.argv)>1:
         n_topics = int(sys.argv[1])
     else:
-        n_topics = 125
+        n_topics = 300
+
     n_samples = 200
     n_burn = 0
     n_thin = 1
@@ -250,7 +254,8 @@ def test_lda():
     ms2lda.run_lda(df, vocab, n_topics, n_samples, n_burn, n_thin, 
                    alpha, beta, use_own_model=True, use_native=True)
     ms2lda.write_results('beer3pos')
-    ms2lda.plot_lda_fragments(consistency=0.50)
+    ms2lda.model.print_topic_words()    
+    ms2lda.plot_lda_fragments(consistency=0.50, sort_by="h_index", interactive=True)
 
 # 
 #     # save some topics from beer3pos lda

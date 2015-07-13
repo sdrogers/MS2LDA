@@ -222,7 +222,7 @@ def display(data, local=False, **kwargs):
 
     return HTML(prepared_data_to_html(data, **kwargs))
 
-def show(data, ip='127.0.0.1', port=8888, n_retries=50,
+def show(data, topic_plotter=None, ip='127.0.0.1', port=8888, n_retries=50,
          local=True, open_browser=True, http_server=None, **kwargs):
     """Starts a local webserver and opens the visualization in a browser.
 
@@ -268,7 +268,8 @@ def show(data, ip='127.0.0.1', port=8888, n_retries=50,
 
     html = prepared_data_to_html(data, **kwargs)
     serve(html, ip=ip, port=port, n_retries=n_retries, files=files,
-          open_browser=open_browser, http_server=http_server)
+          open_browser=open_browser, http_server=http_server, 
+          topic_plotter=topic_plotter)
 
 
 def enable_notebook(local=False, **kwargs):

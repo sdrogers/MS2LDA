@@ -51,8 +51,8 @@ var LDAvis = function(to_select, data_or_file_name) {
         mdswidth = 530,
         mdsheight = 530,
         barwidth = 530,
-        barheight = 530,
-        termwidth = 90, // width to add between two panels to display terms
+        barheight = 330,
+        termwidth = 120, // width to add between two panels to display terms
         mdsarea = mdsheight * mdswidth;
     // controls how big the maximum circle can be
     // doesn't depend on data, only on mds width and height:
@@ -65,6 +65,9 @@ var LDAvis = function(to_select, data_or_file_name) {
     // opacity of topic circles:
     var base_opacity = 0.2,
         highlight_opacity = 0.6;
+
+    // opacity of topic text;
+    var text_opacity = 0.8;
 
     // topic/lambda selection names are specific to *this* vis
     var topic_select = to_select + "-topic";
@@ -79,6 +82,8 @@ var LDAvis = function(to_select, data_or_file_name) {
     var topicUp = topicID + "-up";
     var topicClear = topicID + "-clear";
     var topicHide = topicID + "-hide";
+    var docPrev = visID + "-prev";
+    var docNext = visID + "-next";
 
     var leftPanelID = visID + "-leftpanel";
     var barFreqsID = visID + "-bar-freqs";
@@ -235,15 +240,31 @@ var LDAvis = function(to_select, data_or_file_name) {
         d3.select("#" + topicHide)
             .on("click", function() {
             	var textNodes = d3.select('#' + leftPanelID).selectAll(".txt");
-				if (labels_visible) {
-					textNodes.style('visibility', 'hidden');
-					labels_visible = false
-					this.innerHTML = 'Show labels';     						
-				} else {
-					textNodes.style('visibility', 'visible');
-					labels_visible = true
-					this.innerHTML = 'Hide labels';     											
-				}       
+		if (labels_visible) {
+			textNodes.style('visibility', 'hidden');
+			labels_visible = false
+			this.innerHTML = 'Show labels';     						
+		} else {
+			textNodes.style('visibility', 'visible');
+			labels_visible = true
+			this.innerHTML = 'Hide labels';     											
+		}       
+            });
+
+        d3.select("#" + docPrev)
+            .on("click", function() {
+               var d = new Date();
+               var n = d.getTime();
+               d3.select("#ms1_plot")
+                  .attr("xlink:href","/topic?action=prev&ts="+n);
+            });
+
+        d3.select("#" + docNext)
+            .on("click", function() {
+               var d = new Date();
+               var n = d.getTime();
+               d3.select("#ms1_plot")
+                  .attr("xlink:href","/topic?action=next&ts="+n);
             });
 
         // create linear scaling to pixels (and add some padding on outer region of scatterplot)
@@ -407,7 +428,7 @@ var LDAvis = function(to_select, data_or_file_name) {
                 return (topicID + d.topics + '_label');
             })            
             .attr("stroke", "black")
-            .attr("opacity", 0.80)
+            .attr("opacity", text_opacity)
             .style("text-anchor", "middle")
             .style("font-size", "11px")
             .style("fontWeight", 100)
@@ -418,7 +439,7 @@ var LDAvis = function(to_select, data_or_file_name) {
         // draw circles
         points.append("circle")
             .attr("class", "dot")
-            .style("opacity", 0.2)
+            .style("opacity", base_opacity)
             .style("fill", color1)
             .attr("r", function(d) {
                 //return (rScaleMargin(+d.Freq));
@@ -453,7 +474,7 @@ var LDAvis = function(to_select, data_or_file_name) {
                 document.getElementById(topicID).value = vis_state.topic = d.topics;
 				document.getElementById(topicID+"_shown").value = d.topics-1;                
                 state_save(true);
-                topic_on(this);
+                topic_on(this, true);
             })
             .on("mouseout", function(d) {
                 if (vis_state.topic != d.topics) topic_off(this);
@@ -494,30 +515,30 @@ var LDAvis = function(to_select, data_or_file_name) {
         // bar chart legend/guide:
         var barguide = {"width": 100, "height": 15};
         d3.select("#" + barFreqsID).append("rect")
-            .attr("x", 0)
+            .attr("x", -400)
             .attr("y", mdsheight + 10)
             .attr("height", barguide.height)
             .attr("width", barguide.width)
             .style("fill", color1)
             .attr("opacity", 0.4);
         d3.select("#" + barFreqsID).append("text")
-            .attr("x", barguide.width + 5)
-            .attr("y", mdsheight + 10 + barguide.height/2)
+            .attr("x", barguide.width + 5 - 400)
+            .attr("y", mdsheight + barguide.height/2 + 10)
             .style("dominant-baseline", "middle")
-            .text("Overall term frequency");
+            .text("Overall term freq.");
 
         d3.select("#" + barFreqsID).append("rect")
-            .attr("x", 0)
+            .attr("x", -400)
             .attr("y", mdsheight + 10 + barguide.height + 5)
             .attr("height", barguide.height)
             .attr("width", barguide.width/2)
             .style("fill", color2)
             .attr("opacity", 0.8);
         d3.select("#" + barFreqsID).append("text")
-            .attr("x", barguide.width/2 + 5)
+            .attr("x", barguide.width/2 + 5 - 400)
             .attr("y", mdsheight + 10 + (3/2)*barguide.height + 5)
             .style("dominant-baseline", "middle")
-            .text("Estimated term frequency within the selected topic");
+            .text("Estimated term freq. within topic");
 
         // footnotes:
         d3.select("#" + barFreqsID)
@@ -525,19 +546,37 @@ var LDAvis = function(to_select, data_or_file_name) {
             .attr("xlink:href", "http://vis.stanford.edu/files/2012-Termite-AVI.pdf")
             .attr("target", "_blank")
             .append("text")
-            .attr("x", 0)
+            .attr("x", -400)
             .attr("y", mdsheight + 10 + (6/2)*barguide.height + 5)
             .style("dominant-baseline", "middle")
-            .text("1. saliency(term w) = frequency(w) * [sum_t p(t | w) * log(p(t | w)/p(t))] for topics t; see Chuang et. al (2012)");
+            .text("1. saliency(term w) = frequency(w) * [sum_t p(t | w) *");
         d3.select("#" + barFreqsID)
             .append("a")
             .attr("xlink:href", "http://nlp.stanford.edu/events/illvi2014/papers/sievert-illvi2014.pdf")
             .attr("target", "_blank")
             .append("text")
-            .attr("x", 0)
+            .attr("x", -400)
             .attr("y", mdsheight + 10 + (8/2)*barguide.height + 5)
             .style("dominant-baseline", "middle")
-            .text("2. relevance(term w | topic t) = \u03BB * p(w | t) + (1 - \u03BB) * p(w | t)/p(w); see Sievert & Shirley (2014)");
+            .text("log(p(t | w)/p(t))] for topics t; see Chuang et. al (2012)");
+        d3.select("#" + barFreqsID)
+            .append("a")
+            .attr("xlink:href", "http://nlp.stanford.edu/events/illvi2014/papers/sievert-illvi2014.pdf")
+            .attr("target", "_blank")
+            .append("text")
+            .attr("x", -400)
+            .attr("y", mdsheight + 10 + (10/2)*barguide.height + 5)
+            .style("dominant-baseline", "middle")
+            .text("2. relevance(term w | topic t) = p(w | t)");
+
+        d3.select("#" + barFreqsID)
+            .append("svg:image")
+            .attr("x", 0)
+            .attr("y", mdsheight - 300)
+            .attr('width', 540)
+            .attr('height', 540)
+            .attr('id', 'ms1_plot')
+            .attr("xlink:href","/images/default_logo.png")
 
         // Bind 'default' data to 'default' bar chart
         var basebars = chart.selectAll(to_select + " .bar-totals")
@@ -562,10 +601,11 @@ var LDAvis = function(to_select, data_or_file_name) {
         // Add word labels to the side of each bar
         basebars
             .append("text")
+            .style("font-size", "10px")
             .attr("x", -5)
             .attr("class", "terms")
             .attr("y", function(d) {
-                return y(d.Term) + 12;
+                return y(d.Term) + 8;
             })
             .attr("cursor", "pointer")
             .attr("id", function(d) {
@@ -679,12 +719,24 @@ var LDAvis = function(to_select, data_or_file_name) {
             hide.innerHTML = "Hide Label";
             topicDiv.appendChild(hide);
 
+            var prevBtn = document.createElement("button");
+            prevBtn.setAttribute("id", docPrev);
+            prevBtn.setAttribute("style", "margin-left: 5px");
+            prevBtn.innerHTML = "Prev MS1";
+            topicDiv.appendChild(prevBtn);
+
+            var nextBtn = document.createElement("button");
+            nextBtn.setAttribute("id", docNext);
+            nextBtn.setAttribute("style", "margin-left: 5px");
+            nextBtn.innerHTML = "Next MS1";
+            topicDiv.appendChild(nextBtn);
+
             // lambda inputs
             //var lambdaDivLeft = 8 + mdswidth + margin.left + termwidth;
             var lambdaDivWidth = barwidth;
             var lambdaDiv = document.createElement("div");
             lambdaDiv.setAttribute("id", lambdaInputID);
-            lambdaDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; height: 50px; width: " + lambdaDivWidth + "px; float: right; margin-right: 30px; visibility: hidden");
+            lambdaDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; height: 50px; width: " + lambdaDivWidth + "px; float: right; margin-right: 30px; display: none");
             inputDiv.appendChild(lambdaDiv);
 
             var lambdaZero = document.createElement("div");
@@ -696,7 +748,7 @@ var LDAvis = function(to_select, data_or_file_name) {
                     .attr("x", 0)
                     .attr("y", 0)
                     .style("font-size", "14px")
-                    .style("visibility", "hidden")
+                    .style("display", "none")
                     .text("Slide to adjust relevance metric:");
             var yy = d3.select("#" + lambdaZeroID)
                     .append("text")
@@ -704,16 +756,16 @@ var LDAvis = function(to_select, data_or_file_name) {
                     .attr("y", -5)
                     .style("font-size", "10px")
                     .style("position", "absolute")
-                    .style("visibility", "hidden")
+                    .style("display", "none")
                     .text("(2)");
 
             var sliderDiv = document.createElement("div");
             sliderDiv.setAttribute("id", sliderDivID);
-            sliderDiv.setAttribute("style", "padding: 5px; height: 40px; width: 250px; float: right; margin-top: -5px; margin-right: 10px; visibility: hidden");
+            sliderDiv.setAttribute("style", "padding: 5px; height: 40px; width: 250px; float: right; margin-top: -5px; margin-right: 10px; display: none");
             lambdaDiv.appendChild(sliderDiv);
 
             var lambdaInput = document.createElement("input");
-            lambdaInput.setAttribute("style", "width: 250px; margin-left: 0px; margin-right: 0px; visibility: hidden");
+            lambdaInput.setAttribute("style", "width: 250px; margin-left: 0px; margin-right: 0px; display: none");
             lambdaInput.type = "range";
             lambdaInput.min = 0;
             lambdaInput.max = 1;
@@ -726,7 +778,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             var lambdaLabel = document.createElement("label");
             lambdaLabel.setAttribute("id", lambdaLabelID);
             lambdaLabel.setAttribute("for", lambdaID);
-            lambdaLabel.setAttribute("style", "height: 20px; width: 60px; font-family: sans-serif; font-size: 14px; margin-left: 80px; visibility: hidden");
+            lambdaLabel.setAttribute("style", "height: 20px; width: 60px; font-family: sans-serif; font-size: 14px; margin-left: 80px; display: none");
             lambdaLabel.innerHTML = "&#955 = <span id='" + lambdaID + "-value'>" + vis_state.lambda + "</span>";
             lambdaDiv.appendChild(lambdaLabel);
 
@@ -1044,8 +1096,9 @@ var LDAvis = function(to_select, data_or_file_name) {
 
         // function to update bar chart when a topic is selected
         // the circle argument should be the appropriate circle element
-        function topic_on(circle) {
+        function topic_on(circle, is_clicked) {
             if (circle == null) return null;
+            if (typeof is_clicked === 'undefined') { is_clicked = false; }
 
             // grab data bound to this element
             var d = circle.__data__;
@@ -1058,8 +1111,8 @@ var LDAvis = function(to_select, data_or_file_name) {
             
             // show the label if necessary
             if (!labels_visible) {
-	            var label = d3.select('#' + circle.id + '_label').style('visibility', 'visible');
-			}
+	     	var label = d3.select('#' + circle.id + '_label').style('visibility', 'visible');
+            }
 			
             // Remove 'old' bar chart title
             var text = d3.select(to_select + " .bubble-tool");
@@ -1127,7 +1180,7 @@ var LDAvis = function(to_select, data_or_file_name) {
                 .data(dat3)
                 .attr("x", -5)
                 .attr("y", function(d) {
-                    return y(d.Term) + 12;
+                    return y(d.Term) + 8;
                 })
                 .attr("id", function(d) {
                     return (termID + d.Term);
@@ -1165,6 +1218,18 @@ var LDAvis = function(to_select, data_or_file_name) {
             d3.selectAll(to_select + " .xaxis")
             //.attr("class", "xaxis")
                 .call(xAxis);
+
+            // draw the first MS1 plot for this topic
+            if (is_clicked) {
+               // if we've clicked on the circle
+               d3.select("#ms1_plot")
+                  .attr("xlink:href","/topic?circle_id=" + circle.id + "&action=set");
+            } else {
+               // if we've hovered over the circle
+               d3.select("#ms1_plot")
+                  .attr("xlink:href","/topic?circle_id=" + circle.id + "&action=load");
+            }
+  
         }
 
 
@@ -1225,7 +1290,7 @@ var LDAvis = function(to_select, data_or_file_name) {
                 .data(dat2)
                 .attr("x", -5)
                 .attr("y", function(d) {
-                    return y(d.Term) + 12;
+                    return y(d.Term) + 8;
                 })
                 .style("text-anchor", "end") // right align text - use 'middle' for center alignment
                 .text(function(d) {
@@ -1243,6 +1308,11 @@ var LDAvis = function(to_select, data_or_file_name) {
             d3.selectAll(to_select + " .xaxis")
                 .attr("class", "xaxis")
                 .call(xAxis);
+
+            // reset ms1 plot to the default image
+            d3.select("#ms1_plot")
+                .attr("xlink:href","/images/default_logo.png")
+
         }
 
         // event definition for mousing over a term
@@ -1282,7 +1352,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             for (i = 0; i < k; i++) {
                 // If we want to also re-size the topic number labels, do it here
                 // 11 is the default, so leaving this as 11 won't change anything.
-                size[dat2[i].Topic - 1] = 11;
+                size[dat2[i].Topic - 1] = 14;
             }
 
             var rScaleCond = d3.scale.sqrt()
@@ -1416,7 +1486,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             }
             vis_state.term = "";
             document.getElementById(topicID).value = vis_state.topic = 0;
-			document.getElementById(topicID+"_shown").value = 'None';             
+            document.getElementById(topicID+"_shown").value = 'None';             
             state_save(true);
         }
 

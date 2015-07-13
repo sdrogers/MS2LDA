@@ -60,13 +60,13 @@ class CrossValidatorLda:
             print "Run testing importance sampling " + str(testing_df.shape)
             topics = training_gibbs.topic_word_
 
-#             # use prior alpha
-#             topic_prior = np.ones((self.K, 1))
-#             topic_prior = topic_prior / np.sum(topic_prior)            
-#             topic_prior = topic_prior * self.K * self.alpha
+            # use prior alpha
+            topic_prior = np.ones((self.K, 1))
+            topic_prior = topic_prior / np.sum(topic_prior)            
+            topic_prior = topic_prior * self.K * self.alpha
             
-            # use posterior alpha inferred from the last sample of training_gibbs
-            topic_prior = training_gibbs.posterior_alpha[:, None]
+#             # use posterior alpha inferred from the last sample of training_gibbs
+#             topic_prior = training_gibbs.posterior_alpha[:, None]
 
             print 'topic_prior = ' + str(topic_prior)
             marg = 0         
@@ -169,7 +169,7 @@ def run_beer3():
         
     print "Cross-validation for K=" + str(K)
     n_folds = 4
-    n_samples = 500
+    n_samples = 50
     n_burn = 0
     n_thin = 1
     alpha = 50.0/K
@@ -180,7 +180,7 @@ def run_beer3():
     relative_intensity = True
     fragment_filename = current_path + '/input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
     neutral_loss_filename = current_path + '/input/relative_intensities/Beer_3_T10_POS_losses_rel.csv'
-    mzdiff_filename = None
+    mzdiff_filename = current_path + '/input/relative_intensities/Beer_3_T10_POS_mzdiffs_rel.csv'
     ms1_filename = current_path + '/input/relative_intensities/Beer_3_T10_POS_ms1_rel.csv'
     ms2_filename = current_path + '/input/relative_intensities/Beer_3_T10_POS_ms2_rel.csv'
     ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename,
