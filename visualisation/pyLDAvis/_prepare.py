@@ -11,8 +11,8 @@ import numpy as np
 import pandas as pd
 import scipy.spatial.distance as dist
 from scipy.stats import entropy
-from skbio.stats.ordination import PCoA
-from skbio.stats.distance import DistanceMatrix
+from skbio._principal_coordinate_analysis import PCoA
+from skbio._base_distance import DistanceMatrix
 from .utils import NumPyEncoder
 
 

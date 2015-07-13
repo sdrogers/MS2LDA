@@ -191,7 +191,7 @@ var LDAvis = function(to_select, data_or_file_name) {
                 // input box above is now hidden, and we show value-1 in the other input box that's shown
                 document.getElementById(topicID + "_shown").value = parseInt(value_new)-1;
                 topic_off(document.getElementById(topicID + value_old));
-                topic_on(document.getElementById(topicID + value_new));
+                topic_on(document.getElementById(topicID + value_new), true);
                 vis_state.topic = value_new;
                 state_save(true);
             });
@@ -209,7 +209,7 @@ var LDAvis = function(to_select, data_or_file_name) {
                 // input box above is now hidden, and we show value-1 in the other input box that's shown
                 document.getElementById(topicID + "_shown").value = parseInt(value_new)-1;
                 topic_off(document.getElementById(topicID + value_old));
-                topic_on(document.getElementById(topicID + value_new));
+                topic_on(document.getElementById(topicID + value_new), true);
                 vis_state.topic = value_new;
                 state_save(true);
             });
@@ -472,7 +472,11 @@ var LDAvis = function(to_select, data_or_file_name) {
                 }
                 // make sure topic input box value and fragment reflects clicked selection
                 document.getElementById(topicID).value = vis_state.topic = d.topics;
-				document.getElementById(topicID+"_shown").value = d.topics-1;                
+				document.getElementById(topicID+"_shown").value = d.topics-1;  
+                document.getElementById(docPrev).removeAttribute("disabled");
+                document.getElementById(docNext).removeAttribute("disabled");
+                debugger;
+				              
                 state_save(true);
                 topic_on(this, true);
             })
@@ -722,12 +726,14 @@ var LDAvis = function(to_select, data_or_file_name) {
             var prevBtn = document.createElement("button");
             prevBtn.setAttribute("id", docPrev);
             prevBtn.setAttribute("style", "margin-left: 5px");
+            prevBtn.setAttribute("disabled", "disabled");
             prevBtn.innerHTML = "Prev MS1";
             topicDiv.appendChild(prevBtn);
 
             var nextBtn = document.createElement("button");
             nextBtn.setAttribute("id", docNext);
             nextBtn.setAttribute("style", "margin-left: 5px");
+            nextBtn.setAttribute("disabled", "disabled");
             nextBtn.innerHTML = "Next MS1";
             topicDiv.appendChild(nextBtn);
 
@@ -1487,6 +1493,8 @@ var LDAvis = function(to_select, data_or_file_name) {
             vis_state.term = "";
             document.getElementById(topicID).value = vis_state.topic = 0;
             document.getElementById(topicID+"_shown").value = 'None';             
+            document.getElementById(docPrev).setAttribute("disabled", "disabled");
+            document.getElementById(docNext).setAttribute("disabled", "disabled");
             state_save(true);
         }
 

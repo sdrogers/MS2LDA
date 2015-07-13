@@ -12,6 +12,7 @@ from urllib import urlopen
 import urlparse
 import webbrowser
 import StringIO
+from . import urls
 
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
@@ -41,7 +42,7 @@ def generate_handler(html, files=None, topic_plotter=None):
         files = {}
     
     # add default logo to files
-    logo_url = 'http://www.jolicharts.com/wp-content/uploads/2013/08/D3JS.png'
+    logo_url = urls.DEFAULT_LOGO_LOCAL
     logo_content_type = 'image/png'
     logo_content = StringIO.StringIO(urlopen(logo_url).read()).read()
     files['/images/default_logo.png'] = (logo_content_type, logo_content)
