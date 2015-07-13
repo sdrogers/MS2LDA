@@ -46,13 +46,22 @@ class Ms2Lda_Viz(object):
                 break
         if not interactive:
             print
+
+        # also create a matrix of topics and their h-indices for later use in front-end visualisation
+        if interactive:        
+            num_topics = len(sorted_topic_counts)
+            self.topic_h_indices = np.zeros((num_topics, 2), dtype=int)
+            for k in range(num_topics):
+                item = sorted_topic_counts[k]
+                self.topic_h_indices[k, 0] = item[0] # the topic id
+                self.topic_h_indices[k, 1] = item[1] # the h-index of that topic
         
         return topic_ranking, sorted_topic_counts                
                 
     def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", selected_topics=None, interactive=False):
                 
         topic_ranking, sorted_topic_counts = self.rank_topics(sort_by=sort_by, 
-                                                              selected_topics=selected_topics, interactive=interactive)        
+                                                              selected_topics=selected_topics, interactive=interactive)               
         self.topic_plots = {}
         self.topic_ms1_count = {}
         for (i, c) in sorted_topic_counts:

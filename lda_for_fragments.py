@@ -203,7 +203,7 @@ class Ms2Lda(object):
         
     def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", selected_topics=None, interactive=False):
         plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdf)
-        plotter.plot_lda_fragments(consistency=0.50, sort_by=sort_by, 
+        plotter.plot_lda_fragments(consistency=consistency, sort_by=sort_by, 
                                    selected_topics=selected_topics, interactive=interactive)
         if interactive:
             self.model.visualise(topic_plotter=plotter)
@@ -231,9 +231,9 @@ def test_lda():
     if len(sys.argv)>1:
         n_topics = int(sys.argv[1])
     else:
-        n_topics = 300
+        n_topics = 30
 
-    n_samples = 200
+    n_samples = 20
     n_burn = 0
     n_thin = 1
     alpha = 50.0/n_topics

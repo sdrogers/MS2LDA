@@ -244,6 +244,8 @@ class CollapseGibbsLda:
         data['doc_lengths'] = self.cd
         data['vocab'] = self.vocab
         data['term_frequency'] = np.sum(self.ckn, axis=0)    
+        if topic_plotter is not None:
+            data['topic_h_indices'] = topic_plotter.topic_h_indices
         vis_data = pyLDAvis.prepare(**data)   
         pyLDAvis.show(vis_data, topic_plotter=topic_plotter)        
         

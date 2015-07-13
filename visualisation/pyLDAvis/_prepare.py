@@ -210,7 +210,7 @@ def _term_topic_freq(topic_term_dists, topic_freq, term_frequency):
     return term_topic_freq * err
 
 
-def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequency, \
+def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequency, topic_h_indices, \
                 R=30, lambda_step=0.01, mds=js_PCoA, n_jobs=-1, \
                 plot_opts={'xlab': 'PC1', 'ylab': 'PC2'}):
     """Transforms the topic model distributions and related corpus data into
@@ -293,14 +293,19 @@ def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequenc
     topic_info            = _topic_info(topic_term_dists, topic_proportion, term_frequency, term_topic_freq, vocab, lambda_step, R, n_jobs)
     token_table          = _token_table(topic_info, term_topic_freq, vocab, term_frequency)
     topic_coordinates = _topic_coordinates(mds, topic_term_dists, topic_proportion)
+
+    # ignore topic_order completely and leave the ordering of the topics as it is
 #     client_topic_order = [x + 1 for x in topic_order]
     K = topic_term_dists.shape[0]
     client_topic_order = range(K)
+    
+    # instead we pass the topic h-indices for displaying on the front-end later
+    topic_h_indices = pd.DataFrame({'topic_id': topic_h_indices[:, 0], 'h_index': topic_h_indices[:, 1]}).sort('h_index', ascending=False)
 
-    return PreparedData(topic_coordinates, topic_info, token_table, R, lambda_step, plot_opts, client_topic_order)
+    return PreparedData(topic_coordinates, topic_info, token_table, R, lambda_step, plot_opts, client_topic_order, topic_h_indices)
 
 class PreparedData(namedtuple('PreparedData', ['topic_coordinates', 'topic_info', 'token_table',\
-                                                              'R', 'lambda_step', 'plot_opts', 'topic_order'])):
+                                                              'R', 'lambda_step', 'plot_opts', 'topic_order', 'topic_h_indices'])):
     def to_dict(self):
         return {'mdsDat': self.topic_coordinates.to_dict(orient='list'),
                     'tinfo': self.topic_info.to_dict(orient='list'),
@@ -308,7 +313,8 @@ class PreparedData(namedtuple('PreparedData', ['topic_coordinates', 'topic_info'
                     'R': self.R,
                     'lambda.step': self.lambda_step,
                     'plot.opts': self.plot_opts,
-                    'topic.order': self.topic_order}
+                    'topic.order': self.topic_order,
+                    'topic.h_indices': self.topic_h_indices.to_dict(orient='list')}
 
     def to_json(self):
         return json.dumps(self.to_dict(), cls=NumPyEncoder)

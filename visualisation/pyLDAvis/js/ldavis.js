@@ -113,9 +113,16 @@ var LDAvis = function(to_select, data_or_file_name) {
 
 
     function visualize(data) {
-
+    
         // set the number of topics to global variable K:
         K = data['mdsDat'].x.length;
+
+        // topic ranking
+        var topic_ranking = data['topic.h_indices'];
+        for (var i = 0; i < K; i++) {
+	        console.log('topic_id=' + topic_ranking['topic_id'][i] + ' h_index=' + topic_ranking['h_index'][i]);
+        }        
+        debugger;
 
         // R is the number of top relevant (or salient) words whose bars we display
         R = Math.min(data['R'], 30);

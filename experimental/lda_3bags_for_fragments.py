@@ -187,9 +187,12 @@ class ThreeBags_Ms2Lda(Ms2Lda):
         print "Writing topic docs to " + outfile
         self.docdf.transpose().to_csv(outfile)   
         
-    def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", selected_topics=None):
+    def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", selected_topics=None, interactive=False):
         plotter = ThreeBags_Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdfs, EPSILON=self.EPSILON)
-        plotter.plot_lda_fragments(consistency=0.50, sort_by=sort_by, selected_topics=selected_topics)                                    
+        plotter.plot_lda_fragments(consistency=consistency, sort_by=sort_by, 
+                                   selected_topics=selected_topics, interactive=interactive) 
+        if interactive:
+            self.model.visualise(topic_plotter=plotter)                                           
     
 def test_lda():
 

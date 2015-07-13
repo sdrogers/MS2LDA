@@ -180,7 +180,7 @@ def run_beer3():
     relative_intensity = True
     fragment_filename = current_path + '/input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
     neutral_loss_filename = current_path + '/input/relative_intensities/Beer_3_T10_POS_losses_rel.csv'
-    mzdiff_filename = current_path + '/input/relative_intensities/Beer_3_T10_POS_mzdiffs_rel.csv'
+    mzdiff_filename = None
     ms1_filename = current_path + '/input/relative_intensities/Beer_3_T10_POS_ms1_rel.csv'
     ms2_filename = current_path + '/input/relative_intensities/Beer_3_T10_POS_ms2_rel.csv'
     ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename,
