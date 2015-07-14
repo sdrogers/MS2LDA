@@ -58,7 +58,7 @@ peaks <- as.data.frame(frags@peaks)
 # frags <- xcmsSetFragments(xset, xset_full, cdf.corrected = FALSE, min.rel.int=0.01, max.frags = 5000, 
 #                           msnSelect=c("precursor_int"), specFilter=c("specPeaks"), match.ppm=7, 
 #                           sn=3, mzgap=0.005, min.r=0.75, min.diff=10)
-# peaks <- as.data.frame(frags2@peaks)
+# peaks <- as.data.frame(frags@peaks)
 
 ##########################
 ##### Data filtering #####
