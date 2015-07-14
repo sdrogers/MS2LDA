@@ -18,7 +18,7 @@
 ##	cor = correlation based filtering with minimum r = 0.75
 ## mindiff = minimum difference between precursor and any ms2 fragment (default = 10)
 
-xcmsSetFragments <- function(xs, cdf.corrected = FALSE, min.rel.int = 0.01, max.frags = 5000, msnSelect = c("precursor_int"), 
+xcmsSetFragments <- function(xs, xs_full, cdf.corrected = FALSE, min.rel.int = 0.01, max.frags = 5000, msnSelect = c("precursor_int"), 
     specFilter = c("specPeaks"), match.ppm = 7, sn = 3, mzgap = 0.005, min.r = 0.75, min.diff = 10) {
     
     require("xcms")
@@ -31,8 +31,8 @@ xcmsSetFragments <- function(xs, cdf.corrected = FALSE, min.rel.int = 0.01, max.
         stop("correlation filtering is not possible with single spectrum selection!", "\n")
     }
     
-    if (class(xs) == "xcmsSet") {
-        ms1peaks <- peaks(xs)
+    if (class(xs_full) == "xcmsSet") {
+        ms1peaks <- peaks(xs_full)
     } else {
         stop("input is not an xcmsSet")
     }
@@ -59,7 +59,7 @@ xcmsSetFragments <- function(xs, cdf.corrected = FALSE, min.rel.int = 0.01, max.
     npIntensity <- ms1peaks[, "maxo"]
     npSample <- ms1peaks[, "sample"]
     npCollisionEnergy <- rep(0, numMs1Peaks)
-        
+    
     # PeakNr+1 is the beginning peakindex for msn-spectra
     PeakNr <- numMs1Peaks
     
@@ -266,3 +266,4 @@ xcmsSetFragments <- function(xs, cdf.corrected = FALSE, min.rel.int = 0.01, max.
     cat(length(npPeakID), "Peaks picked,", numAloneSpecs, "MSn-Specs ignored.\n")
     object
 }
+
