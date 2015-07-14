@@ -18,8 +18,6 @@ the Journal of machine Learning research 3 (2003): 993-1022.
 [2] Oliphant, Travis. "Numba python bytecode to LLVM translator." 
 Proceedings of the Python for Scientific Computing Conference (SciPy). 2012.
 
-The variational Bayes version of this file can also be found in lda_vb.py
-
 """
 
 import cPickle
