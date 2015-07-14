@@ -117,13 +117,6 @@ var LDAvis = function(to_select, data_or_file_name) {
         // set the number of topics to global variable K:
         K = data['mdsDat'].x.length;
 
-        // topic ranking
-        var topic_ranking = data['topic.h_indices'];
-        for (var i = 0; i < K; i++) {
-	        console.log('topic_id=' + topic_ranking['topic_id'][i] + ' h_index=' + topic_ranking['h_index'][i]);
-        }        
-        debugger;
-
         // R is the number of top relevant (or salient) words whose bars we display
         R = Math.min(data['R'], 30);
 
@@ -164,7 +157,8 @@ var LDAvis = function(to_select, data_or_file_name) {
         // Create the topic input & lambda slider forms. Inspired from:
         // http://bl.ocks.org/d3noob/10632804
         // http://bl.ocks.org/d3noob/10633704
-        init_forms(topicID, lambdaID, visID);
+        var topic_ranking = data['topic.h_indices'];
+        init_forms(topicID, lambdaID, visID, K, topic_ranking);
 
         // When the value of lambda changes, update the visualization
         d3.select(lambda_select)
@@ -200,6 +194,8 @@ var LDAvis = function(to_select, data_or_file_name) {
                 topic_off(document.getElementById(topicID + value_old));
                 topic_on(document.getElementById(topicID + value_new), true);
                 vis_state.topic = value_new;
+                document.getElementById(docPrev).removeAttribute("disabled");
+                document.getElementById(docNext).removeAttribute("disabled");
                 state_save(true);
             });
 
@@ -218,6 +214,8 @@ var LDAvis = function(to_select, data_or_file_name) {
                 topic_off(document.getElementById(topicID + value_old));
                 topic_on(document.getElementById(topicID + value_new), true);
                 vis_state.topic = value_new;
+                document.getElementById(docPrev).removeAttribute("disabled");
+                document.getElementById(docNext).removeAttribute("disabled");
                 state_save(true);
             });
 
@@ -669,7 +667,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             .call(xAxis);
 
         // dynamically create the topic and lambda input forms at the top of the page:
-        function init_forms(topicID, lambdaID, visID) {
+        function init_forms(topicID, lambdaID, visID, K, topic_ranking) {
 
             // create container div for topic and lambda input:
             var inputDiv = document.createElement("div");
@@ -679,7 +677,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 
             // topic input container:
             var topicDiv = document.createElement("div");
-            topicDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; width: " + mdswidth*2 + "px; height: 50px; float: left");
+            topicDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; width: " + mdswidth*1.9 + "px; height: 75px; float: left");
             inputDiv.appendChild(topicDiv);
 
             var topicLabel = document.createElement("label");
@@ -743,6 +741,17 @@ var LDAvis = function(to_select, data_or_file_name) {
             nextBtn.setAttribute("disabled", "disabled");
             nextBtn.innerHTML = "Next MS1";
             topicDiv.appendChild(nextBtn);
+
+            // topic selection by h-indices ranking
+            var topicRankingDiv = document.createElement("div");
+            topicRankingDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; " + 
+               "width: 150px; height: 75px; overflow-y: scroll; overflow-x: hidden");
+            var topicRankingContent = "";
+            for (var i = 0; i < K; i++) {
+               topicRankingContent += "Topic " + topic_ranking['topic_id'][i] + " h-index=" + topic_ranking['h_index'][i] + "<br/>";
+            }
+            topicRankingDiv.innerHTML = topicRankingContent;
+            inputDiv.appendChild(topicRankingDiv);
 
             // lambda inputs
             //var lambdaDivLeft = 8 + mdswidth + margin.left + termwidth;
