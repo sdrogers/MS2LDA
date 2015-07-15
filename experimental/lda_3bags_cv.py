@@ -123,7 +123,7 @@ def run_beer3():
         
     print "Cross-validation for K=" + str(K)
     n_folds = 4
-    n_samples = 50
+    n_samples = 500
     n_burn = 0
     n_thin = 1
     alpha = 50.0/K

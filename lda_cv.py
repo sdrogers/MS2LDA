@@ -169,7 +169,7 @@ def run_beer3():
         
     print "Cross-validation for K=" + str(K)
     n_folds = 4
-    n_samples = 50
+    n_samples = 500
     n_burn = 0
     n_thin = 1
     alpha = 50.0/K
@@ -225,6 +225,40 @@ def run_urine37():
     cv.cross_validate_is(n_folds, n_burn, n_samples, n_thin, 
                          is_num_samples, is_iters)         
 
+def run_std1pos():
+
+    if len(sys.argv)>1:
+        K = int(sys.argv[1])
+    else:
+        K = 250
+
+    # find the current path of this script file        
+    current_path = os.path.dirname(os.path.abspath(__file__))
+        
+    print "Cross-validation for K=" + str(K)
+    n_folds = 4
+    n_samples = 500
+    n_burn = 0
+    n_thin = 1
+    alpha = 50.0/K
+    beta = 0.1
+    is_num_samples = 10000
+    is_iters = 1000
+     
+    relative_intensity = True
+    fragment_filename = current_path + '/input/relative_intensities/STD_MIX1_POS_60stepped_1E5_Top5_fragments_rel.csv'
+    neutral_loss_filename = current_path + '/input/relative_intensities/STD_MIX1_POS_60stepped_1E5_Top5_losses_rel.csv'
+    mzdiff_filename = None
+    ms1_filename = current_path + '/input/relative_intensities/STD_MIX1_POS_60stepped_1E5_Top5_ms1_rel.csv'
+    ms2_filename = current_path + '/input/relative_intensities/STD_MIX1_POS_60stepped_1E5_Top5_ms2_rel.csv'
+    ms2lda = Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename,
+                ms1_filename, ms2_filename, relative_intensity)
+     
+    df, vocab = ms2lda.preprocess()
+    cv = CrossValidatorLda(df, vocab, K, alpha, beta)
+    cv.cross_validate_is(n_folds, n_burn, n_samples, n_thin, 
+                         is_num_samples, is_iters)         
+
 def main():    
 
     data = None
@@ -237,6 +271,9 @@ def main():
     elif data == 'URINE37POS':
         print "Data = Urine37 Positive"
         run_urine37()
+    elif data == 'STD1POS':
+        print "Data = Standard Mix 1 Positive"
+        run_std1pos()
     else:
         print "Data = Synthetic"
         run_synthetic(parallel=False)        
