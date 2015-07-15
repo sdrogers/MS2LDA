@@ -11,6 +11,7 @@ input_file <- '/home/joewandy/Project/justin_data/Beer_3_T10_POS.mzXML'
 
 # reuse prev vocabularies, if any
 # prev_words_file <- '/home/joewandy/git/metabolomics_tools/justin/notebooks/results/beer3_pos_rel/beer3pos.vocab'
+prev_words_file <- ''
 
 # construct the output filenames
 prefix <- basename(input_file) # get the filename only
@@ -48,7 +49,7 @@ frags <- xcmsSetFragments(xset, cdf.corrected = FALSE, min.rel.int=0.01, max.fra
                           sn=3, mzgap=0.005, min.r=0.75, min.diff=10)
 peaks <- as.data.frame(frags@peaks)
 
-### try out alternative implementation of xcmsSetFragment() that makes use of the full scan data
+# ## try out alternative implementation of xcmsSetFragment() that makes use of the full scan data
 # full_scan_input_file <- '/home/joewandy/Dropbox/Project/justin_data/Dataset_for_PiMP/Beers_4Beers_compared/Positive/Samples/Beer_3_full1.mzXML'
 # xset_full <- xcmsSet(files=full_scan_input_file, method="centWave", ppm=2, snthresh=3, peakwidth=c(5,100),
 #                      prefilter=c(3,1000), mzdiff=0.001, integrate=0, fitgauss=FALSE, verbose.column=TRUE)

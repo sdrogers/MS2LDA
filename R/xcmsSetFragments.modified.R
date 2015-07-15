@@ -101,8 +101,10 @@ xcmsSetFragments <- function(xs, xs_full, cdf.corrected = FALSE, min.rel.int = 0
             ActualParentPeakID <- 0
             if (ms1peaks[i, "sample"] == NumXcmsPath) {
                 # indices of all msn scans where msn precursor mass is within the ms1 peak mz and rt range
-                msn.idx <- which(precursor.mz >= npMinMz[i] & precursor.mz <= npMaxMz[i] & msn.rt >= npMinRt[i] & 
-                  msn.rt <= npMaxRt[i])
+                rtMin <- npMinRt[i] - 0.1*npMinRt[i]
+                rtMax <- npMaxRt[i] + 0.1*npMaxRt[i]
+                msn.idx <- which(precursor.mz >= npMinMz[i] & precursor.mz <= npMaxMz[i] & msn.rt >= rtMin & 
+                  msn.rt <= rtMax)
                 
                 if (length(msn.idx) > 0) {
                   MzTable <- NULL
