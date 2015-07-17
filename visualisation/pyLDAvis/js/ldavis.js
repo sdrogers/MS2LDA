@@ -11,19 +11,20 @@ var LDAvis = function(to_select, data_or_file_name) {
         what: "nothing",
         element: undefined
     },
-        current_hover = {
-            what: "nothing",
-            element: undefined
-        },
-        old_winning_state = {
-            what: "nothing",
-            element: undefined
-        },
-        vis_state = {
-            lambda: 1,
-            topic: 0,
-            term: ""
-        };
+    current_hover = {
+        what: "nothing",
+        element: undefined
+    },
+    old_winning_state = {
+        what: "nothing",
+        element: undefined
+    },
+    vis_state = {
+        lambda: 1,
+        topic: 0,
+        term: "",
+        circles: undefined
+    };
 
     // Set up a few 'global' variables to hold the data:
     var K, // number of topics
@@ -48,12 +49,12 @@ var LDAvis = function(to_select, data_or_file_name) {
         bottom: 70,
         left: 30
     },
-        mdswidth = 530,
-        mdsheight = 530,
-        barwidth = 530,
-        barheight = 330,
-        termwidth = 120, // width to add between two panels to display terms
-        mdsarea = mdsheight * mdswidth;
+    mdswidth = 530,
+    mdsheight = 530,
+    barwidth = 530,
+    barheight = 330,
+    termwidth = 120, // width to add between two panels to display terms
+    mdsarea = mdsheight * mdswidth;
     // controls how big the maximum circle can be
     // doesn't depend on data, only on mds width and height:
     var rMax = 60;
@@ -245,15 +246,15 @@ var LDAvis = function(to_select, data_or_file_name) {
         d3.select("#" + topicHide)
             .on("click", function() {
             	var textNodes = d3.select('#' + leftPanelID).selectAll(".txt");
-		if (labels_visible) {
-			textNodes.style('visibility', 'hidden');
-			labels_visible = false
-			this.innerHTML = 'Show labels';     						
-		} else {
-			textNodes.style('visibility', 'visible');
-			labels_visible = true
-			this.innerHTML = 'Hide labels';     											
-		}       
+				if (labels_visible) {
+					textNodes.style('visibility', 'hidden');
+					labels_visible = false
+					this.innerHTML = 'Show labels';     						
+				} else {
+					textNodes.style('visibility', 'visible');
+					labels_visible = true
+					this.innerHTML = 'Hide labels';     											
+				}       
             });
 
         d3.select("#" + docPrev)
@@ -271,7 +272,7 @@ var LDAvis = function(to_select, data_or_file_name) {
                d3.select("#ms1_plot")
                   .attr("xlink:href","/topic?action=next&ts="+n);
             });
-
+        
         // create linear scaling to pixels (and add some padding on outer region of scatterplot)
         var xrange = d3.extent(mdsData, function(d) {
             return d.x;
@@ -442,7 +443,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             });
 
         // draw circles
-        points.append("circle")
+        var circles = points.append("circle")
             .attr("class", "dot")
             .style("opacity", base_opacity)
             .style("fill", color1)
@@ -479,9 +480,7 @@ var LDAvis = function(to_select, data_or_file_name) {
                 document.getElementById(topicID).value = vis_state.topic = d.topics;
 				document.getElementById(topicID+"_shown").value = d.topics-1;  
                 document.getElementById(docPrev).removeAttribute("disabled");
-                document.getElementById(docNext).removeAttribute("disabled");
-                debugger;
-				              
+                document.getElementById(docNext).removeAttribute("disabled");				              
                 state_save(true);
                 topic_on(this, true);
             })
@@ -489,7 +488,31 @@ var LDAvis = function(to_select, data_or_file_name) {
                 if (vis_state.topic != d.topics) topic_off(this);
                 if (vis_state.topic > 0) topic_on(document.getElementById(topicID + vis_state.topic));
             });
+        
+        // save the circle to the global vis_state
+        vis_state.circles = circles;
 
+        // then we can use this to select the right circle when link is clicked
+        d3.selectAll('.select_topic')
+		.data(topic_ranking['topic_id'])
+		.on("click", function(d) {    			
+			// find the circle element that has been bound to the data			
+			var circles = vis_state['circles']
+			var selected_circle = circles[0][d] // the circles are array inside a single-element array
+			var circle_id = selected_circle.id
+			// find the old topic
+            var old_topic = topicID + vis_state.topic;
+            if (vis_state.topic > 0 && old_topic != circle_id) {
+                topic_off(document.getElementById(old_topic));
+            }
+            // make sure topic input box value and fragment reflects clicked selection
+            document.getElementById(topicID).value = vis_state.topic = d+1;
+			document.getElementById(topicID+"_shown").value = d;  
+            document.getElementById(docPrev).removeAttribute("disabled");
+            document.getElementById(docNext).removeAttribute("disabled");				              
+            topic_on(selected_circle, true);    			
+		});
+        
         svg.append("text")
             .text("Inter-topic Distance Map (via multidimensional scaling)")
             .attr("x", mdswidth/2 + margin.left)
@@ -665,7 +688,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 
         chart.attr("class", "xaxis")
             .call(xAxis);
-
+        
         // dynamically create the topic and lambda input forms at the top of the page:
         function init_forms(topicID, lambdaID, visID, K, topic_ranking) {
 
@@ -742,15 +765,18 @@ var LDAvis = function(to_select, data_or_file_name) {
             nextBtn.innerHTML = "Next MS1";
             topicDiv.appendChild(nextBtn);
 
-            // topic selection by h-indices ranking
             var topicRankingDiv = document.createElement("div");
             topicRankingDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; " + 
-               "width: 150px; height: 75px; overflow-y: scroll; overflow-x: hidden");
+               "width: 150px; height: 75px; overflow-y: scroll; overflow-x: hidden; font-family: sans-serif; font-size: 11px;");
             var topicRankingContent = "";
             for (var i = 0; i < K; i++) {
-               topicRankingContent += "Topic " + topic_ranking['topic_id'][i] + " h-index=" + topic_ranking['h_index'][i] + "<br/>";
+            	var topic_id = topic_ranking['topic_id'][i];
+            	var h_index = topic_ranking['h_index'][i];
+            	var label = "<a href='#' class='select_topic'>";
+            	label += "Topic " + topic_id + " h-index=" + h_index;
+            	label += "</a>";
+            	topicRankingDiv.innerHTML += label + "<br/>";
             }
-            topicRankingDiv.innerHTML = topicRankingContent;
             inputDiv.appendChild(topicRankingDiv);
 
             // lambda inputs

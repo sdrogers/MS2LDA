@@ -382,7 +382,7 @@ def test_lda():
     ms2lda.run_lda(n_topics, n_samples, n_burn, n_thin, alpha, beta)
     ms2lda.write_results('beer3pos')
     ms2lda.model.print_topic_words()    
-    ms2lda.plot_lda_fragments(consistency=0.50, sort_by="h_index", interactive=False)
+    ms2lda.plot_lda_fragments(consistency=0.50, sort_by="h_index", interactive=True)
 
 # 
 #     # save some topics from beer3pos lda
