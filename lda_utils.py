@@ -16,7 +16,8 @@ def word_indices(document):
     """
     results = []
     for nnz in document.values.nonzero()[1]:
-        for n in range(int(document[nnz])):
+        count = document.values[0].flatten()
+        for n in range(int(count[nnz])):
             results.append(nnz)
     return results
 

@@ -24,12 +24,9 @@ import cPickle
 import sys
 import time
 
-from lda.lda import LDA
 from numpy import int32
 from numpy.random import RandomState
 
-from lda_cgs_numba import sample_numba
-from lda_cgs_numpy import sample_numpy
 from lda_generate_data import LdaDataGenerator
 import lda_utils as utils
 import numpy as np
@@ -40,7 +37,7 @@ from lda_utils import estimate_alpha_from_counts
 import visualisation.pyLDAvis as pyLDAvis
 
 
-class CollapseGibbsLda:
+class CollapseGibbsLda(object):
     
     def __init__(self, df, vocab, K, alpha, beta, random_state=None, previous_model=None):
         """
@@ -164,7 +161,7 @@ class CollapseGibbsLda:
         alpha_new = estimate_alpha_from_counts(self.D, self.K, self.alpha, self.cdk)      
         return alpha_new
                                                     
-    def run(self, n_burn, n_samples, n_thin, use_native=False):
+    def run(self, n_burn, n_samples, n_thin, use_native=True):
         """ 
         Runs the Gibbs sampling for LDA 
         
@@ -176,13 +173,19 @@ class CollapseGibbsLda:
         """
 
         # select the sampler function to use
+        from lda_cgs_numpy import sample_numpy
         sampler_func = None
         if not use_native:
             print "Using Numpy for LDA sampling"
             sampler_func = sample_numpy
         else:
             print "Using Numba for LDA sampling"
-            sampler_func = sample_numba
+            try:
+                from lda_cgs_numba import sample_numba
+                sampler_func = sample_numba
+            except Exception:
+                print "Numba not found. Using Numpy for LDA sampling"
+                sampler_func = sample_numpy            
 
         # this will modify the various count matrices (Z, cdk, ckn, cd, ck) inside
         self.topic_word_, self.doc_topic_, self.loglikelihoods_ = sampler_func(
@@ -248,14 +251,7 @@ class CollapseGibbsLda:
         pyLDAvis.show(vis_data, topic_plotter=topic_plotter)        
         
     def print_topic_words(self, EPSILON = 0.05):     
-        
-#         n_top_words = 20
-#         for i, topic_dist in enumerate(self.topic_word_):
-#             topic_words = self.vocab[np.argsort(topic_dist)][:-n_top_words:-1]
-#             print('Topic {}: {}'.format(i, ' '.join(topic_words)))        
-
-        for i, topic_dist in enumerate(self.topic_word_):
-    
+        for i, topic_dist in enumerate(self.topic_word_):    
             ordering = np.argsort(topic_dist)
             topic_words = np.array(self.vocab)[ordering][::-1]
             dist = topic_dist[ordering][::-1]        
@@ -267,7 +263,7 @@ class CollapseGibbsLda:
                 else:
                     break
             print
-                           
+                                       
 def main():
 
     multiplier = 1

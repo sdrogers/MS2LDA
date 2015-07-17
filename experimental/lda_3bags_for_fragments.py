@@ -14,71 +14,18 @@ import pylab as plt
 
 class ThreeBags_Ms2Lda(Ms2Lda):
     
-    def preprocess(self):
-
-        self.ms2['fragment_bin_id'] = self.ms2['fragment_bin_id'].astype(str)
-        self.ms2['loss_bin_id'] = self.ms2['loss_bin_id'].astype(str)
-
-        self.data = pd.DataFrame()
-
-        # discretise the fragment and neutral loss intensities values by converting it to 0 .. 100
-        if self.fragment_data is not None:
-            self.fragment_data *= 100
-            self.data = self.data.append(self.fragment_data)
-        
-        if self.neutral_loss_data is not None:
-            self.neutral_loss_data *= 100
-            self.data = self.data.append(self.neutral_loss_data)
-        
-        # make mzdiff values to be within 0 .. 100 as well
-        if self.mzdiff_data is not None:
-            max_mzdiff_count = self.mzdiff_data.max().max()
-            self.mzdiff_data /= max_mzdiff_count
-            self.mzdiff_data *= 100
-            self.data = self.data.append(self.mzdiff_data)            
-        
-        # get rid of NaNs, transpose the data and floor it
-        self.data = self.data.replace(np.nan,0)
-        self.data = self.data.transpose()
-        sd = coo_matrix(self.data)
-        sd = sd.floor()  
-        npdata = np.array(sd.todense(), dtype='int64')
-        print "Data shape " + str(npdata.shape)
-        df = DataFrame(npdata)
-
-        # build the vocab
-        all_words = self.data.columns.values
-        vocab = []
-        for word in all_words:
-            if word.startswith('fragment'):
-                word_type = 0
-            elif word.startswith('loss'):
-                word_type = 1
-            elif word.startswith('mzdiff'):
-                word_type = 2
-            else:
-                raise ValueError("Unknown word type")
-            tup = (word, word_type)
-            vocab.append(tup)
-        vocab = np.array(vocab)
-        
-        return df, vocab
-
-    def run_lda(self, df, vocab, n_topics, n_samples, n_burn, n_thin, alpha, beta, 
+    def run_lda(self, n_topics, n_samples, n_burn, n_thin, alpha, beta, 
                             use_native=True, previous_model=None):    
                         
-        print "Fitting model..."
+        print "Fitting model with 3bags-LDA ..."
         self.n_topics = n_topics
-        sys.stdout.flush()
-        self.model = CollapseGibbs_3bags_Lda(df, vocab, n_topics, alpha, beta, previous_model=previous_model)
+        self.model = CollapseGibbs_3bags_Lda(self.df, self.vocab, n_topics, alpha, beta, previous_model=previous_model)
         self.n_topics = self.model.K # might change if previous_model is used
+
         start = timeit.default_timer()
         self.model.run(n_burn, n_samples, n_thin, use_native=use_native)
         stop = timeit.default_timer()
         print "DONE. Time=" + str(stop-start)        
-        plt.plot(self.model.loglikelihoods_)
-        plt.show()
-        # print_topic_words(self.model.topic_word_, self.model.n_bags, 20, n_topics, vocab, self.EPSILON)      
                 
     def write_results(self, results_prefix):
 
@@ -132,7 +79,7 @@ class ThreeBags_Ms2Lda(Ms2Lda):
             outfile = self._get_outfile(results_prefix, '_all_bag' + str(b) + '.csv') 
             print "Writing fragments x topics to " + outfile
 
-            masses = np.array(self.data.transpose().index)
+            masses = np.array(self.df.transpose().index)
             d = {}
             for i in np.arange(self.n_topics):
                 topic_name = topic_names[i]
@@ -158,7 +105,7 @@ class ThreeBags_Ms2Lda(Ms2Lda):
         doc = self.model.doc_topic_
         (n_doc, a) = doc.shape
         topic_index = np.arange(self.n_topics)
-        doc_names = np.array(self.data.index)
+        doc_names = np.array(self.df.index)
         d = {}
         for i in np.arange(n_doc):
             doc_name = doc_names[i]
@@ -206,7 +153,6 @@ def test_lda():
     alpha = 50.0/n_topics
     beta = 0.1
 
-    relative_intensity = True
     fragment_filename = '../input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
     neutral_loss_filename = '../input/relative_intensities/Beer_3_T10_POS_losses_rel.csv'
     # mzdiff_filename = '../input/relative_intensities/Beer_3_T10_POS_mzdiffs_rel.csv'    
@@ -215,11 +161,9 @@ def test_lda():
     ms1_filename = '../input/relative_intensities/Beer_3_T10_POS_ms1_rel.csv'
     ms2_filename = '../input/relative_intensities/Beer_3_T10_POS_ms2_rel.csv'
  
-    ms2lda = ThreeBags_Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename, 
-                ms1_filename, ms2_filename, relative_intensity)    
-    df, vocab = ms2lda.preprocess()   
-    ms2lda.run_lda(df, vocab, n_topics, n_samples, n_burn, n_thin, 
-                   alpha, beta)
+    ms2lda = ThreeBags_Ms2Lda.lcms_data_from_R(fragment_filename, neutral_loss_filename, mzdiff_filename, 
+                                               ms1_filename, ms2_filename, vocab_type=2)
+    ms2lda.run_lda(n_topics, n_samples, n_burn, n_thin, alpha, beta)
     ms2lda.write_results('beer3pos_alternative')
     ms2lda.plot_lda_fragments(consistency=0.50)    
             
