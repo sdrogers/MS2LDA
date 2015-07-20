@@ -21,12 +21,13 @@ class Ms2Lda_Viz(object):
     def rank_topics(self, sort_by="h_index", selected_topics=None, top_N=None, interactive=False):
 
         print "Ranking topics ..."
+        self.sort_by = sort_by
         if sort_by == 'h_index':
-            topic_ranking = self._h_index() 
+            topic_sort_criteria = self._h_index() 
         elif sort_by == 'in_degree':
-            topic_ranking = self._in_degree() 
+            topic_sort_criteria = self._in_degree() 
         
-        sorted_topic_counts = sorted(topic_ranking.items(), key=operator.itemgetter(1), reverse=True)
+        sorted_topic_counts = sorted(topic_sort_criteria.items(), key=operator.itemgetter(1), reverse=True)
         if not interactive:
             print "Topic Ranking"
             print "============="
@@ -50,13 +51,15 @@ class Ms2Lda_Viz(object):
         # also create a matrix of topics and their h-indices for later use in front-end visualisation
         if interactive:        
             num_topics = len(sorted_topic_counts)
-            self.topic_h_indices = np.zeros((num_topics, 2), dtype=int)
+            self.topic_ranking = np.zeros((num_topics, 2), dtype=int)
             for k in range(num_topics):
                 item = sorted_topic_counts[k]
-                self.topic_h_indices[k, 0] = item[0] # the topic id
-                self.topic_h_indices[k, 1] = item[1] # the h-index of that topic
+                self.topic_ranking[k, 0] = item[0] # the topic id
+                self.topic_ranking[k, 1] = item[1] # the h-index or in-degree of that topic
+            self.sort_by_min = np.min(self.topic_ranking[:, 1])
+            self.sort_by_max = np.max(self.topic_ranking[:, 1])
         
-        return topic_ranking, sorted_topic_counts                
+        return topic_sort_criteria, sorted_topic_counts                
                 
     def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", selected_topics=None, interactive=False):
                 
@@ -109,6 +112,7 @@ class Ms2Lda_Viz(object):
 
             parent_ids = []
             parent_masses = []
+            parent_rts = []
             parent_intensities = []
             parent_all_fragments = {}
             count = 1
@@ -130,6 +134,7 @@ class Ms2Lda_Viz(object):
                     print '%-5d%-5d\t%3.5f\t%6.3f\t\t%.3e\t%.3f' % (count, peakid, mz, rt, intensity, prob)
                 parent_ids.append(peakid)
                 parent_masses.append(mz)
+                parent_rts.append(rt)
                 parent_intensities.append(intensity)
                 
                 # find all the fragment peaks of this parent peak
@@ -309,12 +314,12 @@ class Ms2Lda_Viz(object):
             num_peaks = len(parent_ids)
             if not interactive:
                 for n in range(num_peaks):
-                        self._make_ms1_plot(i, n, parent_masses, parent_ids, 
+                        self._make_ms1_plot(i, n, parent_masses, parent_rts, parent_ids, 
                            parent_all_fragments, parent_topic_fragments, parent_topic_losses,
                            wordfreq, consistency, max_parent_mz)
                         plt.show()
             else:
-                plot_data = (parent_masses, parent_ids, 
+                plot_data = (parent_masses, parent_rts, parent_ids, 
                            parent_all_fragments, parent_topic_fragments, parent_topic_losses,
                            wordfreq, consistency, max_parent_mz)
                 self.topic_plots[i] = plot_data
@@ -326,15 +331,15 @@ class Ms2Lda_Viz(object):
         
     def plot_for_web(self, i, n):
         if i in self.topic_plots:
-            parent_masses, parent_ids, parent_all_fragments, parent_topic_fragments, parent_topic_losses, wordfreq, consistency, max_parent_mz = self.topic_plots[i]
-            fig = self._make_ms1_plot(i, n, parent_masses, parent_ids, 
+            parent_masses, parent_rts, parent_ids, parent_all_fragments, parent_topic_fragments, parent_topic_losses, wordfreq, consistency, max_parent_mz = self.topic_plots[i]
+            fig = self._make_ms1_plot(i, n, parent_masses, parent_rts, parent_ids, 
                                       parent_all_fragments, parent_topic_fragments, parent_topic_losses,
                                       wordfreq, consistency, max_parent_mz)
             return fig
         else:
             return None
         
-    def _make_ms1_plot(self, i, n, parent_masses, parent_ids, 
+    def _make_ms1_plot(self, i, n, parent_masses, parent_rts, parent_ids, 
                        parent_all_fragments, parent_topic_fragments, parent_topic_losses,
                        wordfreq, consistency, max_parent_mz):
         
@@ -364,6 +369,7 @@ class Ms2Lda_Viz(object):
 
         # plot the parent peak first
         parent_mass = parent_masses[n]
+        parent_rt = parent_rts[n]
 
         # TEMPORARILY HARDCODED FOR RELATIVE INTENSITY 
         parent_intensity = 0.25
@@ -444,7 +450,12 @@ class Ms2Lda_Viz(object):
 
         plt.xlabel('m/z')
         plt.ylabel('relative intensity')                    
-        plt.title('Topic ' + str(i) + ' -- parent peak ' + ("%.5f" % parent_mass))
+        ms1_peak_counts = str(len(parent_masses))
+        mz_value = ("%.5f" % parent_mass)
+        rt_value = ("%.3f" % parent_rt)
+        title = 'Topic ' + str(i) + ' peak ' + str(n+1) + '/' + ms1_peak_counts
+        title += ' (m/z=' + mz_value + ' RT=' + rt_value + ")"
+        plt.title(title)
         
         blue_patch = mpatches.Patch(color='blue', label='Parent peak')
         yellow_patch = mpatches.Patch(color='#FF9933', label='Fragment peaks')

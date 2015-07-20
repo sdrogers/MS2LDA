@@ -246,9 +246,20 @@ class CollapseGibbsLda(object):
         data['vocab'] = self.vocab
         data['term_frequency'] = np.sum(self.ckn, axis=0)    
         if topic_plotter is not None:
-            data['topic_h_indices'] = topic_plotter.topic_h_indices
+            data['topic_ranking'] = topic_plotter.topic_ranking
+            data['plot_opts'] = {'xlab': 'PC1', 'ylab': 'PC2', 'sort_by' : topic_plotter.sort_by}
+            if topic_plotter.sort_by == 'h_index':
+                data['lambda_step'] = 1
+            elif topic_plotter.sort_by == 'in_degree':
+                data['lambda_step'] = 10                
+            data['lambda_min'] = self._round_nicely(topic_plotter.sort_by_min)
+            data['lambda_max'] = self._round_nicely(topic_plotter.sort_by_max)
         vis_data = pyLDAvis.prepare(**data)   
-        pyLDAvis.show(vis_data, topic_plotter=topic_plotter)        
+        pyLDAvis.show(vis_data, topic_plotter=topic_plotter)   
+
+    # http://stackoverflow.com/questions/2272149/round-to-5-or-other-number-in-python        
+    def _round_nicely(self, x, base=5):
+        return int(base * round(float(x)/base))             
         
     def print_topic_words(self, EPSILON = 0.05):     
         for i, topic_dist in enumerate(self.topic_word_):    

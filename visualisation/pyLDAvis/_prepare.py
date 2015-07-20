@@ -210,9 +210,9 @@ def _term_topic_freq(topic_term_dists, topic_freq, term_frequency):
     return term_topic_freq * err
 
 
-def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequency, topic_h_indices, \
-                R=30, lambda_step=0.01, mds=js_PCoA, n_jobs=-1, \
-                plot_opts={'xlab': 'PC1', 'ylab': 'PC2'}):
+def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequency, topic_ranking, plot_opts, \
+                lambda_step, lambda_min, lambda_max, \
+                R=30, mds=js_PCoA, n_jobs=-1):
     """Transforms the topic model distributions and related corpus data into
     the data structures needed for the visualization.
 
@@ -300,21 +300,24 @@ def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequenc
     client_topic_order = range(K)
     
     # instead we pass the topic h-indices for displaying on the front-end later
-    topic_h_indices = pd.DataFrame({'topic_id': topic_h_indices[:, 0], 'h_index': topic_h_indices[:, 1]}).sort('h_index', ascending=False)
+    topic_ranking = pd.DataFrame({'topic_id': topic_ranking[:, 0], 'rank': topic_ranking[:, 1]}).sort('rank', ascending=False)
 
-    return PreparedData(topic_coordinates, topic_info, token_table, R, lambda_step, plot_opts, client_topic_order, topic_h_indices)
+    return PreparedData(topic_coordinates, topic_info, token_table, R, lambda_step, lambda_min, lambda_max, plot_opts, client_topic_order, topic_ranking)
 
 class PreparedData(namedtuple('PreparedData', ['topic_coordinates', 'topic_info', 'token_table',\
-                                                              'R', 'lambda_step', 'plot_opts', 'topic_order', 'topic_h_indices'])):
+                                                              'R', 'lambda_step', 'lambda_min', 'lambda_max', \
+                                                              'plot_opts', 'topic_order', 'topic_ranking'])):
     def to_dict(self):
         return {'mdsDat': self.topic_coordinates.to_dict(orient='list'),
                     'tinfo': self.topic_info.to_dict(orient='list'),
                     'token.table': self.token_table.to_dict(orient='list'),
                     'R': self.R,
                     'lambda.step': self.lambda_step,
+                    'lambda.min': self.lambda_min,
+                    'lambda.max': self.lambda_max,
                     'plot.opts': self.plot_opts,
                     'topic.order': self.topic_order,
-                    'topic.h_indices': self.topic_h_indices.to_dict(orient='list')}
+                    'topic.ranking': self.topic_ranking.to_dict(orient='list')}
 
     def to_json(self):
         return json.dumps(self.to_dict(), cls=NumPyEncoder)

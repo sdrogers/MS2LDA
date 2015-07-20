@@ -20,10 +20,11 @@ var LDAvis = function(to_select, data_or_file_name) {
         element: undefined
     },
     vis_state = {
-        lambda: 1,
+        lambda: undefined,
         topic: 0,
         term: "",
-        circles: undefined
+        circles: undefined,
+        active_topics: []
     };
 
     // Set up a few 'global' variables to hold the data:
@@ -117,6 +118,10 @@ var LDAvis = function(to_select, data_or_file_name) {
     
         // set the number of topics to global variable K:
         K = data['mdsDat'].x.length;
+        for (var i = 0; i < K; i++) {
+    		var this_id = i+1; // circles are counted from 1, ...
+    		vis_state['active_topics'].push(this_id); // initially all topics are active
+        }                    
 
         // R is the number of top relevant (or salient) words whose bars we display
         R = Math.min(data['R'], 30);
@@ -155,30 +160,20 @@ var LDAvis = function(to_select, data_or_file_name) {
         }
         var dat3 = lamData.slice(0, R);
 
+        // create topic ranking
+        var topic_ranking = data['topic.ranking'];
+        var topic_ranking_map = {};
+        for (var i = 0; i < K; i++) {
+        	var topic_id = topic_ranking['topic_id'][i];
+        	var rank = topic_ranking['rank'][i];
+        	topic_ranking_map[topic_id+1] = rank; // +1 to make it same as the initial LDAVis
+        }        
+        vis_state.lambda = data['lambda.min'];
+        
         // Create the topic input & lambda slider forms. Inspired from:
         // http://bl.ocks.org/d3noob/10632804
-        // http://bl.ocks.org/d3noob/10633704
-        var topic_ranking = data['topic.h_indices'];
+        // http://bl.ocks.org/d3noob/10633704        
         init_forms(topicID, lambdaID, visID, K, topic_ranking);
-
-        // When the value of lambda changes, update the visualization
-        d3.select(lambda_select)
-            .on("mouseup", function() {
-                console.log('lambda_select mouseup');
-                // store the previous lambda value
-                lambda.old = lambda.current;
-                lambda.current = document.getElementById(lambdaID).value;
-                vis_state.lambda = +this.value;
-                // adjust the text on the range slider
-                d3.select(lambda_select).property("value", vis_state.lambda);
-                d3.select(lambda_select + "-value").text(vis_state.lambda);
-                // transition the order of the bars
-                var increased = lambda.old < vis_state.lambda;
-                if (vis_state.topic > 0) reorder_bars(increased);
-                // store the current lambda value
-                state_save(true);
-                document.getElementById(lambdaID).value = vis_state.lambda;
-            });
 
         d3.select("#" + topicUp)
             .on("click", function() {
@@ -187,7 +182,22 @@ var LDAvis = function(to_select, data_or_file_name) {
                 if (termElem !== undefined) term_off(termElem);
                 vis_state.term = "";
                 var value_old = document.getElementById(topicID).value;
-                var value_new = Math.min(K, +value_old + 1).toFixed(0);
+                var pos_old = vis_state['active_topics'].indexOf(parseInt(value_old));
+                var value_new = 0;
+                if (pos_old > -1) {
+                	// if we find the position of value_old in active_topics
+                	var pos_new = pos_old+1;
+                	if (pos_new < vis_state['active_topics'].length) {
+                		// then increment to next active topic if possible
+                		value_new = vis_state['active_topics'][pos_new];
+                	} else {
+                		// out of bound, do nothing
+                		value_new = value_old;
+                	}
+                } else {
+                	// otherwise just show the first item in active_topics
+                	value_new = vis_state['active_topics'][0];
+                }
                 // increment the value in the input box
                 document.getElementById(topicID).value = value_new;
                 // input box above is now hidden, and we show value-1 in the other input box that's shown
@@ -197,7 +207,7 @@ var LDAvis = function(to_select, data_or_file_name) {
                 vis_state.topic = value_new;
                 document.getElementById(docPrev).removeAttribute("disabled");
                 document.getElementById(docNext).removeAttribute("disabled");
-                state_save(true);
+//                state_save(true);
             });
 
         d3.select("#" + topicDown)
@@ -208,6 +218,25 @@ var LDAvis = function(to_select, data_or_file_name) {
                 vis_state.term = "";
                 var value_old = document.getElementById(topicID).value;
                 var value_new = Math.max(0, +value_old - 1).toFixed(0);
+
+                var value_old = document.getElementById(topicID).value;
+                var pos_old = vis_state['active_topics'].indexOf(parseInt(value_old));
+                var value_new = 0;
+                if (pos_old > -1) {
+                	// if we find the position of value_old in active_topics
+                	var pos_new = pos_old-1;
+                	if (pos_new >= 0) {
+                		// then decrement to previous active topic if possible
+                		value_new = vis_state['active_topics'][pos_new];
+                	} else {
+                		// out of bound, do nothing
+                		value_new = value_old;
+                	}
+                } else {
+                	// otherwise just show the last item in active_topics
+                	var last_idx = vis_state['active_topics'].length-1;
+                	value_new = vis_state['active_topics'][last_idx];
+                }
                 // increment the value in the input box
                 document.getElementById(topicID).value = value_new;
                 // input box above is now hidden, and we show value-1 in the other input box that's shown
@@ -217,46 +246,62 @@ var LDAvis = function(to_select, data_or_file_name) {
                 vis_state.topic = value_new;
                 document.getElementById(docPrev).removeAttribute("disabled");
                 document.getElementById(docNext).removeAttribute("disabled");
-                state_save(true);
+//                state_save(true);
             });
 
-        d3.select("#" + topicID)
-            .on("keyup", function() {
-                // remove term selection if it exists (from a saved URL)
-                var termElem = document.getElementById(termID + vis_state.term);
-                if (termElem !== undefined) term_off(termElem);
-                vis_state.term = "";
-                topic_off(document.getElementById(topicID + vis_state.topic));
-                var value_new = document.getElementById(topicID).value;
-                if (!isNaN(value_new) && value_new > 0) {
-                    value_new = Math.min(K, Math.max(1, value_new));
-                    topic_on(document.getElementById(topicID + value_new));
-                    vis_state.topic = value_new;
-                    state_save(true);
-                    document.getElementById(topicID).value = vis_state.topic;
-                }
-            });
+//        d3.select("#" + topicID)
+//            .on("keyup", function() {
+//                // remove term selection if it exists (from a saved URL)
+//                var termElem = document.getElementById(termID + vis_state.term);
+//                if (termElem !== undefined) term_off(termElem);
+//                vis_state.term = "";
+//                topic_off(document.getElementById(topicID + vis_state.topic));
+//                var value_new = document.getElementById(topicID).value;
+//                if (!isNaN(value_new) && value_new > 0) {
+//                    value_new = Math.min(K, Math.max(1, value_new));
+//                    topic_on(document.getElementById(topicID + value_new));
+//                    vis_state.topic = value_new;
+////                    state_save(true);
+//                    document.getElementById(topicID).value = vis_state.topic;
+//                }
+//            });
 
+        // clear current topic
         d3.select("#" + topicClear)
             .on("click", function() {
                 state_reset();
-                state_save(true);
+//                state_save(true);
             });
 
+        // hide topic labels
         d3.select("#" + topicHide)
             .on("click", function() {
-            	var textNodes = d3.select('#' + leftPanelID).selectAll(".txt");
 				if (labels_visible) {
+	            	var textNodes = d3.select('#' + leftPanelID).selectAll(".txt");
 					textNodes.style('visibility', 'hidden');
 					labels_visible = false
 					this.innerHTML = 'Show labels';     						
 				} else {
-					textNodes.style('visibility', 'visible');
+	                // check the slider to make sure we don't show things that should be hidden
+	                for (var i = 0; i < K; i++) {
+	        			var circles = vis_state['circles']
+	        			var selected_circle = circles[0][i] // the circles are array inside a single-element array
+	        			var this_id = i+1; // circles are counted from 1, ...
+	        			var rank = topic_ranking_map[this_id];
+	        			if (rank < vis_state.lambda) {
+	        				// hide label
+        	            	d3.select('#' + selected_circle.id + '_label').style('visibility', 'hidden');
+	        			} else {
+	        				// show label
+        	            	d3.select('#' + selected_circle.id + '_label').style('visibility', 'visible');
+	        			}
+	                }             
 					labels_visible = true
 					this.innerHTML = 'Hide labels';     											
 				}       
             });
 
+        // select the previous MS1 peak in the current topic
         d3.select("#" + docPrev)
             .on("click", function() {
                var d = new Date();
@@ -265,6 +310,7 @@ var LDAvis = function(to_select, data_or_file_name) {
                   .attr("xlink:href","/topic?action=prev&ts="+n);
             });
 
+        // select the next MS1 peak in the current topic
         d3.select("#" + docNext)
             .on("click", function() {
                var d = new Date();
@@ -272,6 +318,75 @@ var LDAvis = function(to_select, data_or_file_name) {
                d3.select("#ms1_plot")
                   .attr("xlink:href","/topic?action=next&ts="+n);
             });
+        
+        // select the right circle when link is clicked
+        d3.selectAll('.select_topic')
+		.data(topic_ranking['topic_id'])
+		.on("click", function(d) {    			
+			// find the circle element that has been bound to the data			
+			var circles = vis_state['circles']
+			var selected_circle = circles[0][d] // the circles are array inside a single-element array
+			var circle_id = selected_circle.id
+			// find the old topic
+            var old_topic = topicID + vis_state.topic;
+            if (vis_state.topic > 0 && old_topic != circle_id) {
+                topic_off(document.getElementById(old_topic));
+            }
+            // make sure topic input box value and fragment reflects clicked selection
+            document.getElementById(topicID).value = vis_state.topic = d+1; 	// +1 because we index circles from 1,..
+			document.getElementById(topicID+"_shown").value = d;  				// but we show circle labels from 0,..
+            document.getElementById(docPrev).removeAttribute("disabled");
+            document.getElementById(docNext).removeAttribute("disabled");				              
+            topic_on(selected_circle, true);    			
+		});
+        
+        // When the value of lambda changes, update the visualization 
+        // by showing/hiding the appropriate circles
+        d3.select(lambda_select)
+            .on("mouseup", function() {
+
+            	state_reset();
+            	
+            	// store the previous lambda value
+                lambda.old = lambda.current;
+                lambda.current = document.getElementById(lambdaID).value;
+                vis_state.lambda = +this.value;
+
+                // adjust the text on the range slider
+                d3.select(lambda_select).property("value", vis_state.lambda);
+                d3.select(lambda_select + "-value").text(vis_state.lambda);
+
+                // transition the order of the bars
+//                var increased = lambda.old < vis_state.lambda;
+//                if (vis_state.topic > 0) reorder_bars(increased);
+                // store the current lambda value
+//                state_save(true);
+
+                // decide which circles to hide or show based on its ranking
+				vis_state['active_topics'] = []
+                for (var i = 0; i < K; i++) {
+        			var circles = vis_state['circles']
+        			var selected_circle = circles[0][i] // the circles are array inside a single-element array
+        			var this_id = i+1; // circles are counted from 1, ...
+        			var rank = topic_ranking_map[this_id];
+        			if (rank < vis_state.lambda) {
+        				// hide circle
+        	            selected_circle.style.visibility = 'hidden';
+        	            if (labels_visible) {
+        	            	var label = d3.select('#' + selected_circle.id + '_label').style('visibility', 'hidden');
+        	            }        				
+        			} else {
+        				// show circle
+        				vis_state['active_topics'].push(this_id);
+        	            selected_circle.style.visibility = 'visible';
+        	            if (labels_visible) {
+        	            	var label = d3.select('#' + selected_circle.id + '_label').style('visibility', 'visible');
+        	            	vis_state['active_topics'].push()
+        	            }        				
+        			}
+                }                
+                document.getElementById(lambdaID).value = vis_state.lambda;
+            });        
         
         // create linear scaling to pixels (and add some padding on outer region of scatterplot)
         var xrange = d3.extent(mdsData, function(d) {
@@ -325,7 +440,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             .attr("opacity", 0)
             .on("click", function() {
                 state_reset();
-                state_save(true);
+//                state_save(true);
             });
 
         mdsplot.append("line") // draw x-axis
@@ -448,8 +563,13 @@ var LDAvis = function(to_select, data_or_file_name) {
             .style("opacity", base_opacity)
             .style("fill", color1)
             .attr("r", function(d) {
+            	var rank = topic_ranking_map[d.topics];
+            	if (data['plot.opts'].sort_by === 'in_degree') {
+            		rank /= 10;
+            	}
                 //return (rScaleMargin(+d.Freq));
-                return (Math.sqrt((d.Freq/100)*mdswidth*mdsheight*circle_prop/Math.PI));
+                //return (Math.sqrt((d.Freq/100)*mdswidth*mdsheight*circle_prop/Math.PI));
+                return (Math.sqrt((rank/100)*mdswidth*mdsheight*circle_prop/Math.PI));
             })
             .attr("cx", function(d) {
                 return (xScale(+d.x));
@@ -481,7 +601,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 				document.getElementById(topicID+"_shown").value = d.topics-1;  
                 document.getElementById(docPrev).removeAttribute("disabled");
                 document.getElementById(docNext).removeAttribute("disabled");				              
-                state_save(true);
+//                state_save(true);
                 topic_on(this, true);
             })
             .on("mouseout", function(d) {
@@ -489,29 +609,9 @@ var LDAvis = function(to_select, data_or_file_name) {
                 if (vis_state.topic > 0) topic_on(document.getElementById(topicID + vis_state.topic));
             });
         
-        // save the circle to the global vis_state
+        // IMPORTANT: save the circle to the global vis_state once they're created
+        // this will be used in various event handlers in the form
         vis_state.circles = circles;
-
-        // then we can use this to select the right circle when link is clicked
-        d3.selectAll('.select_topic')
-		.data(topic_ranking['topic_id'])
-		.on("click", function(d) {    			
-			// find the circle element that has been bound to the data			
-			var circles = vis_state['circles']
-			var selected_circle = circles[0][d] // the circles are array inside a single-element array
-			var circle_id = selected_circle.id
-			// find the old topic
-            var old_topic = topicID + vis_state.topic;
-            if (vis_state.topic > 0 && old_topic != circle_id) {
-                topic_off(document.getElementById(old_topic));
-            }
-            // make sure topic input box value and fragment reflects clicked selection
-            document.getElementById(topicID).value = vis_state.topic = d+1;
-			document.getElementById(topicID+"_shown").value = d;  
-            document.getElementById(docPrev).removeAttribute("disabled");
-            document.getElementById(docNext).removeAttribute("disabled");				              
-            topic_on(selected_circle, true);    			
-		});
         
         svg.append("text")
             .text("Inter-topic Distance Map (via multidimensional scaling)")
@@ -663,7 +763,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             .on("mouseout", function() {
                 vis_state.term = "";
                 term_off(this);
-                state_save(true);
+//                state_save(true);
             });
 
         var title = chart.append("text")
@@ -771,9 +871,14 @@ var LDAvis = function(to_select, data_or_file_name) {
             var topicRankingContent = "";
             for (var i = 0; i < K; i++) {
             	var topic_id = topic_ranking['topic_id'][i];
-            	var h_index = topic_ranking['h_index'][i];
+            	var rank = topic_ranking['rank'][i];
             	var label = "<a href='#' class='select_topic'>";
-            	label += "Topic " + topic_id + " h-index=" + h_index;
+        		label += "Topic " + topic_id;
+            	if (data['plot.opts'].sort_by === 'h_index') {
+            		label += " h-index=" + rank;
+            	} else if (data['plot.opts'].sort_by === 'in_degree') {
+            		label += " in-degree=" + rank;            		
+            	}
             	label += "</a>";
             	topicRankingDiv.innerHTML += label + "<br/>";
             }
@@ -784,8 +889,9 @@ var LDAvis = function(to_select, data_or_file_name) {
             var lambdaDivWidth = barwidth;
             var lambdaDiv = document.createElement("div");
             lambdaDiv.setAttribute("id", lambdaInputID);
-            lambdaDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; height: 50px; width: " + lambdaDivWidth + "px; float: right; margin-right: 30px; display: none");
-            inputDiv.appendChild(lambdaDiv);
+//            lambdaDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; height: 50px; width: " + lambdaDivWidth + "px; float: right; margin-right: 30px; display: none");
+            lambdaDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; height: 50px; width: " + lambdaDivWidth + "px; float: lefts; margin-right: 30px");
+            topicDiv.appendChild(lambdaDiv);
 
             var lambdaZero = document.createElement("div");
             lambdaZero.setAttribute("style", "padding: 5px; height: 20px; width: 220px; font-family: sans-serif; float: left");
@@ -809,14 +915,16 @@ var LDAvis = function(to_select, data_or_file_name) {
 
             var sliderDiv = document.createElement("div");
             sliderDiv.setAttribute("id", sliderDivID);
-            sliderDiv.setAttribute("style", "padding: 5px; height: 40px; width: 250px; float: right; margin-top: -5px; margin-right: 10px; display: none");
+//            sliderDiv.setAttribute("style", "padding: 5px; height: 40px; width: 250px; float: right; margin-top: -5px; margin-right: 10px; display: none");
+            sliderDiv.setAttribute("style", "padding: 5px; height: 40px; width: 250px; float: right; margin-top: -5px; margin-right: 10px");
             lambdaDiv.appendChild(sliderDiv);
 
             var lambdaInput = document.createElement("input");
-            lambdaInput.setAttribute("style", "width: 250px; margin-left: 0px; margin-right: 0px; display: none");
+//            lambdaInput.setAttribute("style", "width: 250px; margin-left: 0px; margin-right: 0px; display: none");
+            lambdaInput.setAttribute("style", "width: 250px; margin-left: 0px; margin-right: 0px");
             lambdaInput.type = "range";
-            lambdaInput.min = 0;
-            lambdaInput.max = 1;
+            lambdaInput.min = data['lambda.min'];
+            lambdaInput.max = data['lambda.max'];
             lambdaInput.step = data['lambda.step'];
             lambdaInput.value = vis_state.lambda;
             lambdaInput.id = lambdaID;
@@ -826,8 +934,13 @@ var LDAvis = function(to_select, data_or_file_name) {
             var lambdaLabel = document.createElement("label");
             lambdaLabel.setAttribute("id", lambdaLabelID);
             lambdaLabel.setAttribute("for", lambdaID);
-            lambdaLabel.setAttribute("style", "height: 20px; width: 60px; font-family: sans-serif; font-size: 14px; margin-left: 80px; display: none");
-            lambdaLabel.innerHTML = "&#955 = <span id='" + lambdaID + "-value'>" + vis_state.lambda + "</span>";
+//            lambdaLabel.setAttribute("style", "height: 20px; width: 60px; font-family: sans-serif; font-size: 14px; margin-left: 80px; display: none");
+            lambdaLabel.setAttribute("style", "height: 20px; width: 60px; font-family: sans-serif; font-size: 14px; margin-left: 80px");
+        	if (data['plot.opts'].sort_by === 'h_index') {
+                lambdaLabel.innerHTML = "h-index &ge; <span id='" + lambdaID + "-value'>" + vis_state.lambda + "</span>";
+        	} else if (data['plot.opts'].sort_by === 'in_degree') {
+                lambdaLabel.innerHTML = "degree &ge; <span id='" + lambdaID + "-value'>" + vis_state.lambda + "</span>";
+        	}            
             lambdaDiv.appendChild(lambdaLabel);
 
             // Create the svg to contain the slider scale:
@@ -836,7 +949,7 @@ var LDAvis = function(to_select, data_or_file_name) {
                     .attr("height", 25);
 
             var sliderScale = d3.scale.linear()
-                    .domain([0, 1])
+                    .domain([data['lambda.min'], data['lambda.max']])
                     .range([7.5, 242.5])  // trimmed by 7.5px on each side to match the input type=range slider:
                     .nice();
 
@@ -877,8 +990,10 @@ var LDAvis = function(to_select, data_or_file_name) {
             });
             // define relevance:
             for (var i = 0; i < dat2.length; i++) {
-                dat2[i].relevance = vis_state.lambda * dat2[i].logprob +
-                    (1 - vis_state.lambda) * dat2[i].loglift;
+            	// lambda is now unused
+//                dat2[i].relevance = vis_state.lambda * dat2[i].logprob +
+//                    (1 - vis_state.lambda) * dat2[i].loglift;
+                dat2[i].relevance = dat2[i].logprob;
             }
 
             // sort by relevance:
@@ -971,7 +1086,7 @@ var LDAvis = function(to_select, data_or_file_name) {
                     .on("mouseout", function() {
                         vis_state.term = "";
                         term_off(this);
-                        state_save(true);
+//                        state_save(true);
                     });
 
             var redbarsEnter = redbars.enter().append("rect")
@@ -984,160 +1099,160 @@ var LDAvis = function(to_select, data_or_file_name) {
                     .style("fill", color2)
                     .attr("opacity", 0.8);
 
-
-            if (increase) {
-                graybarsEnter
-                    .attr("width", function(d) {
-                        return x(d.Total);
-                    })
-                    .transition().duration(duration)
-                    .delay(duration)
-                    .attr("y", function(d) {
-                        return y(d.Term);
-                    });
-                labelsEnter
-                    .transition().duration(duration)
-                    .delay(duration)
-                    .attr("y", function(d) {
-                        return y(d.Term) + 12;
-                    });
-                redbarsEnter
-                    .attr("width", function(d) {
-                        return x(d.Freq);
-                    })
-                    .transition().duration(duration)
-                    .delay(duration)
-                    .attr("y", function(d) {
-                        return y(d.Term);
-                    });
-
-                graybars.transition().duration(duration)
-                    .attr("width", function(d) {
-                        return x(d.Total);
-                    })
-                    .transition().duration(duration)
-                    .attr("y", function(d) {
-                        return y(d.Term);
-                    });
-                labels.transition().duration(duration)
-                    .delay(duration)
-                    .attr("y", function(d) {
-                        return y(d.Term) + 12;
-                    });
-                redbars.transition().duration(duration)
-                    .attr("width", function(d) {
-                        return x(d.Freq);
-                    })
-                    .transition().duration(duration)
-                    .attr("y", function(d) {
-                        return y(d.Term);
-                    });
-
-                // Transition exiting rectangles to the bottom of the barchart:
-                graybars.exit()
-                    .transition().duration(duration)
-                    .attr("width", function(d) {
-                        return x(d.Total);
-                    })
-                    .transition().duration(duration)
-                    .attr("y", function(d, i) {
-                        return barheight + margin.bottom + 6 + i * 18;
-                    })
-                    .remove();
-                labels.exit()
-                    .transition().duration(duration)
-                    .delay(duration)
-                    .attr("y", function(d, i) {
-                        return barheight + margin.bottom + 18 + i * 18;
-                    })
-                    .remove();
-                redbars.exit()
-                    .transition().duration(duration)
-                    .attr("width", function(d) {
-                        return x(d.Freq);
-                    })
-                    .transition().duration(duration)
-                    .attr("y", function(d, i) {
-                        return barheight + margin.bottom + 6 + i * 18;
-                    })
-                    .remove();
-                // https://github.com/mbostock/d3/wiki/Transitions#wiki-d3_ease
-                newaxis.transition().duration(duration)
-                    .call(xAxis)
-                    .transition().duration(duration);
-            } else {
-                graybarsEnter
-                    .attr("width", 100) // FIXME by looking up old width of these bars
-                    .transition().duration(duration)
-                    .attr("y", function(d) {
-                        return y(d.Term);
-                    })
-                    .transition().duration(duration)
-                    .attr("width", function(d) {
-                        return x(d.Total);
-                    });
-                labelsEnter
-                    .transition().duration(duration)
-                    .attr("y", function(d) {
-                        return y(d.Term) + 12;
-                    });
-                redbarsEnter
-                    .attr("width", 50) // FIXME by looking up old width of these bars
-                    .transition().duration(duration)
-                    .attr("y", function(d) {
-                        return y(d.Term);
-                    })
-                    .transition().duration(duration)
-                    .attr("width", function(d) {
-                        return x(d.Freq);
-                    });
-
-                graybars.transition().duration(duration)
-                    .attr("y", function(d) {
-                        return y(d.Term);
-                    })
-                    .transition().duration(duration)
-                    .attr("width", function(d) {
-                        return x(d.Total);
-                    });
-                labels.transition().duration(duration)
-                    .attr("y", function(d) {
-                        return y(d.Term) + 12;
-                    });
-                redbars.transition().duration(duration)
-                    .attr("y", function(d) {
-                        return y(d.Term);
-                    })
-                    .transition().duration(duration)
-                    .attr("width", function(d) {
-                        return x(d.Freq);
-                    });
-
-                // Transition exiting rectangles to the bottom of the barchart:
-                graybars.exit()
-                    .transition().duration(duration)
-                    .attr("y", function(d, i) {
-                        return barheight + margin.bottom + 6 + i * 18 + 2 * rMax;
-                    })
-                    .remove();
-                labels.exit()
-                    .transition().duration(duration)
-                    .attr("y", function(d, i) {
-                        return barheight + margin.bottom + 18 + i * 18 + 2 * rMax;
-                    })
-                    .remove();
-                redbars.exit()
-                    .transition().duration(duration)
-                    .attr("y", function(d, i) {
-                        return barheight + margin.bottom + 6 + i * 18 + 2 * rMax;
-                    })
-                    .remove();
-
-                // https://github.com/mbostock/d3/wiki/Transitions#wiki-d3_ease
-                newaxis.transition().duration(duration)
-                    .transition().duration(duration)
-                    .call(xAxis);
-            }
+// this is used for animation when lambda slider is changed
+//            if (increase) {
+//                graybarsEnter
+//                    .attr("width", function(d) {
+//                        return x(d.Total);
+//                    })
+//                    .transition().duration(duration)
+//                    .delay(duration)
+//                    .attr("y", function(d) {
+//                        return y(d.Term);
+//                    });
+//                labelsEnter
+//                    .transition().duration(duration)
+//                    .delay(duration)
+//                    .attr("y", function(d) {
+//                        return y(d.Term) + 12;
+//                    });
+//                redbarsEnter
+//                    .attr("width", function(d) {
+//                        return x(d.Freq);
+//                    })
+//                    .transition().duration(duration)
+//                    .delay(duration)
+//                    .attr("y", function(d) {
+//                        return y(d.Term);
+//                    });
+//
+//                graybars.transition().duration(duration)
+//                    .attr("width", function(d) {
+//                        return x(d.Total);
+//                    })
+//                    .transition().duration(duration)
+//                    .attr("y", function(d) {
+//                        return y(d.Term);
+//                    });
+//                labels.transition().duration(duration)
+//                    .delay(duration)
+//                    .attr("y", function(d) {
+//                        return y(d.Term) + 12;
+//                    });
+//                redbars.transition().duration(duration)
+//                    .attr("width", function(d) {
+//                        return x(d.Freq);
+//                    })
+//                    .transition().duration(duration)
+//                    .attr("y", function(d) {
+//                        return y(d.Term);
+//                    });
+//
+//                // Transition exiting rectangles to the bottom of the barchart:
+//                graybars.exit()
+//                    .transition().duration(duration)
+//                    .attr("width", function(d) {
+//                        return x(d.Total);
+//                    })
+//                    .transition().duration(duration)
+//                    .attr("y", function(d, i) {
+//                        return barheight + margin.bottom + 6 + i * 18;
+//                    })
+//                    .remove();
+//                labels.exit()
+//                    .transition().duration(duration)
+//                    .delay(duration)
+//                    .attr("y", function(d, i) {
+//                        return barheight + margin.bottom + 18 + i * 18;
+//                    })
+//                    .remove();
+//                redbars.exit()
+//                    .transition().duration(duration)
+//                    .attr("width", function(d) {
+//                        return x(d.Freq);
+//                    })
+//                    .transition().duration(duration)
+//                    .attr("y", function(d, i) {
+//                        return barheight + margin.bottom + 6 + i * 18;
+//                    })
+//                    .remove();
+//                // https://github.com/mbostock/d3/wiki/Transitions#wiki-d3_ease
+//                newaxis.transition().duration(duration)
+//                    .call(xAxis)
+//                    .transition().duration(duration);
+//            } else {
+//                graybarsEnter
+//                    .attr("width", 100) // FIXME by looking up old width of these bars
+//                    .transition().duration(duration)
+//                    .attr("y", function(d) {
+//                        return y(d.Term);
+//                    })
+//                    .transition().duration(duration)
+//                    .attr("width", function(d) {
+//                        return x(d.Total);
+//                    });
+//                labelsEnter
+//                    .transition().duration(duration)
+//                    .attr("y", function(d) {
+//                        return y(d.Term) + 12;
+//                    });
+//                redbarsEnter
+//                    .attr("width", 50) // FIXME by looking up old width of these bars
+//                    .transition().duration(duration)
+//                    .attr("y", function(d) {
+//                        return y(d.Term);
+//                    })
+//                    .transition().duration(duration)
+//                    .attr("width", function(d) {
+//                        return x(d.Freq);
+//                    });
+//
+//                graybars.transition().duration(duration)
+//                    .attr("y", function(d) {
+//                        return y(d.Term);
+//                    })
+//                    .transition().duration(duration)
+//                    .attr("width", function(d) {
+//                        return x(d.Total);
+//                    });
+//                labels.transition().duration(duration)
+//                    .attr("y", function(d) {
+//                        return y(d.Term) + 12;
+//                    });
+//                redbars.transition().duration(duration)
+//                    .attr("y", function(d) {
+//                        return y(d.Term);
+//                    })
+//                    .transition().duration(duration)
+//                    .attr("width", function(d) {
+//                        return x(d.Freq);
+//                    });
+//
+//                // Transition exiting rectangles to the bottom of the barchart:
+//                graybars.exit()
+//                    .transition().duration(duration)
+//                    .attr("y", function(d, i) {
+//                        return barheight + margin.bottom + 6 + i * 18 + 2 * rMax;
+//                    })
+//                    .remove();
+//                labels.exit()
+//                    .transition().duration(duration)
+//                    .attr("y", function(d, i) {
+//                        return barheight + margin.bottom + 18 + i * 18 + 2 * rMax;
+//                    })
+//                    .remove();
+//                redbars.exit()
+//                    .transition().duration(duration)
+//                    .attr("y", function(d, i) {
+//                        return barheight + margin.bottom + 6 + i * 18 + 2 * rMax;
+//                    })
+//                    .remove();
+//
+//                // https://github.com/mbostock/d3/wiki/Transitions#wiki-d3_ease
+//                newaxis.transition().duration(duration)
+//                    .transition().duration(duration)
+//                    .call(xAxis);
+//            }
         }
 
         //////////////////////////////////////////////////////////////////////////////
@@ -1159,7 +1274,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             
             // show the label if necessary
             if (!labels_visible) {
-	     	var label = d3.select('#' + circle.id + '_label').style('visibility', 'visible');
+            	var label = d3.select('#' + circle.id + '_label').style('visibility', 'visible');
             }
 			
             // Remove 'old' bar chart title
@@ -1167,6 +1282,13 @@ var LDAvis = function(to_select, data_or_file_name) {
             text.remove();
 
             // append text with info relevant to topic of interest
+        	var rank = topic_ranking_map[topics];
+        	var msg = "";
+        	if (data['plot.opts'].sort_by === 'h_index') {
+        		msg += "Topic " + (topics-1) + ", h-index=" + rank + " (" + Freq + "% of tokens)";
+        	} else if (data['plot.opts'].sort_by === 'in_degree') {
+        		msg += "Topic " + (topics-1) + ", degree=" + rank + " (" + Freq + "% of tokens)";
+        	}            
             d3.select("#" + barFreqsID)
                 .append("text")
                 .attr("x", barwidth/2)
@@ -1174,7 +1296,7 @@ var LDAvis = function(to_select, data_or_file_name) {
                 .attr("class", "bubble-tool") //  set class so we can remove it when highlight_off is called
                 .style("text-anchor", "middle")
                 .style("font-size", "16px")
-                .text("Top-" + R + " Most Relevant Terms for Topic " + (topics-1) + " (" + Freq + "% of tokens)");
+                .text(msg);
 
             // grab the bar-chart data for this topic only:
             var dat2 = lamData.filter(function(d) {
@@ -1183,8 +1305,10 @@ var LDAvis = function(to_select, data_or_file_name) {
 
             // define relevance:
             for (var i = 0; i < dat2.length; i++) {
-                dat2[i].relevance = lambda.current * dat2[i].logprob +
-                    (1 - lambda.current) * dat2[i].loglift;
+            	// lambda is now unused
+//                dat2[i].relevance = lambda.current * dat2[i].logprob +
+//                (1 - lambda.current) * dat2[i].loglift;
+            	dat2[i].relevance = dat2[i].logprob;
             }
 
             // sort by relevance:
@@ -1371,7 +1495,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             }
             vis_state.term = term.innerHTML;
             term_on(term);
-            state_save(true);
+//            state_save(true);
         }
         // updates vis when a term is selected via click or hover
         function term_on(term) {
@@ -1440,8 +1564,13 @@ var LDAvis = function(to_select, data_or_file_name) {
                 .data(mdsData)
                 .transition()
                 .attr("r", function(d) {
+                	var rank = topic_ranking_map[d.topics];
+                	if (data['plot.opts'].sort_by === 'in_degree') {
+                		rank /= 10;            		
+                	}                	
                     //return (rScaleMargin(+d.Freq));
-                    return (Math.sqrt((d.Freq/100)*mdswidth*mdsheight*circle_prop/Math.PI));
+                    //return (Math.sqrt((d.Freq/100)*mdswidth*mdsheight*circle_prop/Math.PI));
+                    return (Math.sqrt((rank/100)*mdswidth*mdsheight*circle_prop/Math.PI));
                 });
 
             // Change sizes of topic numbers:
@@ -1469,61 +1598,61 @@ var LDAvis = function(to_select, data_or_file_name) {
         // serialize the visualization state using fragment identifiers -- http://en.wikipedia.org/wiki/Fragment_identifier
         // location.hash holds the address information
 
-        var params = location.hash.split("&");
-        if (params.length > 1) {
-            vis_state.topic = params[0].split("=")[1];
-            vis_state.lambda = params[1].split("=")[1];
-            vis_state.term = params[2].split("=")[1];
+//        var params = location.hash.split("&");
+//        if (params.length > 1) {
+//            vis_state.topic = params[0].split("=")[1];
+//            vis_state.lambda = params[1].split("=")[1];
+//            vis_state.term = params[2].split("=")[1];
+//
+//            // Idea: write a function to parse the URL string
+//            // only accept values in [0,1] for lambda, {0, 1, ..., K} for topics (any string is OK for term)
+//            // Allow for subsets of the three to be entered:
+//            // (1) topic only (lambda = 1 term = "")
+//            // (2) lambda only (topic = 0 term = "") visually the same but upon hovering a topic, the effect of lambda will be seen
+//            // (3) term only (topic = 0 lambda = 1) only fires when the term is among the R most salient
+//            // (4) topic + lambda (term = "")
+//            // (5) topic + term (lambda = 1)
+//            // (6) lambda + term (topic = 0) visually lambda doesn't make a difference unless a topic is hovered
+//            // (7) topic + lambda + term
+//
+//            // Short-term: assume format of "#topic=k&lambda=l&term=s" where k, l, and s are strings (b/c they're from a URL)
+//
+//            // Force k (topic identifier) to be an integer between 0 and K:
+//            vis_state.topic = Math.round(Math.min(K, Math.max(0, vis_state.topic)));
+//
+//            // Force l (lambda identifier) to be in [0, 1]:
+//            vis_state.lambda = Math.min(1, Math.max(0, vis_state.lambda));
+//
+//            // impose the value of lambda:
+//            document.getElementById(lambdaID).value = vis_state.lambda;
+//            document.getElementById(lambdaID + "-value").innerHTML = vis_state.lambda;
+//
+//            // select the topic and transition the order of the bars (if approporiate)
+//            if (!isNaN(vis_state.topic)) {
+//                document.getElementById(topicID).value = vis_state.topic;
+//                if (vis_state.topic > 0) {
+//                    topic_on(document.getElementById(topicID + vis_state.topic));
+//                }
+//                if (vis_state.lambda < 1 && vis_state.topic > 0) {
+//                    reorder_bars(false);
+//                }
+//            }
+//            lambda.current = vis_state.lambda;
+//            var termElem = document.getElementById(termID + vis_state.term);
+//            if (termElem !== undefined) term_on(termElem);
+//        }
 
-            // Idea: write a function to parse the URL string
-            // only accept values in [0,1] for lambda, {0, 1, ..., K} for topics (any string is OK for term)
-            // Allow for subsets of the three to be entered:
-            // (1) topic only (lambda = 1 term = "")
-            // (2) lambda only (topic = 0 term = "") visually the same but upon hovering a topic, the effect of lambda will be seen
-            // (3) term only (topic = 0 lambda = 1) only fires when the term is among the R most salient
-            // (4) topic + lambda (term = "")
-            // (5) topic + term (lambda = 1)
-            // (6) lambda + term (topic = 0) visually lambda doesn't make a difference unless a topic is hovered
-            // (7) topic + lambda + term
-
-            // Short-term: assume format of "#topic=k&lambda=l&term=s" where k, l, and s are strings (b/c they're from a URL)
-
-            // Force k (topic identifier) to be an integer between 0 and K:
-            vis_state.topic = Math.round(Math.min(K, Math.max(0, vis_state.topic)));
-
-            // Force l (lambda identifier) to be in [0, 1]:
-            vis_state.lambda = Math.min(1, Math.max(0, vis_state.lambda));
-
-            // impose the value of lambda:
-            document.getElementById(lambdaID).value = vis_state.lambda;
-            document.getElementById(lambdaID + "-value").innerHTML = vis_state.lambda;
-
-            // select the topic and transition the order of the bars (if approporiate)
-            if (!isNaN(vis_state.topic)) {
-                document.getElementById(topicID).value = vis_state.topic;
-                if (vis_state.topic > 0) {
-                    topic_on(document.getElementById(topicID + vis_state.topic));
-                }
-                if (vis_state.lambda < 1 && vis_state.topic > 0) {
-                    reorder_bars(false);
-                }
-            }
-            lambda.current = vis_state.lambda;
-            var termElem = document.getElementById(termID + vis_state.term);
-            if (termElem !== undefined) term_on(termElem);
-        }
-
-        function state_url() {
-            return location.origin + location.pathname + "#topic=" + vis_state.topic +
-                "&lambda=" + vis_state.lambda + "&term=" + vis_state.term;
-        }
-
-        function state_save(replace) {
-            if (replace)
-                history.replaceState(vis_state, "Query", state_url());
-            else
-                history.pushState(vis_state, "Query", state_url());
-        }
+//        function state_url() {
+//            return location.origin + location.pathname + "#topic=" + vis_state.topic +
+//                "&lambda=" + vis_state.lambda + "&term=" + vis_state.term;
+//        }
+//
+//        function state_save(replace) {
+//            if (replace)
+//                history.replaceState(vis_state, "Query", state_url());
+//            else
+//                history.pushState(vis_state, "Query", state_url());
+//        }
 
         function state_reset() {
             if (vis_state.topic > 0) {
@@ -1537,7 +1666,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             document.getElementById(topicID+"_shown").value = 'None';             
             document.getElementById(docPrev).setAttribute("disabled", "disabled");
             document.getElementById(docNext).setAttribute("disabled", "disabled");
-            state_save(true);
+//            state_save(true);
         }
 
     }
