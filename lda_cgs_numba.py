@@ -17,8 +17,8 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
     cumsum = np.empty(K, dtype=np.float64)
 
     # precompute repeated constants
-    N_beta = N * beta
-    K_alpha = K * alpha    
+    N_beta = np.sum(beta)
+    K_alpha = np.sum(alpha)    
 
     # prepare the input matrices
     print "Preparing words"
@@ -92,7 +92,7 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
 
 @jit(int32(
            int32, int32, int32, int32[:, :], int32[:], 
-           int32, int32, int32, float64, float64,
+           int32, int32, int32, float64[:], float64[:],
            float64, float64,
            float64[:], float64[:], float64,
            int32[:, :], int32[:], int32[:, :], int32[:]
@@ -123,10 +123,10 @@ def _nb_get_new_index(d, n, k, cdk, cd,
 
         # we risk underflowing by not working in log space here
         if i < previous_K:
-            likelihood = (temp_previous_ckn[i] + beta) / (previous_ck[i] + N_beta)
+            likelihood = (temp_previous_ckn[i] + beta[i]) / (previous_ck[i] + N_beta)
         else:
-            likelihood = (temp_ckn[i] + beta) / (ck[i] + N_beta)
-        prior = (temp_cdk[i] + alpha) / (cd[d] + K_alpha)
+            likelihood = (temp_ckn[i] + beta[i]) / (ck[i] + N_beta)
+        prior = (temp_cdk[i] + alpha[i]) / (cd[d] + K_alpha)
         post[i] = likelihood * prior
 
         # better but slower code
@@ -182,18 +182,26 @@ def _nb_get_new_index(d, n, k, cdk, cd,
     
     return k
 
-@jit(float64(int32, int32, int32, float64, float64, int32[:, :], int32[:], int32[:, :], int32[:]), nopython=True)
-def _nb_ll(D, N, K, alpha, beta, cdk, cd, ckn, ck):
-    ll = K * ( math.lgamma(N*beta) - (math.lgamma(beta)*N) )
+@jit(float64(int32, int32, int32, float64[:], float64[:], float64, float64, int32[:, :], int32[:], int32[:, :], int32[:]), nopython=True)
+def _nb_ll(D, N, K, alpha, beta, N_beta, K_alpha, cdk, cd, ckn, ck):
+    
+    temp_sum = 0
+    for b in beta:
+        temp_sum += math.lgamma(b)
+    ll = K * ( math.lgamma(N_beta) - temp_sum )
     for k in range(K):
         for n in range(N):
-            ll += math.lgamma(ckn[k, n]+beta)
-        ll -= math.lgamma(ck[k] + N*beta)
-    ll += D * ( math.lgamma(K*alpha) - (math.lgamma(alpha)*K) )
+            ll += math.lgamma(ckn[k, n]+beta[n])
+        ll -= math.lgamma(ck[k] + N_beta)
+
+    temp_sum = 0
+    for a in alpha:
+        temp_sum += math.lgamma(a)
+    ll += D * ( math.lgamma(K_alpha) - temp_sum )
     for d in range(D):
         for k in range(K):
-            ll += math.lgamma(cdk[d, k]+alpha)
-        ll -= math.lgamma(cd[d] + K*alpha)                
+            ll += math.lgamma(cdk[d, k]+alpha[k])
+        ll -= math.lgamma(cd[d] + K_alpha)                
     
     return ll
 
@@ -224,6 +232,6 @@ def _nb_do_sampling(s, n_burn, total_words, all_d, all_pos, all_n, all_random, Z
 
     ll = 0
     if s > n_burn:    
-        ll = _nb_ll(D, N, K, alpha, beta, cdk, cd, ckn, ck)                
+        ll = _nb_ll(D, N, K, alpha, beta, N_beta, K_alpha, cdk, cd, ckn, ck)                
 
     return ll

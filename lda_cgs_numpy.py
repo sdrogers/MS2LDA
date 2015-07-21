@@ -13,8 +13,8 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
 
     all_lls = []
     thin = 0
-    N_beta = N * beta
-    K_alpha = K * alpha    
+    N_beta = np.sum(beta)
+    K_alpha = np.sum(alpha)    
     for samp in range(n_samples):
     
         s = samp+1        
@@ -42,7 +42,7 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                 if previous_K == 0:
 
                     # for training
-                    log_likelihood = np.log(ckn[:, n] + beta) - np.log(ck + N_beta)
+                    log_likelihood = np.log(ckn[:, n] + beta[n]) - np.log(ck + N_beta)
                                 
                 else:
                     
@@ -91,17 +91,17 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
             thin += 1
             if thin%n_thin==0:    
 
-                ll = K * ( gammaln(N*beta) - (gammaln(beta)*N) )
+                ll = K * ( gammaln(N_beta) - np.sum(gammaln(beta)) )
                 for k in range(K):
                     for n in range(N):
-                        ll += gammaln(ckn[k, n]+beta)
-                    ll -= gammaln(ck[k] + N*beta)                        
+                        ll += gammaln(ckn[k, n]+beta[n])
+                    ll -= gammaln(ck[k] + N_beta)                        
 
-                ll += D * ( gammaln(K*alpha) - (gammaln(alpha)*K) )
+                ll += D * ( gammaln(K_alpha) - np.sum(gammaln(alpha)) )
                 for d in range(D):
                     for k in range(K):
-                        ll += gammaln(cdk[d, k]+alpha)
-                    ll -= gammaln(cd[d] + K*alpha)                
+                        ll += gammaln(cdk[d, k]+alpha[k])
+                    ll -= gammaln(cd[d] + K_alpha)                
                 
                 all_lls.append(ll)      
                 print(" Log joint likelihood = %.3f " % ll)                        

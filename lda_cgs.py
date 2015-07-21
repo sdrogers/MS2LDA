@@ -87,7 +87,8 @@ class CollapseGibbsLda(object):
                 assert(self.previous_ckn.shape[1]==len(self.previous_vocab))
                 
                 # make previous_ckn have the right number of columns
-                N_diff = self.N - len(self.previous_vocab)
+                N_prev_words = len(self.previous_vocab)
+                N_diff = self.N - N_prev_words
                 temp = np.zeros((self.previous_K, N_diff), int32)
                 self.previous_ckn = np.hstack((self.previous_ckn, temp)) # size is previous_K x N
                 
@@ -103,6 +104,12 @@ class CollapseGibbsLda(object):
                 self.K = self.K + self.previous_K
                 print "Total no. of topics = " + str(self.K)
                 
+                # initialise the Dirichlet hyperparameters too
+                self.alpha = np.ones(self.K) * alpha
+                self.beta = np.ones(self.N) * beta
+                for n in range(N_prev_words):
+                    # but make sure to use previous beta for the words that have been fixed from before
+                    self.beta[n] = self.previous_model.selected_beta[n] 
                 
             else:                
                 raise ValueError("No previous topics have been selected")
@@ -114,6 +121,9 @@ class CollapseGibbsLda(object):
             self.previous_ckn = np.zeros((self.K, self.N), int32)
             self.previous_ck = np.zeros(self.K, int32)
             self.previous_K = 0 # no old topics
+            self.alpha = np.ones(self.K) * alpha
+            self.beta = np.ones(self.N) * beta
+            
 
         # make the current arrays too
         self.ckn = np.zeros((self.K, self.N), int32)
@@ -223,6 +233,9 @@ class CollapseGibbsLda(object):
         non_zero_cols = (colsum>0)
         non_zero_cols_pos = np.where(non_zero_cols)
         self.selected_vocab = self.vocab[non_zero_cols_pos] 
+        
+        # and the beta hyperparameter for those words too
+        self.selected_beta = self.beta[non_zero_cols_pos]
 
         # dump the whole model out
         # binary mode ('b') is required for portability between Unix and Windows
