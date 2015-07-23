@@ -1,4 +1,4 @@
-require('gtools') # for natural sorting
+library(gtools) # for natural sorting
 
 extract_ms2_fragment_df <- function(ms1, ms2, prev_words_file) {
     

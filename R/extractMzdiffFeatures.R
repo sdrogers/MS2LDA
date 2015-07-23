@@ -1,4 +1,4 @@
-require('gtools') # for natural sorting
+library(gtools) # for natural sorting
 
 extract_mzdiff_df <- function(ms1, ms2) {
     
