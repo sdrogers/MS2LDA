@@ -18,6 +18,7 @@ dppm <- 10
 rt_window <- c(-100, 100)
 ms_msms_cut <- 5E3
 select_most_intense <- TRUE
+rt_ms1_ms2_difference <- 0.2 * 60
 
 # If we specify the mzXML file for the full scan data, then we want to do peak picking etc.
 if (grepl("mzXML", ms1_input_file)) {
@@ -36,7 +37,7 @@ if (grepl("mzXML", ms1_input_file)) {
     peak_info <- peak_info[which(peak_info$maxo >= 250000),]
     
     # take only the columns we need
-    keeps <- c("mz", "rt", "maxo")
+    keeps <- c("mz", "rt", "maxo", "rtmin")
     peak_info <- peak_info[, keeps] 
     colnames(peak_info)[3] <- "int" # rename maxo to int
     
@@ -60,6 +61,7 @@ num_ms1_peaks <- nrow(peak_info)
 np_rt <- peak_info$rt
 np_mz <- peak_info$mz
 np_intensity <- peak_info$int
+np_rt_min <- peak_info$rtmin
 
 # get the MS/MS
 print("Finding MS2 peaks")
@@ -139,9 +141,20 @@ for(i in 1:num_ms1_peaks) {
     # remove satellite peaks
     shot <- filterPeakSatellites(shot)
 
+    # skip those without any MS2
     num_ms2 <- nrow(shot)
     if (num_ms2 == 0) {
         next
+    }
+    
+    # check that the difference between RT of full scan in 
+    # fragmentation file and RT of MS1 feature from peak list
+    # isn't too big
+    rt_min_from_peaklist <- np_rt_min[i]
+    rt_ms <- t$childHeaders$retentionTime[[1]] # use the real RT from the MSMS
+    diff <- abs(rt_min_from_peaklist-rt_ms)
+    if (diff > rt_ms1_ms2_difference) {
+        next # if too big, then skip
     }
     
     # append MS1 info
@@ -165,8 +178,7 @@ for(i in 1:num_ms1_peaks) {
 
     ms2_masses <- shot$mz
     ms2_intensities <- shot$int
-    actual_rt <- t$childHeaders$retentionTime[[1]] # use the real RT from the MSMS
-    ms2_rts <- rep(actual_rt, num_ms2)
+    ms2_rts <- rep(rt_ms, num_ms2)
 
     # other stuff that are always fixed
     ms2_levels <- rep(2, num_ms2)
