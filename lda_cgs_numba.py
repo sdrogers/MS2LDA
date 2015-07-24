@@ -4,7 +4,9 @@ import sys
 from numba import jit
 from numba.types import int32, float64
 
+from lda_cgs import Sample
 import numpy as np
+
 
 def sample_numba(random_state, n_burn, n_samples, n_thin, 
             D, N, K, document_indices, 
@@ -51,6 +53,7 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
     print "DONE"
 
     # loop over samples
+    samples = []
     all_lls = []
     thin = 0
     for samp in range(n_samples):
@@ -73,22 +76,18 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
             thin += 1
             if thin%n_thin==0:    
                 all_lls.append(ll)      
-                print(" Log joint likelihood = %.3f " % ll)                        
+                print(" Log joint likelihood = %.3f " % ll)  
+                cdk_copy = np.copy(cdk)
+                ckn_copy = np.copy(ckn)
+                to_store = Sample(cdk_copy, ckn_copy)
+                samples.append(to_store)                                      
             else:                
                 print
         else:
             print
             
-    # update phi
-    phi = ckn + beta
-    phi /= np.sum(phi, axis=1)[:, np.newaxis]
-
-    # update theta
-    theta = cdk + alpha 
-    theta /= np.sum(theta, axis=1)[:, np.newaxis]
-
     all_lls = np.array(all_lls)            
-    return phi, theta, all_lls
+    return all_lls, samples
 
 @jit(int32(
            int32, int32, int32, int32[:, :], int32[:], 

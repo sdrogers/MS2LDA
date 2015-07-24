@@ -23,6 +23,7 @@ Proceedings of the Python for Scientific Computing Conference (SciPy). 2012.
 import cPickle
 import sys
 import time
+from collections import namedtuple
 
 from numpy import int32
 from numpy.random import RandomState
@@ -36,6 +37,7 @@ from scipy.special import psi
 from lda_utils import estimate_alpha_from_counts
 import visualisation.pyLDAvis as pyLDAvis
 
+Sample = namedtuple('Sample', 'cdk ckn')
 
 class CollapseGibbsLda(object):
     
@@ -164,14 +166,75 @@ class CollapseGibbsLda(object):
                 word_locs.append((pos, n))
             self.document_indices[d] = word_locs
             
-    def get_posterior_alpha(self, n_iter=100):
-        """
-        Estimate the concentration parameter alpha from the thetas in the last sample
-        """
-        alpha_new = estimate_alpha_from_counts(self.D, self.K, self.alpha, self.cdk)      
-        return alpha_new
+        self.samples = [] # store the samples
+        
+    def store_sample(self):
+        cdk_copy = np.copy(self.cdk)
+        ckn_copy = np.copy(self.ckn)
+        samp = Sample(cdk_copy, ckn_copy)
+        self.samples.append(samp)
+
+    def _get_posterior_probs(self, samp_cdk, samp_ckn):
+
+        # update theta
+        theta = samp_cdk + self.alpha 
+        theta /= np.sum(theta, axis=1)[:, np.newaxis]
+        
+        # update phi
+        phi = samp_ckn + self.beta
+        phi /= np.sum(phi, axis=1)[:, np.newaxis]
+        
+        # update posterior alpha
+        alpha_new = estimate_alpha_from_counts(self.D, self.K, self.alpha, samp_cdk)      
+        return theta, phi, alpha_new
+            
+    def _update_parameters(self):
+
+        # use the last sample only
+        if self.n_burn == 0:
+            print "Using only the last sample"
+            last_samp = self.samples[-1]
+            theta, phi, alpha_new = self._get_posterior_probs(last_samp.cdk, last_samp.ckn)            
+            return phi, theta, alpha_new
+
+        print "Using all samples"
+        thetas = []
+        phis = []
+        alphas = []
+        for samp in self.samples:            
+            theta, phi, alpha_new = self._get_posterior_probs(samp.cdk, samp.ckn)
+            thetas.append(theta)
+            phis.append(phi)
+            if not np.isnan(alpha_new).any():           
+                alphas.append(alpha_new)
+        
+        # average over the results
+        S = len(self.samples)
+        avg_theta = np.zeros_like(thetas[0])
+        avg_phi = np.zeros_like(phis[0])
+        avg_posterior_alpha = np.zeros_like(alphas[0])
+
+        for theta in thetas:
+            avg_theta += theta
+        avg_theta /= len(thetas)
+        
+        for phi in phis:
+            avg_phi += phi
+        avg_phi /= len(phis)
+        
+        for alpha in alphas:
+            avg_posterior_alpha += alpha
+        avg_posterior_alpha /= len(alphas)
+        
+        return avg_phi, avg_theta, avg_posterior_alpha
                                                     
-    def run(self, n_burn, n_samples, n_thin, use_native=True):
+    def run(self, n_burn, n_samples, n_thin=1, use_native=True):
+        
+        self.n_burn = n_burn
+        self.n_thin = n_thin
+        if self.n_burn == 0:
+            self.n_thin = 1
+        
         """ 
         Runs the Gibbs sampling for LDA 
         
@@ -198,7 +261,7 @@ class CollapseGibbsLda(object):
                 sampler_func = sample_numpy            
 
         # this will modify the various count matrices (Z, cdk, ckn, cd, ck) inside
-        self.topic_word_, self.doc_topic_, self.loglikelihoods_ = sampler_func(
+        self.loglikelihoods_, self.samples = sampler_func(
                 self.random_state, n_burn, n_samples, n_thin,
                 self.D, self.N, self.K, self.document_indices,
                 self.alpha, self.beta,
@@ -206,7 +269,7 @@ class CollapseGibbsLda(object):
                 self.ckn, self.ck, self.previous_ckn, self.previous_ck)
         
         # update posterior alpha from the last sample  
-        self.posterior_alpha = self.get_posterior_alpha()   
+        self.topic_word_, self.doc_topic_, self.posterior_alpha = self._update_parameters()   
                         
     @classmethod
     def load(cls, filename):
@@ -298,9 +361,9 @@ def main():
 
     alpha = 0.1
     beta = 0.01    
-    n_samples = 200
-    n_burn = 0
-    n_thin = 1
+    n_samples = 400
+    n_burn = 200
+    n_thin = 10
 
     random_state = RandomState(1234567890)
 
@@ -316,7 +379,7 @@ def main():
     print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
     print gibbs1.posterior_alpha    
     gibbs1.print_topic_words()
-    gibbs1.visualise()
+    # gibbs1.visualise()
       
 #     # try saving model
 #     selected_topics = [0, 2, 4, 6, 8]

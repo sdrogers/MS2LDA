@@ -3,7 +3,7 @@ import sys
 from scipy.special import gammaln
 
 import numpy as np
-
+from lda_cgs import Sample
 
 def sample_numpy(random_state, n_burn, n_samples, n_thin, 
             D, N, K, document_indices, 
@@ -11,6 +11,7 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
             Z, cdk, cd, previous_K,
             ckn, ck, previous_ckn, previous_ck):
 
+    samples = []
     all_lls = []
     thin = 0
     N_beta = np.sum(beta)
@@ -104,19 +105,17 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                     ll -= gammaln(cd[d] + K_alpha)                
                 
                 all_lls.append(ll)      
-                print(" Log joint likelihood = %.3f " % ll)                        
+                print(" Log joint likelihood = %.3f " % ll)     
+                
+                cdk_copy = np.copy(cdk)
+                ckn_copy = np.copy(ckn)
+                to_store = Sample(cdk_copy, ckn_copy)
+                samples.append(to_store)
+                                   
             else:                
                 print
         else:
             print
             
-    # update phi
-    phi = ckn + beta
-    phi /= np.sum(phi, axis=1)[:, np.newaxis]
-
-    # update theta
-    theta = cdk + alpha 
-    theta /= np.sum(theta, axis=1)[:, np.newaxis]
-
     all_lls = np.array(all_lls)
-    return phi, theta, all_lls
+    return all_lls, samples

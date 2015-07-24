@@ -364,9 +364,9 @@ def test_lda():
         n_topics = 30
 
     n_topics = 300
-    n_samples = 20
-    n_burn = 0
-    n_thin = 1
+    n_samples = 100
+    n_burn = 50
+    n_thin = 5
     alpha = 50.0/n_topics
     beta = 0.1
 
