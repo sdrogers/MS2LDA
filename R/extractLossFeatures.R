@@ -51,7 +51,7 @@ extract_neutral_loss_df <- function(ms1, ms2, prev_words_file) {
             
             # find losses within that window
             match.idx <- which(sapply(losses, function(x) {
-                abs(mz - x) < max.ppm
+                abs(mz - x) < abs(max.ppm)
             }))    
             
             # use the existing word as label for the rows
@@ -59,7 +59,7 @@ extract_neutral_loss_df <- function(ms1, ms2, prev_words_file) {
             
             # if there's a match then use the actual fragment peaks
             if (length(match.idx)>0) { 
-            
+                            
                 # find column of the parent peaks
                 intensities <- fragment_intensities[match.idx]
                 peakids <- fragment_peakids[match.idx]
@@ -115,14 +115,16 @@ extract_neutral_loss_df <- function(ms1, ms2, prev_words_file) {
     # greedily discretise the remaining loss values
     # remember that we want to group similar losses values together too
     while(length(losses) > 0) {
-        
+                
         mz <- losses[1]
         
         # get all the losses values within tolerance from mz
         max.ppm <- mz * 15 * 1e-06
         match.idx <- which(sapply(losses, function(x) {
-            abs(mz - x) < max.ppm
+            abs(mz - x) < abs(max.ppm) # compare against abs(max.ppm) just in case there's MS2 mz > MS1 mz
         }))    
+        
+        stopifnot(length(match.idx) > 0) # we must always find something here ..
         
         # compute their average mean mz as the row label and find column of the parent peaks
         mean.mz <- round(mean(losses[match.idx]), digits=5)
@@ -130,13 +132,14 @@ extract_neutral_loss_df <- function(ms1, ms2, prev_words_file) {
         peakids <- fragment_peakids[match.idx]
         parent.id <- parent_ids[match.idx]
         parent.idx <- match(as.character(parent.id), ms1.names)
-        
+
         # append this new row to the data frame only if no. of parent.idx > threshold
         threshold_counts <- 5
         threshold_max_loss <- 200
         if (length(parent.idx) >= threshold_counts && mean.mz < threshold_max_loss) {
+
+            print(paste(c("remaining=", length(losses), " loss=", mean.mz, " matches=", length(match.idx), " accepted"), collapse=""))
             
-            print(paste(c("remaining=", length(losses), " loss=", mean.mz, " matches=", length(match.idx)), collapse=""))
             row <- rep(NA, nrow(ms1))
             row[parent.idx] <- intensities
             
@@ -146,14 +149,16 @@ extract_neutral_loss_df <- function(ms1, ms2, prev_words_file) {
             matching_pos <- match(as.character(peakids), ms2.names)
             ms2[matching_pos, "loss_bin_id"] <- as.character(mean.mz)            
             
+        } else {
+            print(paste(c("remaining=", length(losses), " loss=", mean.mz, " matches=", length(match.idx), " rejected"), collapse=""))
         }
         
-        # this will always find something
+        # this will always find something -- following the assertion in stopifnot() above
         losses <- losses[-match.idx]
         fragment_peakids <- fragment_peakids[-match.idx]
         fragment_intensities <- fragment_intensities[-match.idx]
         parent_ids <- parent_ids[-match.idx]
-        
+                
     }
     
     existing_loss_df <- existing_loss_df[mixedsort(row.names(existing_loss_df)),]

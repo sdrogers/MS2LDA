@@ -111,22 +111,6 @@ def _topic_coordinates(mds, topic_term_dists, topic_proportion):
     return mds_df
 
 
-def _chunks(l, n):
-    """ Yield successive n-sized chunks from l.
-    """
-    for i in range(0, len(l), n):
-        yield l[i:i+n]
-
-
-def _job_chunks(l, n_jobs):
-    n_chunks = n_jobs
-    if n_jobs < 0:
-        # so, have n chunks if we are using all n cores/cpus
-        n_chunks = cpu_count() + 1 - n_jobs
-
-    return _chunks(l, n_chunks)
-
-
 def _find_relevance(log_ttd, log_lift, R, lambda_):
     relevance = lambda_ * log_ttd + (1 - lambda_) * log_lift
     return relevance.T.apply(lambda s: s.order(ascending=False).index).head(R)
@@ -171,8 +155,7 @@ def _topic_info(topic_term_dists, topic_proportion, term_frequency, term_topic_f
                                     'loglift': log_lift.loc[original_topic_id, term_ix].round(4), \
                                     'Category': 'Topic%d' % new_topic_id})
 
-    top_terms = pd.concat(Parallel(n_jobs=n_jobs)(delayed(_find_relevance_chunks)(log_ttd, log_lift, R, ls) \
-                                                                 for ls in _job_chunks(lambda_seq, n_jobs)))
+    top_terms = _find_relevance_chunks(log_ttd, log_lift, R, lambda_seq)
     topic_dfs = map(topic_top_term_df, enumerate(top_terms.T.iterrows(), 1))
     return pd.concat([default_term_info] + list(topic_dfs))
 

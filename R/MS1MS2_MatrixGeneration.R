@@ -23,6 +23,10 @@ results <- create_peaklist(peaks)
 ms1 <- results$ms1
 ms2 <- results$ms2
 
+# set the row names as the peakid
+rownames(ms1) <- ms1$peakID
+rownames(ms2) <- ms2$peakID
+
 # reuse prev vocabularies, if any .. for LDA.
 # prev_words_file <- '/home/joewandy/git/metabolomics_tools/justin/notebooks/results/beer3_pos_rel/beer3pos.vocab'
 prev_words_file <- ''
