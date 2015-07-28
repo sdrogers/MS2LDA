@@ -1,14 +1,16 @@
 ### This is the peak detection workflow based on the RMassBank's script from Emma ###
 print("Running create_peak_method #3")
 
+library(xcms)
+library(Hmisc)
 library(RMassBank)
 library(mzR)
 source('cachedEic.R')
 source('cachedMsms.R')
 
 # The full scan MS1 info can be provided as either mzXML or CSV file
-# ms1_input_file <- '/home/joewandy/Dropbox/Project/justin_data/Dataset_for_PiMP/Beers_4Beers_compared/Positive/Samples/Beer_3_full1.mzXML'
-ms1_input_file <- '/home/joewandy/Dropbox/Project/justin_data/test_mz_rt_pairs_Beer2_withIntensities.csv'
+# input_file <- '/home/joewandy/Dropbox/Project/justin_data/Dataset_for_PiMP/Beers_4Beers_compared/Positive/Samples/Beer_3_full1.mzXML'
+input_file <- '/home/joewandy/Dropbox/Project/justin_data/test_mz_rt_pairs_Beer2_withIntensities.csv'
 
 # The fragmentation mzML file
 fragment_mzML <- '/home/joewandy/Dropbox/Project/justin_data/Beer_3_T10_POS.mzML'
@@ -18,13 +20,13 @@ dppm <- 10
 rt_window <- c(-100, 100)
 ms_msms_cut <- 5E3
 select_most_intense <- TRUE
-rt_ms1_ms2_difference <- 0.2 * 60
+rt_ms1_ms2_difference <- 15
 
 # If we specify the mzXML file for the full scan data, then we want to do peak picking etc.
-if (grepl("mzXML", ms1_input_file)) {
+if (grepl("mzXML", input_file)) {
     
     # input file is an mzXML file
-    xset_full <- xcmsSet(files=ms1_input_file, method="centWave", ppm=2, snthresh=3, peakwidth=c(5,100),
+    xset_full <- xcmsSet(files=input_file, method="centWave", ppm=2, snthresh=3, peakwidth=c(5,100),
                          prefilter=c(3,1000), mzdiff=0.001, integrate=0, fitgauss=FALSE, verbose.column=TRUE)
     xset_full <- group(xset_full)
     
@@ -43,7 +45,7 @@ if (grepl("mzXML", ms1_input_file)) {
     
 } else { # otherwise just load the CSV file directly, assuming that it has been pre-filtered
     
-    peak_info <- read.csv(ms1_input_file)
+    peak_info <- read.csv(input_file)
     peak_info <- as.data.frame(peak_info)
     
 }
@@ -61,7 +63,6 @@ num_ms1_peaks <- nrow(peak_info)
 np_rt <- peak_info$rt
 np_mz <- peak_info$mz
 np_intensity <- peak_info$int
-np_rt_min <- peak_info$rtmin
 
 # get the MS/MS
 print("Finding MS2 peaks")
@@ -116,7 +117,7 @@ stopifnot(num_ms1_peaks == length(msms))
 peaks_colnames <- c("peakID", "MSnParentPeakID", "msLevel", "rt", "mz", "intensity", "Sample", "GroupPeakMSn", 
                       "CollisionEnergy")
 peaks <- data.frame(t(rep(NA, length(peaks_colnames))))
-peaks <- peaks[-1, ] # delete first row of all NAs
+colnames(peaks) <- peaks_colnames      
 
 # loop over all the MS1 peaks and append to the dataframe
 peak_id <- 0
@@ -150,9 +151,9 @@ for(i in 1:num_ms1_peaks) {
     # check that the difference between RT of full scan in 
     # fragmentation file and RT of MS1 feature from peak list
     # isn't too big
-    rt_min_from_peaklist <- np_rt_min[i]
-    rt_ms <- t$childHeaders$retentionTime[[1]] # use the real RT from the MSMS
-    diff <- abs(rt_min_from_peaklist-rt_ms)
+    rt_ms <- np_rt[i]
+    rt_ms2_from_fragmentation <- t$childHeaders$retentionTime[[1]] # use the real RT from the MSMS
+    diff <- abs(rt_ms-rt_ms2_from_fragmentation)
     if (diff > rt_ms1_ms2_difference) {
         next # if too big, then skip
     }
@@ -167,7 +168,6 @@ for(i in 1:num_ms1_peaks) {
     new_row <- c(peak_id, ms1_parent_peak_id, ms1_level, ms1_rt, ms1_mz, ms1_intensity, 
                  sample_idx, group_peak_msn, collision_energy)
     peaks <- rbind(peaks, new_row)  
-    colnames(peaks) <- peaks_colnames      
     
     # set the ms2 info
     ms2_parent_peakids <- rep(peak_id, num_ms2)    
@@ -194,3 +194,5 @@ for(i in 1:num_ms1_peaks) {
     peaks <- rbind(peaks, ms2_df)
     
 }
+
+peaks <- peaks[-1, ] # delete first row of all NAs

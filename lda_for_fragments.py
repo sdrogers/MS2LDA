@@ -364,19 +364,25 @@ def test_lda():
         n_topics = 30
 
     n_topics = 300
-    n_samples = 100
-    n_burn = 50
-    n_thin = 5
+    n_samples = 10
+    n_burn = 0
+    n_thin = 1
     alpha = 50.0/n_topics
     beta = 0.1
 
     # train on beer3pos
     
-    fragment_filename = 'input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
-    neutral_loss_filename = 'input/relative_intensities/Beer_3_T10_POS_losses_rel.csv'
+#     fragment_filename = 'input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
+#     neutral_loss_filename = 'input/relative_intensities/Beer_3_T10_POS_losses_rel.csv'
+#     mzdiff_filename = None    
+#     ms1_filename = 'input/relative_intensities/Beer_3_T10_POS_ms1_rel.csv'
+#     ms2_filename = 'input/relative_intensities/Beer_3_T10_POS_ms2_rel.csv'
+  
+    fragment_filename = 'input/test_mz_rt_pairs_Beer2_withIntensities_fragments.csv'
+    neutral_loss_filename = 'input/test_mz_rt_pairs_Beer2_withIntensities_losses.csv'
     mzdiff_filename = None    
-    ms1_filename = 'input/relative_intensities/Beer_3_T10_POS_ms1_rel.csv'
-    ms2_filename = 'input/relative_intensities/Beer_3_T10_POS_ms2_rel.csv'
+    ms1_filename = 'input/test_mz_rt_pairs_Beer2_withIntensities_ms1.csv'
+    ms2_filename = 'input/test_mz_rt_pairs_Beer2_withIntensities_ms2.csv'  
   
     ms2lda = Ms2Lda.lcms_data_from_R(fragment_filename, neutral_loss_filename, mzdiff_filename, 
                                      ms1_filename, ms2_filename)    
