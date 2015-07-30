@@ -1,7 +1,7 @@
 library(gtools) # for natural sorting
 
-extract_ms2_fragment_df <- function(ms1, ms2, prev_words_file) {
-    
+extract_ms2_fragment_df <- function(ms1, ms2, prev_words_file, grouping_tol=7) {
+        
     ########################################
     ##### MS1/MS2 Dataframe Generation #####
     ########################################
@@ -42,7 +42,7 @@ extract_ms2_fragment_df <- function(ms1, ms2, prev_words_file) {
             mz <- prev_mzs[i]
                         
             # calculate mz window
-            max.ppm <- mz * 7 * 1e-06
+            max.ppm <- mz * grouping_tol * 1e-06
             
             # find peaks within that window
             match.idx <- which(sapply(copy_ms2$mz, function(x) {
@@ -97,7 +97,7 @@ extract_ms2_fragment_df <- function(ms1, ms2, prev_words_file) {
         mz <- copy_ms2$mz[1]
         
         # calculate mz window
-        max.ppm <- mz * 7 * 1e-06
+        max.ppm <- mz * grouping_tol * 1e-06
         
         # find peaks within that window
         match.idx <- which(sapply(copy_ms2$mz, function(x) {
