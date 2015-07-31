@@ -101,13 +101,21 @@ def _series_with_name(data, name):
         return pd.Series(data, name=name)
 
 
-def _topic_coordinates(mds, topic_term_dists, topic_proportion):
-    K = topic_term_dists.shape[0]
-    mds_res = mds(topic_term_dists)
-    assert mds_res.shape == (K, 2)
-    mds_df = pd.DataFrame({'x': mds_res[:,0], 'y': mds_res[:,1], 'topics': range(1, K + 1), \
-                                  'cluster': 1, 'Freq': topic_proportion * 100})
+def _topic_coordinates(mds, topic_term_dists, topic_proportion, topic_coords):
+#     K = topic_term_dists.shape[0]
+#     mds_res = mds(topic_term_dists)
+#     assert mds_res.shape == (K, 2)
+#     mds_df = pd.DataFrame({'x': mds_res[:,0], 'y': mds_res[:,1], 'topics': range(1, K + 1), \
+#                                   'cluster': 1, 'Freq': topic_proportion * 100})
     # note: cluster (should?) be deprecated soon. See: https://github.com/cpsievert/LDAvis/issues/26
+
+    K = topic_term_dists.shape[0]
+    assert(K==len(topic_coords))
+    xs = [coor[0] for coor in topic_coords]
+    ys = [coor[1] for coor in topic_coords]
+    mds_df = pd.DataFrame({'x': xs, 'y': ys, 'topics': range(1, K + 1), \
+                                  'cluster': 1, 'Freq': topic_proportion * 100})
+
     return mds_df
 
 
@@ -193,7 +201,7 @@ def _term_topic_freq(topic_term_dists, topic_freq, term_frequency):
     return term_topic_freq * err
 
 
-def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequency, topic_ranking, plot_opts, \
+def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequency, topic_ranking, topic_coordinates, plot_opts, \
                 lambda_step, lambda_min, lambda_max, \
                 R=30, mds=js_PCoA, n_jobs=-1):
     """Transforms the topic model distributions and related corpus data into
@@ -275,7 +283,7 @@ def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequenc
     term_topic_freq     = _term_topic_freq(topic_term_dists, topic_freq, term_frequency)
     topic_info            = _topic_info(topic_term_dists, topic_proportion, term_frequency, term_topic_freq, vocab, lambda_step, R, n_jobs)
     token_table          = _token_table(topic_info, term_topic_freq, vocab, term_frequency)
-    topic_coordinates = _topic_coordinates(mds, topic_term_dists, topic_proportion)
+    topic_coordinates = _topic_coordinates(mds, topic_term_dists, topic_proportion, topic_coordinates)
 
     # ignore topic_order completely and leave the ordering of the topics as it is
 #     client_topic_order = [x + 1 for x in topic_order]

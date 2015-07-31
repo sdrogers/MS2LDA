@@ -400,7 +400,7 @@ var LDAvis = function(to_select, data_or_file_name) {
         var ydiff = yrange[1] - yrange[0],
             ypad = 0.05;
 
-        if (xdiff > ydiff) {
+/*        if (xdiff > ydiff) {
             var xScale = d3.scale.linear()
                     .range([0, mdswidth])
                     .domain([xrange[0] - xpad * xdiff, xrange[1] + xpad * xdiff]);
@@ -417,7 +417,16 @@ var LDAvis = function(to_select, data_or_file_name) {
                     .range([mdsheight, 0])
                     .domain([yrange[0] - ypad * ydiff, yrange[1] + ypad * ydiff]);
         }
+*/
 
+        var xScale = d3.scale.linear()
+        		.range([30, mdswidth-30])
+        		.domain([xrange[0], xrange[1]])
+
+        var yScale = d3.scale.linear()
+        		.range([mdsheight-50, 50])
+        		.domain([yrange[0], yrange[1]])        		
+        		
         // Create new svg element (that will contain everything):
         var svg = d3.select(to_select).append("svg")
                 .attr("width", mdswidth + barwidth + margin.left + termwidth + margin.right)
@@ -446,25 +455,25 @@ var LDAvis = function(to_select, data_or_file_name) {
         mdsplot.append("line") // draw x-axis
             .attr("x1", 0)
             .attr("x2", mdswidth)
-            .attr("y1", mdsheight / 2)
-            .attr("y2", mdsheight / 2)
+            .attr("y1", mdsheight)
+            .attr("y2", mdsheight)
             .attr("stroke", "gray")
             .attr("opacity", 0.3);
         mdsplot.append("text") // label x-axis
-            .attr("x", 0)
-            .attr("y", mdsheight/2 - 5)
+            .attr("x", mdswidth)
+            .attr("y", mdsheight - 5)
             .text(data['plot.opts'].xlab)
             .attr("fill", "gray");
 
         mdsplot.append("line") // draw y-axis
-            .attr("x1", mdswidth / 2)
-            .attr("x2", mdswidth / 2)
+            .attr("x1", 0)
+            .attr("x2", 0)
             .attr("y1", 0)
             .attr("y2", mdsheight)
             .attr("stroke", "gray")
             .attr("opacity", 0.3);
         mdsplot.append("text") // label y-axis
-            .attr("x", mdswidth/2 + 5)
+            .attr("x", 5)
             .attr("y", 7)
             .text(data['plot.opts'].ylab)
             .attr("fill", "gray");
@@ -563,13 +572,14 @@ var LDAvis = function(to_select, data_or_file_name) {
             .style("opacity", base_opacity)
             .style("fill", color1)
             .attr("r", function(d) {
-            	var rank = topic_ranking_map[d.topics];
-            	if (data['plot.opts'].sort_by === 'in_degree') {
-            		rank /= 10;
-            	}
+            	// var rank = topic_ranking_map[d.topics];
+            	// if (data['plot.opts'].sort_by === 'in_degree') {
+            	// 	rank /= 10;
+            	// }
+                //return (Math.sqrt((rank/100)*mdswidth*mdsheight*circle_prop/Math.PI));
                 //return (rScaleMargin(+d.Freq));
                 //return (Math.sqrt((d.Freq/100)*mdswidth*mdsheight*circle_prop/Math.PI));
-                return (Math.sqrt((rank/100)*mdswidth*mdsheight*circle_prop/Math.PI));
+                return (Math.sqrt((1/100)*mdswidth*mdsheight*circle_prop/Math.PI));
             })
             .attr("cx", function(d) {
                 return (xScale(+d.x));
@@ -1564,13 +1574,14 @@ var LDAvis = function(to_select, data_or_file_name) {
                 .data(mdsData)
                 .transition()
                 .attr("r", function(d) {
-                	var rank = topic_ranking_map[d.topics];
-                	if (data['plot.opts'].sort_by === 'in_degree') {
-                		rank /= 10;            		
-                	}                	
-                    //return (rScaleMargin(+d.Freq));
-                    //return (Math.sqrt((d.Freq/100)*mdswidth*mdsheight*circle_prop/Math.PI));
-                    return (Math.sqrt((rank/100)*mdswidth*mdsheight*circle_prop/Math.PI));
+                	// var rank = topic_ranking_map[d.topics];
+                	// if (data['plot.opts'].sort_by === 'in_degree') {
+                	// 	rank /= 10;            		
+                	// }                	
+                    // return (Math.sqrt((rank/100)*mdswidth*mdsheight*circle_prop/Math.PI));
+                    // return (rScaleMargin(+d.Freq));
+                    // return (Math.sqrt((d.Freq/100)*mdswidth*mdsheight*circle_prop/Math.PI));
+                    return (Math.sqrt((1/100)*mdswidth*mdsheight*circle_prop/Math.PI));
                 });
 
             // Change sizes of topic numbers:

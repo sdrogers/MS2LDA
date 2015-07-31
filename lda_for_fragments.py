@@ -365,10 +365,14 @@ class Ms2Lda(object):
         
     def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", selected_topics=None, interactive=False):
         plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdf)
-        plotter.plot_lda_fragments(consistency=consistency, sort_by=sort_by, 
-                                   selected_topics=selected_topics, interactive=interactive)
         if interactive:
+            # if interactive mode, we always sort by the h_index because we need both the h-index and degree for plotting
+            plotter.plot_lda_fragments(consistency=consistency, sort_by='h_index', 
+                                       selected_topics=selected_topics, interactive=interactive)
             self.model.visualise(topic_plotter=plotter)
+        else:
+            plotter.plot_lda_fragments(consistency=consistency, sort_by=sort_by, 
+                                       selected_topics=selected_topics, interactive=interactive)
             
     def print_topic_words(self):
         self.model.print_topic_words(self.EPSILON)
@@ -402,7 +406,7 @@ def test_lda():
         n_topics = 30
 
     n_topics = 300
-    n_samples = 10
+    n_samples = 3
     n_burn = 0
     n_thin = 1
     alpha = 50.0/n_topics
@@ -427,11 +431,11 @@ def test_lda():
     ms2lda.run_lda(n_topics, n_samples, n_burn, n_thin, alpha, beta)
     ms2lda.save_project('results/beer3pos.project')
     
-    new_ms2lda = Ms2Lda.resume_from('results/beer3pos.project')
+    # new_ms2lda = Ms2Lda.resume_from('results/beer3pos.project')
     
-    # ms2lda.write_results('beer3pos')
-    # ms2lda.model.print_topic_words()    
-    # ms2lda.plot_lda_fragments(consistency=0.50, sort_by="h_index", interactive=True)
+    ms2lda.write_results('beer3pos')
+    ms2lda.model.print_topic_words()    
+    ms2lda.plot_lda_fragments(consistency=0.50, sort_by="h_index", interactive=True)
 
 # 
 #     # save some topics from beer3pos lda

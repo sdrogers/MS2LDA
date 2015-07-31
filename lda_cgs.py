@@ -322,7 +322,8 @@ class CollapseGibbsLda(object):
         data['term_frequency'] = np.sum(self.ckn, axis=0)    
         if topic_plotter is not None:
             data['topic_ranking'] = topic_plotter.topic_ranking
-            data['plot_opts'] = {'xlab': 'PC1', 'ylab': 'PC2', 'sort_by' : topic_plotter.sort_by}
+            data['topic_coordinates'] = topic_plotter.topic_coordinates
+            data['plot_opts'] = {'xlab': 'h-index', 'ylab': 'degree', 'sort_by' : topic_plotter.sort_by}
             if topic_plotter.sort_by == 'h_index':
                 data['lambda_step'] = 1
             elif topic_plotter.sort_by == 'in_degree':

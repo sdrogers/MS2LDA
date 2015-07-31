@@ -70,6 +70,7 @@ class Ms2Lda_Viz(object):
                                                               selected_topics=selected_topics, interactive=interactive)               
         self.topic_plots = {}
         self.topic_ms1_count = {}
+        self.topic_coordinates = {}
         for (i, c) in sorted_topic_counts:
             
             # skip non-selected topics
@@ -328,9 +329,16 @@ class Ms2Lda_Viz(object):
                 self.topic_plots[i] = plot_data
                 self.topic_ms1_count[i] = num_peaks
                 print "Topic " + str(i) + " has " + str(num_peaks) + " ms1 peaks"
+                
+                x_coord = topic_ranking[i]
+                y_coord = num_peaks
+                self.topic_coordinates.update({i:(x_coord, y_coord)})
                     
-            # break        
-        
+            # break
+
+        # convert topic_coordinates from dictionary to a list of coordinates, sorted by the topic id
+        sorted_coords = sorted(self.topic_coordinates.iteritems(), key=lambda key_value: key_value[0])
+        self.topic_coordinates = [item[1] for item in sorted_coords]        
         
     def plot_for_web(self, i, n):
         if i in self.topic_plots:
