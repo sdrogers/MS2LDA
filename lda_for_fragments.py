@@ -1,30 +1,36 @@
+import cPickle
 import os
 import re
 import sys
+import time
 import timeit
+import gzip
 
 from pandas.core.frame import DataFrame
 from scipy.sparse import coo_matrix
 
-from visualisation.pylab.lda_for_fragments_viz import Ms2Lda_Viz
 from lda_cgs import CollapseGibbsLda
 import numpy as np
 import pandas as pd
 import pylab as plt
+from visualisation.pylab.lda_for_fragments_viz import Ms2Lda_Viz
+
 
 class Ms2Lda(object):
     
-    def __init__(self, df, vocab, ms1, ms2, EPSILON=0.05):
+    def __init__(self, df, vocab, ms1, ms2, input_filenames=[], EPSILON=0.05):
         self.df = df
         self.vocab = vocab
         self.ms1 = ms1
         self.ms2 = ms2
         self.EPSILON = EPSILON
+        self.input_filenames = input_filenames
         
     @classmethod
     def lcms_data_from_R(cls, fragment_filename, neutral_loss_filename, mzdiff_filename, 
                  ms1_filename, ms2_filename, vocab_type=1):
 
+        input_filenames = []
         fragment_data = None
         neutral_loss_data = None
         mzdiff_data = None
@@ -32,13 +38,19 @@ class Ms2Lda(object):
         # load all the input files        
         if fragment_filename is not None:
             fragment_data = pd.read_csv(fragment_filename, index_col=0)
+            input_filenames.append(fragment_filename)
         if neutral_loss_filename is not None:
             neutral_loss_data = pd.read_csv(neutral_loss_filename, index_col=0)
+            input_filenames.append(neutral_loss_filename)
         if mzdiff_filename is not None:
             mzdiff_data = pd.read_csv(mzdiff_filename, index_col=0)
+            input_filenames.append(mzdiff_filename)
         
         ms1 = pd.read_csv(ms1_filename, index_col=0)
         ms2 = pd.read_csv(ms2_filename, index_col=0)
+        input_filenames.append(ms1_filename)
+        input_filenames.append(ms2_filename)
+        
         ms2['fragment_bin_id'] = ms2['fragment_bin_id'].astype(str)
         ms2['loss_bin_id'] = ms2['loss_bin_id'].astype(str)
 
@@ -95,8 +107,25 @@ class Ms2Lda(object):
             raise ValueError("Unknown vocab type")
 
         # return the instantiated object        
-        this_instance = cls(df, vocab, ms1, ms2)
-        return this_instance           
+        this_instance = cls(df, vocab, ms1, ms2, input_filenames)        
+        return this_instance         
+    
+    @classmethod
+    def resume_from(cls, project_in):
+        start = timeit.default_timer()        
+        with gzip.GzipFile(project_in, 'rb') as f:
+            obj = cPickle.load(f)
+            stop = timeit.default_timer()
+            print "Project loaded from " + project_in + " time taken = " + str(stop-start)
+            print " - input_filenames = "
+            for fname in obj.input_filenames:
+                print "\t" + fname
+            print " - df.shape = " + str(obj.df.shape)
+            print " - K = " + str(obj.model.K)
+            print " - alpha = " + str(obj.model.alpha[0])
+            print " - beta = " + str(obj.model.beta[0])
+            print " - last_saved_timestamp = " + str(obj.last_saved_timestamp)        
+            return obj  
         
     @classmethod
     def gcms_data_from_mzmatch(cls, input_filename, intensity_colname, tol):
@@ -201,7 +230,8 @@ class Ms2Lda(object):
         vocab = df.columns
                 
         # return the instantiated object        
-        this_instance = cls(df, vocab, ms1, ms2)
+        input_filenames = [input_filename]
+        this_instance = cls(df, vocab, ms1, ms2, input_filenames)
         return this_instance        
         
     def run_lda(self, n_topics, n_samples, n_burn, n_thin, alpha, beta, 
@@ -318,7 +348,15 @@ class Ms2Lda(object):
         print "Writing topic docs to " + outfile
         self.docdf.transpose().to_csv(outfile)
         
-    def save_model(self, topic_indices, model_out, words_out):
+    def save_project(self, project_out):
+        start = timeit.default_timer()        
+        self.last_saved_timestamp = str(time.strftime("%c"))
+        with gzip.GzipFile(project_out, 'wb') as f:
+            cPickle.dump(self, f, protocol=cPickle.HIGHEST_PROTOCOL)
+            stop = timeit.default_timer()
+            print "Project saved to " + project_out + " time taken = " + str(stop-start)
+        
+    def persist_topics(self, topic_indices, model_out, words_out):
         self.model.save(topic_indices, model_out, words_out)
         
     def rank_topics(self, sort_by="h_index", selected_topics=None, top_N=None):
@@ -387,9 +425,13 @@ def test_lda():
     ms2lda = Ms2Lda.lcms_data_from_R(fragment_filename, neutral_loss_filename, mzdiff_filename, 
                                      ms1_filename, ms2_filename)    
     ms2lda.run_lda(n_topics, n_samples, n_burn, n_thin, alpha, beta)
-    ms2lda.write_results('beer3pos')
-    ms2lda.model.print_topic_words()    
-    ms2lda.plot_lda_fragments(consistency=0.50, sort_by="h_index", interactive=True)
+    ms2lda.save_project('results/beer3pos.project')
+    
+    new_ms2lda = Ms2Lda.resume_from('results/beer3pos.project')
+    
+    # ms2lda.write_results('beer3pos')
+    # ms2lda.model.print_topic_words()    
+    # ms2lda.plot_lda_fragments(consistency=0.50, sort_by="h_index", interactive=True)
 
 # 
 #     # save some topics from beer3pos lda

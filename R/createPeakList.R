@@ -22,6 +22,9 @@ create_peaklist <- function(peaks) {
     
     # make sure only ms1 peaks with ms2 fragments are kept
     ms1 <- ms1[which(ms1$peakID %in% ms2$MSnParentPeakID),]
+
+    # sort the ms2 dataframe by the intensity column
+    ms2 <- ms2[with(ms2, order(-intensity)), ]
     
     # scale the intensities of ms2 peaks to relative intensity
     parent_ids <- ms2$MSnParentPeakID
@@ -44,6 +47,9 @@ create_peaklist <- function(peaks) {
         
     }
     
+    # set the row names to be the same as the peakid
+    rownames(ms1) <- ms1$peakID
+    rownames(ms2) <- ms2$peakID    
     output <- list("ms1"=ms1, "ms2"=ms2)
     return(output)
     

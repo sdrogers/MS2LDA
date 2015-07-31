@@ -6,11 +6,31 @@ create_peak_method <- 3
 
 # Check inside each sourced script for all the parameters etc.
 if (create_peak_method == 1) {
+    
     source('runCreatePeakMethod1.R')    
+    fragmentation_file <- '/home/joewandy/Project/justin_data/Beer_3_T10_POS.mzXML'    
+    peaks <- run_create_peak_method_1(fragmentation_file)
+
 } else if (create_peak_method == 2) {
+
     source('runCreatePeakMethod2.R')    
+    full_scan_file <- '/home/joewandy/Dropbox/Project/justin_data/Dataset_for_PiMP/Beers_4Beers_compared/Positive/Samples/Beer_3_full1.mzXML'
+    fragmentation_file <- '/home/joewandy/Project/justin_data/Beer_3_T10_POS.mzXML'
+    peaks <- run_create_peak_method_2(full_scan_file, fragmentation_file)
+    
 } else if (create_peak_method == 3) {
+
     source('runCreatePeakMethod3.R')    
+
+    # The full scan MS1 info can be provided as either mzXML or CSV file
+    # input_file <- '/home/joewandy/Dropbox/Project/justin_data/Dataset_for_PiMP/Beers_4Beers_compared/Positive/Samples/Beer_3_full1.mzXML'
+    input_file <- '/home/joewandy/Dropbox/Project/justin_data/test_mz_rt_pairs_Beer2_withIntensities.csv'
+    
+    # The fragmentation mzML file
+    fragment_mzML <- '/home/joewandy/Dropbox/Project/justin_data/Beer_3_T10_POS.mzML'
+
+    peaks <- run_create_peak_method_3(input_file, fragment_mzML)    
+    
 }
 
 ###############################
@@ -23,28 +43,33 @@ results <- create_peaklist(peaks)
 ms1 <- results$ms1
 ms2 <- results$ms2
 
-# set the row names as the peakid
-rownames(ms1) <- ms1$peakID
-rownames(ms2) <- ms2$peakID
-
 # reuse prev vocabularies, if any .. for LDA.
 # prev_words_file <- '/home/joewandy/git/metabolomics_tools/justin/notebooks/results/beer3_pos_rel/beer3pos.vocab'
 prev_words_file <- ''
 
 source('extractFragmentFeatures.R')
-results <- extract_ms2_fragment_df(ms1, ms2, prev_words_file)
+results <- extract_ms2_fragment_df(ms1, ms2, prev_words_file, grouping_tol=7)
 fragment_df <- results$fragment_df
 ms2 <- results$ms2
 
 source('extractLossFeatures.R')
-results <- extract_neutral_loss_df(ms1, ms2, prev_words_file)
+results <- extract_neutral_loss_df(ms1, ms2, prev_words_file, 
+                                   grouping_tol=15, threshold_counts=5, threshold_max_loss=200)
 neutral_loss_df <- results$neutral_loss_df
 ms2 <- results$ms2
+loss_values_df <- results$loss_values_df
 
 # source('extractMzdiffFeatures.R')
 # results <- extract_mzdiff_df(ms1, ms2)
 # mz_diff_df <- results$mz_diff_df
 # ms2 <- results$ms2
+
+# post-processing: for losses<40, merge rows within 0.01 Dalton together
+source('postProcessing.R')
+results <- post_process_neutral_loss(neutral_loss_df, loss_values_df, ms2, 
+                                     min_mass_to_include=40, max_diff=0.01)   
+neutral_loss_df <- results$neutral_loss_df
+ms2 <- results$ms2
 
 ########################
 ##### Write Output #####
