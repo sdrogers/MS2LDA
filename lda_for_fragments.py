@@ -4,6 +4,7 @@ import re
 import sys
 import time
 import timeit
+import gzip
 
 from pandas.core.frame import DataFrame
 from scipy.sparse import coo_matrix
@@ -111,20 +112,20 @@ class Ms2Lda(object):
     
     @classmethod
     def resume_from(cls, project_in):
-        # return the instantiated object that has been pickled
-        f = file(project_in, 'rb')
-        obj = cPickle.load(f)
-        f.close()
-        print "Project loaded from " + project_in
-        print " - input_filenames = "
-        for fname in obj.input_filenames:
-            print "\t" + fname
-        print " - df.shape = " + str(obj.df.shape)
-        print " - K = " + str(obj.model.K)
-        print " - alpha = " + str(obj.model.alpha[0])
-        print " - beta = " + str(obj.model.beta[0])
-        print " - last_saved_timestamp = " + str(obj.last_saved_timestamp)        
-        return obj  
+        start = timeit.default_timer()        
+        with gzip.GzipFile(project_in, 'rb') as f:
+            obj = cPickle.load(f)
+            stop = timeit.default_timer()
+            print "Project loaded from " + project_in + " time taken = " + str(stop-start)
+            print " - input_filenames = "
+            for fname in obj.input_filenames:
+                print "\t" + fname
+            print " - df.shape = " + str(obj.df.shape)
+            print " - K = " + str(obj.model.K)
+            print " - alpha = " + str(obj.model.alpha[0])
+            print " - beta = " + str(obj.model.beta[0])
+            print " - last_saved_timestamp = " + str(obj.last_saved_timestamp)        
+            return obj  
         
     @classmethod
     def gcms_data_from_mzmatch(cls, input_filename, intensity_colname, tol):
@@ -348,13 +349,12 @@ class Ms2Lda(object):
         self.docdf.transpose().to_csv(outfile)
         
     def save_project(self, project_out):
-        # dump the whole object out
-        # binary mode ('b') is required for portability between Unix and Windows
+        start = timeit.default_timer()        
         self.last_saved_timestamp = str(time.strftime("%c"))
-        f = file(project_out, 'wb')
-        cPickle.dump(self, f)
-        f.close()
-        print "Project saved to " + project_out
+        with gzip.GzipFile(project_out, 'wb') as f:
+            cPickle.dump(self, f, protocol=cPickle.HIGHEST_PROTOCOL)
+            stop = timeit.default_timer()
+            print "Project saved to " + project_out + " time taken = " + str(stop-start)
         
     def persist_topics(self, topic_indices, model_out, words_out):
         self.model.save(topic_indices, model_out, words_out)
@@ -425,9 +425,13 @@ def test_lda():
     ms2lda = Ms2Lda.lcms_data_from_R(fragment_filename, neutral_loss_filename, mzdiff_filename, 
                                      ms1_filename, ms2_filename)    
     ms2lda.run_lda(n_topics, n_samples, n_burn, n_thin, alpha, beta)
-    ms2lda.write_results('beer3pos')
-    ms2lda.model.print_topic_words()    
-    ms2lda.plot_lda_fragments(consistency=0.50, sort_by="h_index", interactive=True)
+    ms2lda.save_project('results/beer3pos.project')
+    
+    new_ms2lda = Ms2Lda.resume_from('results/beer3pos.project')
+    
+    # ms2lda.write_results('beer3pos')
+    # ms2lda.model.print_topic_words()    
+    # ms2lda.plot_lda_fragments(consistency=0.50, sort_by="h_index", interactive=True)
 
 # 
 #     # save some topics from beer3pos lda

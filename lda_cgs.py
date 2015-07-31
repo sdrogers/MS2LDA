@@ -27,6 +27,7 @@ from collections import namedtuple
 
 from numpy import int32
 from numpy.random import RandomState
+import gzip
 
 from lda_generate_data import LdaDataGenerator
 import lda_utils as utils
@@ -273,11 +274,10 @@ class CollapseGibbsLda(object):
                         
     @classmethod
     def load(cls, filename):
-        f = file(filename, 'rb')
-        obj = cPickle.load(f)
-        f.close()
-        print "Model loaded from " + filename
-        return obj
+        with gzip.GzipFile(filename, 'rb') as f:
+            obj = cPickle.load(f)
+            print "Model loaded from " + filename
+            return obj
     
     def save(self, topic_indices, model_out, words_out):
         
@@ -302,10 +302,9 @@ class CollapseGibbsLda(object):
 
         # dump the whole model out
         # binary mode ('b') is required for portability between Unix and Windows
-        f = file(model_out, 'wb')
-        cPickle.dump(self, f)
-        f.close()
-        print "Model saved to " + model_out
+        with gzip.GzipFile(model_out, 'wb') as f:
+            cPickle.dump(self, f, protocol=cPickle.HIGHEST_PROTOCOL)
+            print "Model saved to " + model_out
 
         # also write out the selected vocabs into a text file
         # can be used for feature processing later ..
