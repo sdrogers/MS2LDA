@@ -463,7 +463,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             .attr("stroke", "gray")
             .attr("opacity", 0.3);
         mdsplot.append("text") // label x-axis
-            .attr("x", mdswidth)
+            .attr("x", mdswidth/2 - 10)
             .attr("y", mdsheight - 5)
             .text(data['plot.opts'].xlab)
             .attr("fill", "gray");
@@ -655,9 +655,19 @@ var LDAvis = function(to_select, data_or_file_name) {
 
         // Add a group for the bar chart
         var chart = svg.append("g")
-                .attr("transform", "translate(" + +(mdswidth + margin.left + termwidth) + "," + 2 * margin.top + ")")
+                .attr("transform", "translate(" + +(mdswidth + 20 + margin.left + termwidth) + "," + (400 + 2 * margin.top) + ")")
                 .attr("id", barFreqsID);
 
+        // ms1 plot
+        d3.select("#" + barFreqsID)
+        .append("svg:image")
+        .attr("x", -100)
+        .attr("y", -530)
+        .attr('width', 600)
+        .attr('height', 600)
+        .attr('id', 'ms1_plot')
+        .attr("xlink:href","/images/default_logo.png")        
+        
         // bar chart legend/guide:
         var barguide = {"width": 100, "height": 15};
         d3.select("#" + barFreqsID).append("rect")
@@ -714,15 +724,6 @@ var LDAvis = function(to_select, data_or_file_name) {
             .attr("y", mdsheight + 10 + (10/2)*barguide.height + 5)
             .style("dominant-baseline", "middle")
             .text("2. relevance(term w | topic t) = p(w | t)");
-
-        d3.select("#" + barFreqsID)
-            .append("svg:image")
-            .attr("x", 0)
-            .attr("y", mdsheight - 300)
-            .attr('width', 600)
-            .attr('height', 600)
-            .attr('id', 'ms1_plot')
-            .attr("xlink:href","/images/default_logo.png")
 
         // Bind 'default' data to 'default' bar chart
         var basebars = chart.selectAll(to_select + " .bar-totals")
@@ -1303,7 +1304,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             d3.select("#" + barFreqsID)
                 .append("text")
                 .attr("x", barwidth/2)
-                .attr("y", -30)
+                .attr("y", -430)
                 .attr("class", "bubble-tool") //  set class so we can remove it when highlight_off is called
                 .style("text-anchor", "middle")
                 .style("font-size", "16px")

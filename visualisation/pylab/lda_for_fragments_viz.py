@@ -363,17 +363,17 @@ class Ms2Lda_Viz(object):
                        wordfreq, consistency, max_parent_mz):
         
         parent_fontspec = {
-            'size':'10', 
+            'size':'12', 
             'color':'blue', 
             'weight':'bold'
         }
         fragment_fontspec = {
-            'size':'8', 
+            'size':'12', 
             'color':'#800000', 
             'weight':'bold'
         }
         loss_fontspec = {
-            'size':'8', 
+            'size':'12', 
             'color':'green', 
             'weight':'bold'
         }        
