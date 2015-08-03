@@ -320,16 +320,12 @@ class CollapseGibbsLda(object):
         data['doc_lengths'] = self.cd
         data['vocab'] = self.vocab
         data['term_frequency'] = np.sum(self.ckn, axis=0)    
-        if topic_plotter is not None:
-            data['topic_ranking'] = topic_plotter.topic_ranking
-            data['topic_coordinates'] = topic_plotter.topic_coordinates
-            data['plot_opts'] = {'xlab': 'h-index', 'ylab': 'degree', 'sort_by' : topic_plotter.sort_by}
-            if topic_plotter.sort_by == 'h_index':
-                data['lambda_step'] = 1
-            elif topic_plotter.sort_by == 'in_degree':
-                data['lambda_step'] = 10                
-            data['lambda_min'] = self._round_nicely(topic_plotter.sort_by_min)
-            data['lambda_max'] = self._round_nicely(topic_plotter.sort_by_max)
+        data['topic_ranking'] = topic_plotter.topic_ranking
+        data['topic_coordinates'] = topic_plotter.topic_coordinates
+        data['plot_opts'] = {'xlab': 'h-index', 'ylab': 'degree', 'sort_by' : topic_plotter.sort_by}
+        data['lambda_step'] = 1               
+        data['lambda_min'] = self._round_nicely(topic_plotter.sort_by_min)
+        data['lambda_max'] = self._round_nicely(topic_plotter.sort_by_max)
         vis_data = pyLDAvis.prepare(**data)   
         pyLDAvis.show(vis_data, topic_plotter=topic_plotter)   
 

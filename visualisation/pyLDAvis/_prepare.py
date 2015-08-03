@@ -291,7 +291,9 @@ def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequenc
     client_topic_order = range(K)
     
     # instead we pass the topic h-indices for displaying on the front-end later
-    topic_ranking = pd.DataFrame({'topic_id': topic_ranking[:, 0], 'rank': topic_ranking[:, 1]}).sort('rank', ascending=False)
+    topic_ranking = pd.DataFrame({'topic_id': topic_ranking[:, 0], 
+                                  'rank': topic_ranking[:, 1], 
+                                  'degree': topic_ranking[:, 2]}).sort('rank', ascending=False)
 
     return PreparedData(topic_coordinates, topic_info, token_table, R, lambda_step, lambda_min, lambda_max, plot_opts, client_topic_order, topic_ranking)
 

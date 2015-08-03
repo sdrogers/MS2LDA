@@ -65,11 +65,11 @@ var LDAvis = function(to_select, data_or_file_name) {
     var word_prop = 0.25;
 
     // opacity of topic circles:
-    var base_opacity = 0.2,
+    var base_opacity = 0.1,
         highlight_opacity = 0.6;
 
     // opacity of topic text;
-    var text_opacity = 0.8;
+    var text_opacity = 0.6;
 
     // topic/lambda selection names are specific to *this* vis
     var topic_select = to_select + "-topic";
@@ -160,13 +160,16 @@ var LDAvis = function(to_select, data_or_file_name) {
         }
         var dat3 = lamData.slice(0, R);
 
-        // create topic ranking
+        // create topic degree map
         var topic_ranking = data['topic.ranking'];
-        var topic_ranking_map = {};
+        var topic_degree_map = {};
+        var topic_h_index_map = {};
         for (var i = 0; i < K; i++) {
         	var topic_id = topic_ranking['topic_id'][i];
         	var rank = topic_ranking['rank'][i];
-        	topic_ranking_map[topic_id+1] = rank; // +1 to make it same as the initial LDAVis
+        	var degree = topic_ranking['degree'][i];
+        	topic_degree_map[topic_id+1] = degree; // +1 to make it same as the initial LDAVis
+        	topic_h_index_map[topic_id+1] = rank; // +1 to make it same as the initial LDAVis
         }        
         vis_state.lambda = data['lambda.min'];
         
@@ -287,8 +290,8 @@ var LDAvis = function(to_select, data_or_file_name) {
 	        			var circles = vis_state['circles']
 	        			var selected_circle = circles[0][i] // the circles are array inside a single-element array
 	        			var this_id = i+1; // circles are counted from 1, ...
-	        			var rank = topic_ranking_map[this_id];
-	        			if (rank < vis_state.lambda) {
+	        			var degree = topic_degree_map[this_id];
+	        			if (degree < vis_state.lambda) {
 	        				// hide label
         	            	d3.select('#' + selected_circle.id + '_label').style('visibility', 'hidden');
 	        			} else {
@@ -362,14 +365,14 @@ var LDAvis = function(to_select, data_or_file_name) {
                 // store the current lambda value
 //                state_save(true);
 
-                // decide which circles to hide or show based on its ranking
+                // decide which circles to hide or show based on its degree
 				vis_state['active_topics'] = []
                 for (var i = 0; i < K; i++) {
         			var circles = vis_state['circles']
         			var selected_circle = circles[0][i] // the circles are array inside a single-element array
         			var this_id = i+1; // circles are counted from 1, ...
-        			var rank = topic_ranking_map[this_id];
-        			if (rank < vis_state.lambda) {
+        			var degree = topic_degree_map[this_id];
+        			if (degree < vis_state.lambda) {
         				// hide circle
         	            selected_circle.style.visibility = 'hidden';
         	            if (labels_visible) {
@@ -495,7 +498,8 @@ var LDAvis = function(to_select, data_or_file_name) {
                 .attr('cy', mdsheight + rSize)
                 .style('fill', 'none')
                 .style('stroke-dasharray', '2 2')
-                .style('stroke', '#999');
+                .style('stroke', '#999')
+                .style('visibility', 'hidden');                        
             d3.select("#" + leftPanelID).append("line")
                 .attr('class', "lineGuide" + size)
                 .attr("x1", cx)
@@ -503,7 +507,8 @@ var LDAvis = function(to_select, data_or_file_name) {
                 .attr("y1", mdsheight + 2 * rSize)
                 .attr("y2", mdsheight + 2 * rSize)
                 .style("stroke", "gray")
-                .style("opacity", 0.3);
+                .style("opacity", 0.3)
+                .style('visibility', 'hidden');
         };
 
         circleGuide(newSmall, "Small");
@@ -520,25 +525,29 @@ var LDAvis = function(to_select, data_or_file_name) {
             .attr('class', "circleGuideTitle")
             .style("text-anchor", "left")
             .style("fontWeight", "bold")
-            .text("Marginal topic distribution");
+            .text("Marginal topic distribution")
+        	.style('visibility', 'hidden');            
         d3.select("#" + leftPanelID).append("text")
             .attr("x", cx2 + 10)
             .attr("y", mdsheight + 2 * newSmall)
             .attr('class', "circleGuideLabelSmall")
             .style("text-anchor", "start")
-            .text(defaultLabelSmall);
+            .text(defaultLabelSmall)
+        	.style('visibility', 'hidden');            
         d3.select("#" + leftPanelID).append("text")
             .attr("x", cx2 + 10)
             .attr("y", mdsheight + 2 * newMedium)
             .attr('class', "circleGuideLabelMedium")
             .style("text-anchor", "start")
-            .text(defaultLabelMedium);
+            .text(defaultLabelMedium)
+        	.style('visibility', 'hidden');            
         d3.select("#" + leftPanelID).append("text")
             .attr("x", cx2 + 10)
             .attr("y", mdsheight + 2 * newLarge)
             .attr('class', "circleGuideLabelLarge")
             .style("text-anchor", "start")
-            .text(defaultLabelLarge);
+            .text(defaultLabelLarge)
+        	.style('visibility', 'hidden');            
 
         // bind mdsData to the points in the left panel:
         var points = mdsplot.selectAll("points")
@@ -572,14 +581,9 @@ var LDAvis = function(to_select, data_or_file_name) {
             .style("opacity", base_opacity)
             .style("fill", color1)
             .attr("r", function(d) {
-            	// var rank = topic_ranking_map[d.topics];
-            	// if (data['plot.opts'].sort_by === 'in_degree') {
-            	// 	rank /= 10;
-            	// }
-                //return (Math.sqrt((rank/100)*mdswidth*mdsheight*circle_prop/Math.PI));
                 //return (rScaleMargin(+d.Freq));
                 //return (Math.sqrt((d.Freq/100)*mdswidth*mdsheight*circle_prop/Math.PI));
-                return (Math.sqrt((1/100)*mdswidth*mdsheight*circle_prop/Math.PI));
+                return (Math.sqrt((0.5/100)*mdswidth*mdsheight*circle_prop/Math.PI));
             })
             .attr("cx", function(d) {
                 return (xScale(+d.x));
@@ -624,7 +628,7 @@ var LDAvis = function(to_select, data_or_file_name) {
         vis_state.circles = circles;
         
         svg.append("text")
-            .text("Inter-topic Distance Map (via multidimensional scaling)")
+            .text("Topic Plot")
             .attr("x", mdswidth/2 + margin.left)
             .attr("y", 30)
             .style("font-size", "16px")
@@ -715,8 +719,8 @@ var LDAvis = function(to_select, data_or_file_name) {
             .append("svg:image")
             .attr("x", 0)
             .attr("y", mdsheight - 300)
-            .attr('width', 540)
-            .attr('height', 540)
+            .attr('width', 600)
+            .attr('height', 600)
             .attr('id', 'ms1_plot')
             .attr("xlink:href","/images/default_logo.png")
 
@@ -806,6 +810,12 @@ var LDAvis = function(to_select, data_or_file_name) {
             var inputDiv = document.createElement("div");
             inputDiv.setAttribute("id", topID);
             inputDiv.setAttribute("style", "width: 1210px"); // to match the width of the main svg element
+            document.getElementById(visID).appendChild(inputDiv);        	
+        	
+            // create container div for topic and lambda input:
+            var inputDiv = document.createElement("div");
+            inputDiv.setAttribute("id", topID);
+            inputDiv.setAttribute("style", "width: 1210px"); // to match the width of the main svg element
             document.getElementById(visID).appendChild(inputDiv);
 
             // topic input container:
@@ -884,11 +894,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             	var rank = topic_ranking['rank'][i];
             	var label = "<a href='#' class='select_topic'>";
         		label += "Topic " + topic_id;
-            	if (data['plot.opts'].sort_by === 'h_index') {
-            		label += " h-index=" + rank;
-            	} else if (data['plot.opts'].sort_by === 'in_degree') {
-            		label += " in-degree=" + rank;            		
-            	}
+        		label += " h-index=" + rank;            		
             	label += "</a>";
             	topicRankingDiv.innerHTML += label + "<br/>";
             }
@@ -946,11 +952,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             lambdaLabel.setAttribute("for", lambdaID);
 //            lambdaLabel.setAttribute("style", "height: 20px; width: 60px; font-family: sans-serif; font-size: 14px; margin-left: 80px; display: none");
             lambdaLabel.setAttribute("style", "height: 20px; width: 60px; font-family: sans-serif; font-size: 14px; margin-left: 80px");
-        	if (data['plot.opts'].sort_by === 'h_index') {
-                lambdaLabel.innerHTML = "h-index &ge; <span id='" + lambdaID + "-value'>" + vis_state.lambda + "</span>";
-        	} else if (data['plot.opts'].sort_by === 'in_degree') {
-                lambdaLabel.innerHTML = "degree &ge; <span id='" + lambdaID + "-value'>" + vis_state.lambda + "</span>";
-        	}            
+            lambdaLabel.innerHTML = "degree &ge; <span id='" + lambdaID + "-value'>" + vis_state.lambda + "</span>";
             lambdaDiv.appendChild(lambdaLabel);
 
             // Create the svg to contain the slider scale:
@@ -1291,14 +1293,13 @@ var LDAvis = function(to_select, data_or_file_name) {
             var text = d3.select(to_select + " .bubble-tool");
             text.remove();
 
-            // append text with info relevant to topic of interest
-        	var rank = topic_ranking_map[topics];
-        	var msg = "";
-        	if (data['plot.opts'].sort_by === 'h_index') {
-        		msg += "Topic " + (topics-1) + ", h-index=" + rank + " (" + Freq + "% of tokens)";
-        	} else if (data['plot.opts'].sort_by === 'in_degree') {
-        		msg += "Topic " + (topics-1) + ", degree=" + rank + " (" + Freq + "% of tokens)";
-        	}            
+             // append text with info relevant to topic of interest
+        	var degree = topic_degree_map[topics];
+        	var h_index = topic_h_index_map[topics];
+    		var msg = "Topic " + (topics-1) + 
+    			", degree=" + degree + 
+    			", h-index=" + h_index + 
+    			" (" + Freq + "% of tokens)";
             d3.select("#" + barFreqsID)
                 .append("text")
                 .attr("x", barwidth/2)
@@ -1562,8 +1563,28 @@ var LDAvis = function(to_select, data_or_file_name) {
                 });
 
             // Alter the guide
-            d3.select(to_select + " .circleGuideTitle")
-                .text("Conditional topic distribution given term = '" + term.innerHTML + "'");
+            d3.select(to_select + " .circleGuideTitle")            
+                .text("Conditional topic distribution given term = '" + term.innerHTML + "'")
+            	.style('visibility', 'visible');
+            d3.select(to_select + " .circleGuideLabelLarge")
+            	.style('visibility', 'visible');
+            d3.select(to_select + " .circleGuideLabelMedium")
+            	.style('visibility', 'visible');
+            d3.select(to_select + " .circleGuideLabelSmall")
+            	.style('visibility', 'visible');
+	        d3.select(to_select + " .circleGuideLarge")
+        		.style('visibility', 'visible');
+	        d3.select(to_select + " .circleGuideMedium")
+        		.style('visibility', 'visible');
+	        d3.select(to_select + " .circleGuideSmall")
+            	.style('visibility', 'visible');
+	        d3.select(to_select + " .lineGuideLarge")
+	        	.style('visibility', 'visible');            
+	        d3.select(to_select + " .lineGuideMedium")
+	        	.style('visibility', 'visible');            
+	        d3.select(to_select + " .lineGuideSmall")
+        		.style('visibility', 'visible');            
+            
         }
 
         function term_off(term) {
@@ -1574,14 +1595,9 @@ var LDAvis = function(to_select, data_or_file_name) {
                 .data(mdsData)
                 .transition()
                 .attr("r", function(d) {
-                	// var rank = topic_ranking_map[d.topics];
-                	// if (data['plot.opts'].sort_by === 'in_degree') {
-                	// 	rank /= 10;            		
-                	// }                	
-                    // return (Math.sqrt((rank/100)*mdswidth*mdsheight*circle_prop/Math.PI));
                     // return (rScaleMargin(+d.Freq));
                     // return (Math.sqrt((d.Freq/100)*mdswidth*mdsheight*circle_prop/Math.PI));
-                    return (Math.sqrt((1/100)*mdswidth*mdsheight*circle_prop/Math.PI));
+                    return (Math.sqrt((0.5/100)*mdswidth*mdsheight*circle_prop/Math.PI));
                 });
 
             // Change sizes of topic numbers:
@@ -1591,18 +1607,33 @@ var LDAvis = function(to_select, data_or_file_name) {
 
             // Go back to the default guide
             d3.select(to_select + " .circleGuideTitle")
-                .text("Marginal topic distribution");
-            d3.select(to_select + " .circleGuideLabelLarge")
-                .text(defaultLabelLarge);
-            d3.select(to_select + " .circleGuideLabelSmall")
+                .text("Marginal topic distribution")
+            	.style('visibility', 'hidden');
+	        d3.select(to_select + " .circleGuideLabelLarge")
+                .text(defaultLabelLarge)
+            	.style('visibility', 'hidden');
+	        d3.select(to_select + " .circleGuideLabelMedium")
+	        	.style('visibility', 'hidden');
+	        d3.select(to_select + " .circleGuideLabelSmall")
                 .attr("y", mdsheight + 2 * newSmall)
-                .text(defaultLabelSmall);
-            d3.select(to_select + " .circleGuideSmall")
+                .text(defaultLabelSmall)
+                .style('visibility', 'hidden');
+	        d3.select(to_select + " .circleGuideLarge")
+	    		.style('visibility', 'hidden');
+	        d3.select(to_select + " .circleGuideMedium")
+	    		.style('visibility', 'hidden');
+	        d3.select(to_select + " .circleGuideSmall")
                 .attr("r", newSmall)
-                .attr("cy", mdsheight + newSmall);
-            d3.select(to_select + " .lineGuideSmall")
+                .attr("cy", mdsheight + newSmall)
+                .style('visibility', 'hidden');
+	        d3.select(to_select + " .lineGuideLarge")
+	        	.style('visibility', 'hidden');            
+	        d3.select(to_select + " .lineGuideMedium")
+	        	.style('visibility', 'hidden');            
+	        d3.select(to_select + " .lineGuideSmall")
                 .attr("y1", mdsheight + 2 * newSmall)
-                .attr("y2", mdsheight + 2 * newSmall);
+                .attr("y2", mdsheight + 2 * newSmall)
+            	.style('visibility', 'hidden');
         }
 
 
