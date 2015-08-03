@@ -257,12 +257,11 @@ def show(data, topic_plotter=None, ip='127.0.0.1', port=8888, n_retries=50,
         kwargs['ldavis_url'] = '/LDAvis.js'
         kwargs['d3_url'] = '/d3.js'
         kwargs['ldavis_css_url'] = '/LDAvis.css'
-        files = {'/LDAvis.js': ["text/javascript",
-                               open(urls.LDAVIS_LOCAL, 'r').read()],
-                 '/LDAvis.css': ["text/css",
-                                 open(urls.LDAVIS_CSS_LOCAL, 'r').read()],
-                 '/d3.js': ["text/javascript",
-                            open(urls.D3_LOCAL, 'r').read()]}
+        files = {'/graph.json': ["application/json", open(urls.TEST_GRAPH_LOCAL, 'r').read()],
+                 '/LDAvis.js': ["text/javascript", open(urls.LDAVIS_LOCAL, 'r').read()],
+                 '/LDAvis.css': ["text/css", open(urls.LDAVIS_CSS_LOCAL, 'r').read()],
+                 '/d3.js': ["text/javascript", open(urls.D3_LOCAL, 'r').read()]
+                 }
     else:
         files = None
 

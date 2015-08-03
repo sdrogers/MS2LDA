@@ -9,7 +9,7 @@ from . import __path__, __version__
 import warnings
 
 __all__ = ["D3_URL", "LDAVIS_URL", "LDAVISMIN_URL", "LDAVIS_CSS_URL",
-           "D3_LOCAL", "LDAVIS_LOCAL", "LDAVISMIN_LOCAL", "LDAVIS_CSS_LOCAL"]
+           "D3_LOCAL", "LDAVIS_LOCAL", "LDAVISMIN_LOCAL", "LDAVIS_CSS_LOCAL", "TEST_GRAPH_LOCAL"]
 
 D3_URL = "https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"
 
@@ -28,6 +28,7 @@ if DEV:
     LDAVIS_CSS_URL = os.path.join(LOCAL_JS_DIR, "ldavis.css")
     LDAVIS_LOCAL = os.path.join(LOCAL_JS_DIR, "ldavis.js")
     LDAVIS_CSS_LOCAL = os.path.join(LOCAL_JS_DIR, "ldavis.css")
+    TEST_GRAPH_LOCAL = os.path.join(LOCAL_JS_DIR, "graph.json")
 else:
 #     WWW_JS_DIR = "https://cdn.rawgit.com/bmabey/pyLDAvis/files/"
 #     JS_VERSION = '1.0.0'
@@ -42,6 +43,7 @@ else:
     LDAVIS_CSS_URL = os.path.join(LOCAL_JS_DIR, "ldavis.css")
     LDAVIS_LOCAL = os.path.join(LOCAL_JS_DIR, "ldavis.js")
     LDAVIS_CSS_LOCAL = os.path.join(LOCAL_JS_DIR, "ldavis.css")
+    TEST_GRAPH_LOCAL = os.path.join(LOCAL_JS_DIR, "graph.json")
 
 LDAVISMIN_URL = LDAVIS_URL
 LDAVISMIN_LOCAL = LDAVIS_LOCAL

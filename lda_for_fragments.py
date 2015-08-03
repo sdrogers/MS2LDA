@@ -429,7 +429,7 @@ def test_lda():
     ms2lda = Ms2Lda.lcms_data_from_R(fragment_filename, neutral_loss_filename, mzdiff_filename, 
                                      ms1_filename, ms2_filename)    
     ms2lda.run_lda(n_topics, n_samples, n_burn, n_thin, alpha, beta)
-    ms2lda.save_project('results/beer3pos.project')
+#     ms2lda.save_project('results/beer3pos.project')
     
     # new_ms2lda = Ms2Lda.resume_from('results/beer3pos.project')
     
