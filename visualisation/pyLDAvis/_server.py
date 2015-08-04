@@ -15,7 +15,7 @@ import StringIO
 from . import urls
 
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-import visualisation.networkx.lda_visualisation as lda_nx
+from ..networkx import lda_visualisation
 import json
 
 IPYTHON_WARNING = """
@@ -133,7 +133,7 @@ def generate_handler(html, files=None, topic_plotter=None):
             elif self.path.startswith('/graph.json'):
                 
                 print "Serving dynamic json file -- threshold = " + str(GlobalVariable.degree)
-                json_data = lda_nx.get_json_from_docdf(topic_plotter.docdf.transpose(), GlobalVariable.degree)
+                json_data = lda_visualisation.get_json_from_docdf(topic_plotter.docdf.transpose(), GlobalVariable.degree)
 
 #                 print "Debugging file saved to " + json_outfile
 #                 json_outfile = '/home/joewandy/git/metabolomics_tools/justin/visualisation/pyLDAvis/json_out.json'

@@ -119,31 +119,30 @@ def run_beer3():
         K = 250
 
     # find the current path of this script file        
-    current_path = os.path.dirname(os.path.abspath(__file__))
-        
+    current_path = os.path.dirname(os.path.abspath(__file__)) 
+    
     print "Cross-validation for K=" + str(K)
     n_folds = 4
     n_samples = 500
-    n_burn = 0
-    n_thin = 1
+    n_burn = 250
+    n_thin = 5
     alpha = 50.0/K
     beta = 0.1
     is_num_samples = 10000
     is_iters = 1000
      
-    relative_intensity = True
-    fragment_filename = current_path + '/../input/relative_intensities/Beer_3_T10_POS_fragments_rel.csv'
-    neutral_loss_filename = current_path + '/../input/relative_intensities/Beer_3_T10_POS_losses_rel.csv'
-    mzdiff_filename = None
-    ms1_filename = current_path + '/../input/relative_intensities/Beer_3_T10_POS_ms1_rel.csv'
-    ms2_filename = current_path + '/../input/relative_intensities/Beer_3_T10_POS_ms2_rel.csv'
-    ms2lda = ThreeBags_Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename,
-                ms1_filename, ms2_filename, relative_intensity)
-     
-    df, vocab = ms2lda.preprocess()
+    fragment_filename = current_path + '/input/final/Beer_3_full1_5_2E5_pos_fragments.csv'
+    neutral_loss_filename = current_path + '/input/final/Beer_3_full1_5_2E5_pos_losses.csv'
+    mzdiff_filename = None    
+    ms1_filename = current_path + '/input/final/Beer_3_full1_5_2E5_pos_ms1.csv'
+    ms2_filename = current_path + '/input/final/Beer_3_full1_5_2E5_pos_ms2.csv'  
+    ms2lda = ThreeBags_Ms2Lda.lcms_data_from_R(fragment_filename, neutral_loss_filename, mzdiff_filename, 
+                                     ms1_filename, ms2_filename)    
+    df = ms2lda.df
+    vocab = ms2lda.vocab
     cv = CrossValidatorLda(df, vocab, K, alpha, beta)
     cv.cross_validate_is(n_folds, n_burn, n_samples, n_thin, 
-                         is_num_samples, is_iters)         
+                         is_num_samples, is_iters)           
 
 def run_urine37():
 
@@ -158,26 +157,25 @@ def run_urine37():
     print "Cross-validation for K=" + str(K)
     n_folds = 4
     n_samples = 500
-    n_burn = 0
-    n_thin = 1
+    n_burn = 250
+    n_thin = 5
     alpha = 50.0/K
     beta = 0.1
     is_num_samples = 10000
     is_iters = 1000
      
-    relative_intensity = True
-    fragment_filename = current_path + '/../input/relative_intensities/Urine_37_Top10_POS_fragments_rel.csv'
-    neutral_loss_filename = current_path + '/../input/relative_intensities/Urine_37_Top10_POS_losses_rel.csv'
-    mzdiff_filename = None
-    ms1_filename = current_path + '/../input/relative_intensities/Urine_37_Top10_POS_ms1_rel.csv'
-    ms2_filename = current_path + '/../input/relative_intensities/Urine_37_Top10_POS_ms2_rel.csv'
-    ms2lda = ThreeBags_Ms2Lda(fragment_filename, neutral_loss_filename, mzdiff_filename,
-                ms1_filename, ms2_filename, relative_intensity)
-     
-    df, vocab = ms2lda.preprocess()
+    fragment_filename = current_path + '/input/final/Urine_64_fullscan1_5_2E5_POS_fragments.csv'
+    neutral_loss_filename = current_path + '/input/final/Urine_64_fullscan1_5_2E5_POS_losses.csv'
+    mzdiff_filename = None    
+    ms1_filename = current_path + '/input/final/Urine_64_fullscan1_5_2E5_POS_ms1.csv'
+    ms2_filename = current_path + '/input/final/Urine_64_fullscan1_5_2E5_POS_ms2.csv'  
+    ms2lda = ThreeBags_Ms2Lda.lcms_data_from_R(fragment_filename, neutral_loss_filename, mzdiff_filename, 
+                                     ms1_filename, ms2_filename)    
+    df = ms2lda.df
+    vocab = ms2lda.vocab
     cv = CrossValidatorLda(df, vocab, K, alpha, beta)
     cv.cross_validate_is(n_folds, n_burn, n_samples, n_thin, 
-                         is_num_samples, is_iters)         
+                         is_num_samples, is_iters)           
 
 def main():    
 
