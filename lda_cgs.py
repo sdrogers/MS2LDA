@@ -313,7 +313,7 @@ class CollapseGibbsLda(object):
                 f.write("{}\n".format(item))                
         print "Words written to " + words_out    
         
-    def visualise(self, topic_plotter=None):
+    def visualise(self, topic_plotter):
         data = {}
         data['topic_term_dists'] = self.topic_word_
         data['doc_topic_dists'] = self.doc_topic_
@@ -375,7 +375,6 @@ def main():
     print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
     print gibbs1.posterior_alpha    
     gibbs1.print_topic_words()
-    # gibbs1.visualise()
       
 #     # try saving model
 #     selected_topics = [0, 2, 4, 6, 8]

@@ -106,14 +106,10 @@ def export_docdf_to_gephi(infile, nodes_out, edges_out):
     print(df)    
     df.to_csv(edges_out, index=False)
     print("Saved to " + edges_out)
+    
+def get_json_from_docdf(docdf, threshold):
 
-def export_docdf_to_networkx(infile):
-    """ Exports docdf to networkx """
-
-    print("Loading " + infile)
-    docdf = pd.read_csv(infile, index_col=0)
-
-    G = nx.DiGraph()
+    G = nx.Graph()
     node_names = set()
     for row_index in docdf.index:
         docname = _get_docname(row_index)
@@ -142,18 +138,51 @@ def export_docdf_to_networkx(infile):
     for n in node_names:
         node_id = nodes[n]
         if node_id in G:
+
+            # always insert all documents
             if n.startswith('doc'):
-                group = 1
+                node_group = 1
+                node_size = 10
+                node_score = 0
+                node_type = "square"
+                G.add_node(node_id, name=n, group=node_group, in_degree=0, size=node_size, score=node_score, type=node_type)
+
+            # for topics, insert only those whose in-degree is above threshold
             elif n.startswith('topic'):
-                group = 2
-            in_degree = G.in_degree(node_id)
-            G.add_node(node_id, name = n, group=group, in_degree=in_degree)
-            print(str(node_id) + ", " + n)        
+                node_group = 2
+                node_size = 60
+                node_score = 1
+                node_type = "circle"
+                in_degree = G.degree(node_id)
+                if in_degree >= threshold:                
+                    G.add_node(node_id, name=n, group=node_group, in_degree=in_degree, size=in_degree*5, score=node_score, type=node_type)
+                    print(str(node_id) + ", " + n + " degree=" + str(in_degree) + " added")        
+                else:
+                    G.remove_node(node_id)
+                    print(str(node_id) + ", " + n + " degree=" + str(in_degree) + " removed")   
+
+    # final cleanup, delete all unconnected documents
+    unconnected = []
+    for n in node_names:
+        node_id = nodes[n]
+        if node_id in G:
+            degree = G.degree(node_id) 
+            if n.startswith('doc') and degree == 0:
+                unconnected.append(node_id)
+    G.remove_nodes_from(unconnected)    
 
     print("Total nodes = " + str(G.number_of_nodes()))
     print("Total edges = " + str(G.number_of_edges()))
 
-    d = json_graph.node_link_data(G) # node-link format to serialize
+    json_out = json_graph.node_link_data(G) # node-link format to serialize
+    return json_out
+
+def export_docdf_to_networkx(infile):
+    """ Exports docdf to networkx """
+
+    print("Loading " + infile)
+    docdf = pd.read_csv(infile, index_col=0)
+    d = get_json_from_docdf(docdf)
     json.dump(d, open('test.json','w'))
     print('Wrote node-link JSON data to test.json') 
     
@@ -161,7 +190,8 @@ def export_docdf_to_networkx(infile):
     Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
     httpd = SocketServer.TCPServer(("", PORT), Handler)
     print("serving at port " + str(PORT))
-    httpd.serve_forever()       
+    httpd.serve_forever()        
+
         
 def main():
     

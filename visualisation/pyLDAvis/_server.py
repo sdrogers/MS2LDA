@@ -15,7 +15,8 @@ import StringIO
 from . import urls
 
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-
+import visualisation.networkx.lda_visualisation as lda_nx
+import json
 
 IPYTHON_WARNING = """
 Note: if you're in the IPython notebook, pyLDAvis.show() is not the best command
@@ -34,7 +35,8 @@ except ImportError:
 
 class GlobalVariable(object):
     selected_topic_id = 0
-    ms1_idx = 0    
+    ms1_idx = 0   
+    degree = 0 
 
 def generate_handler(html, files=None, topic_plotter=None):
     
@@ -110,7 +112,40 @@ def generate_handler(html, files=None, topic_plotter=None):
                 self.send_response(200)
                 self.send_header("Content-type", content_type)
                 self.end_headers()
-                self.wfile.write(content)                
+                self.wfile.write(content)      
+
+            # handle request for the clickable graph
+            elif self.path.startswith('/graph.html'):
+
+                # get everything after '?'                    
+                path, tmp = self.path.split('?', 1)
+                qs = urlparse.parse_qs(tmp)
+                degree = qs['degree'][0]
+                GlobalVariable.degree = int(degree)
+                
+                content_type, content = files[path]
+                self.send_response(200)
+                self.send_header("Content-type", content_type)
+                self.end_headers()
+                self.wfile.write(content.encode())
+                                
+            # handle request for the clickable graph
+            elif self.path.startswith('/graph.json'):
+                
+                print "Serving dynamic json file -- threshold = " + str(GlobalVariable.degree)
+                json_data = lda_nx.get_json_from_docdf(topic_plotter.docdf.transpose(), GlobalVariable.degree)
+
+#                 print "Debugging file saved to " + json_outfile
+#                 json_outfile = '/home/joewandy/git/metabolomics_tools/justin/visualisation/pyLDAvis/json_out.json'
+#                 with open(json_outfile, 'w') as f:
+#                     json.dump(json_data, f, sort_keys=True, indent=4, ensure_ascii=False)                
+                
+                content_type = "application/json"
+                content = json.dumps(json_data, sort_keys=True, indent=4, ensure_ascii=False)                
+                self.send_response(200)
+                self.send_header("Content-type", content_type)
+                self.end_headers()
+                self.wfile.write(content.encode())                          
                
             elif self.path in files:
                                   

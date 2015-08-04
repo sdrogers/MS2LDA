@@ -369,7 +369,7 @@ class Ms2Lda(object):
             # if interactive mode, we always sort by the h_index because we need both the h-index and degree for plotting
             plotter.plot_lda_fragments(consistency=consistency, sort_by='h_index', 
                                        selected_topics=selected_topics, interactive=interactive)
-            self.model.visualise(topic_plotter=plotter)
+            self.model.visualise(plotter)
         else:
             plotter.plot_lda_fragments(consistency=consistency, sort_by=sort_by, 
                                        selected_topics=selected_topics, interactive=interactive)
