@@ -131,13 +131,13 @@ def run_beer3():
     is_num_samples = 10000
     is_iters = 1000
      
-    fragment_filename = current_path + '/input/final/Beer_3_full1_5_2E5_pos_fragments.csv'
-    neutral_loss_filename = current_path + '/input/final/Beer_3_full1_5_2E5_pos_losses.csv'
+    fragment_filename = current_path + '/../input/final/Beer_3_full1_5_2E5_pos_fragments.csv'
+    neutral_loss_filename = current_path + '/../input/final/Beer_3_full1_5_2E5_pos_losses.csv'
     mzdiff_filename = None    
-    ms1_filename = current_path + '/input/final/Beer_3_full1_5_2E5_pos_ms1.csv'
-    ms2_filename = current_path + '/input/final/Beer_3_full1_5_2E5_pos_ms2.csv'  
+    ms1_filename = current_path + '/../input/final/Beer_3_full1_5_2E5_pos_ms1.csv'
+    ms2_filename = current_path + '/../input/final/Beer_3_full1_5_2E5_pos_ms2.csv'  
     ms2lda = ThreeBags_Ms2Lda.lcms_data_from_R(fragment_filename, neutral_loss_filename, mzdiff_filename, 
-                                     ms1_filename, ms2_filename)    
+                                     ms1_filename, ms2_filename, vocab_type=2)    
     df = ms2lda.df
     vocab = ms2lda.vocab
     cv = CrossValidatorLda(df, vocab, K, alpha, beta)
@@ -164,13 +164,13 @@ def run_urine37():
     is_num_samples = 10000
     is_iters = 1000
      
-    fragment_filename = current_path + '/input/final/Urine_64_fullscan1_5_2E5_POS_fragments.csv'
-    neutral_loss_filename = current_path + '/input/final/Urine_64_fullscan1_5_2E5_POS_losses.csv'
+    fragment_filename = current_path + '/../input/final/Urine_64_fullscan1_5_2E5_POS_fragments.csv'
+    neutral_loss_filename = current_path + '/../input/final/Urine_64_fullscan1_5_2E5_POS_losses.csv'
     mzdiff_filename = None    
-    ms1_filename = current_path + '/input/final/Urine_64_fullscan1_5_2E5_POS_ms1.csv'
-    ms2_filename = current_path + '/input/final/Urine_64_fullscan1_5_2E5_POS_ms2.csv'  
+    ms1_filename = current_path + '/../input/final/Urine_64_fullscan1_5_2E5_POS_ms1.csv'
+    ms2_filename = current_path + '/../input/final/Urine_64_fullscan1_5_2E5_POS_ms2.csv'  
     ms2lda = ThreeBags_Ms2Lda.lcms_data_from_R(fragment_filename, neutral_loss_filename, mzdiff_filename, 
-                                     ms1_filename, ms2_filename)    
+                                     ms1_filename, ms2_filename, vocab_type=2)    
     df = ms2lda.df
     vocab = ms2lda.vocab
     cv = CrossValidatorLda(df, vocab, K, alpha, beta)
