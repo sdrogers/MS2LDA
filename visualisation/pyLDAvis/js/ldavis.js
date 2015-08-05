@@ -1439,13 +1439,18 @@ var LDAvis = function(to_select, data_or_file_name) {
 			}
 
             var title = d3.selectAll(to_select + " .bubble-tool")
-                    .text("Top-" + R + " Most Salient Terms");
-            title.append("tspan")
-                .attr("baseline-shift", "super")
-                .attr("font-size", 16)
 	            .attr("x", barwidth/2)
 	            .attr("y", -30)
-                .text(1);
+	            .style("text-anchor", "middle")
+	            .style("font-size", "16px")
+	            .text("Top-" + R + " Most Salient Terms"); 
+            
+//            title.append("tspan")
+//                .attr("baseline-shift", "super")
+//                .attr("font-size", 16)
+//	            .attr("x", barwidth/2)
+//	            .attr("y", -30)
+//                .text(1);
                         
             // remove the red bars
             d3.selectAll(to_select + " .overlay").remove();
