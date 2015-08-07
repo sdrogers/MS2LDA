@@ -1,0 +1,4850 @@
+bash: module: line 1: syntax error: unexpected end of file
+bash: error importing function definition for `module'
+10
+./process.sh 500 URINE37POS
+Data = Urine37 Positive
+Cross-validation for K=500
+Data shape (780, 1648)
+K=500 Testing fold=0
+K=500 Training fold=1
+K=500 Training fold=2
+K=500 Training fold=3
+Run training gibbs (585, 1648)
+CGS LDA initialising
+...........................................................
+Using Numba for 3-bags LDA sampling
+Preparing words
+Preparing Z matrix
+DONE
+Sample 1   Log joint likelihood = -1864745.607 
+Sample 2   Log joint likelihood = -1101315.453 
+Sample 3   Log joint likelihood = -842796.689 
+Sample 4   Log joint likelihood = -770808.309 
+Sample 5   Log joint likelihood = -742393.839 
+Sample 6   Log joint likelihood = -725484.779 
+Sample 7   Log joint likelihood = -713495.658 
+Sample 8   Log joint likelihood = -705282.155 
+Sample 9   Log joint likelihood = -699184.742 
+Sample 10   Log joint likelihood = -693875.684 
+Sample 11   Log joint likelihood = -688437.227 
+Sample 12   Log joint likelihood = -684668.124 
+Sample 13   Log joint likelihood = -680723.589 
+Sample 14   Log joint likelihood = -677478.495 
+Sample 15   Log joint likelihood = -674409.312 
+Sample 16   Log joint likelihood = -671143.252 
+Sample 17   Log joint likelihood = -670033.269 
+Sample 18   Log joint likelihood = -668109.724 
+Sample 19   Log joint likelihood = -666646.883 
+Sample 20   Log joint likelihood = -665385.753 
+Sample 21   Log joint likelihood = -663085.655 
+Sample 22   Log joint likelihood = -661089.269 
+Sample 23   Log joint likelihood = -660329.798 
+Sample 24   Log joint likelihood = -659180.439 
+Sample 25   Log joint likelihood = -658257.880 
+Sample 26   Log joint likelihood = -657723.333 
+Sample 27   Log joint likelihood = -657118.405 
+Sample 28   Log joint likelihood = -655934.081 
+Sample 29   Log joint likelihood = -653972.640 
+Sample 30   Log joint likelihood = -652749.808 
+Sample 31   Log joint likelihood = -650507.742 
+Sample 32   Log joint likelihood = -649839.728 
+Sample 33   Log joint likelihood = -649214.286 
+Sample 34   Log joint likelihood = -648992.259 
+Sample 35   Log joint likelihood = -648341.113 
+Sample 36   Log joint likelihood = -647521.064 
+Sample 37   Log joint likelihood = -647068.725 
+Sample 38   Log joint likelihood = -646679.545 
+Sample 39   Log joint likelihood = -646516.508 
+Sample 40   Log joint likelihood = -645904.491 
+Sample 41   Log joint likelihood = -645458.241 
+Sample 42   Log joint likelihood = -645199.400 
+Sample 43   Log joint likelihood = -644486.772 
+Sample 44   Log joint likelihood = -644594.852 
+Sample 45   Log joint likelihood = -643892.607 
+Sample 46   Log joint likelihood = -643731.930 
+Sample 47   Log joint likelihood = -643519.654 
+Sample 48   Log joint likelihood = -643045.608 
+Sample 49   Log joint likelihood = -642571.129 
+Sample 50   Log joint likelihood = -642064.313 
+Sample 51   Log joint likelihood = -642048.394 
+Sample 52   Log joint likelihood = -642021.184 
+Sample 53   Log joint likelihood = -641912.511 
+Sample 54   Log joint likelihood = -642008.213 
+Sample 55   Log joint likelihood = -641417.940 
+Sample 56   Log joint likelihood = -641187.849 
+Sample 57   Log joint likelihood = -641530.117 
+Sample 58   Log joint likelihood = -641153.705 
+Sample 59   Log joint likelihood = -640751.537 
+Sample 60   Log joint likelihood = -641000.380 
+Sample 61   Log joint likelihood = -641014.854 
+Sample 62   Log joint likelihood = -640643.493 
+Sample 63   Log joint likelihood = -640813.441 
+Sample 64   Log joint likelihood = -640770.712 
+Sample 65   Log joint likelihood = -640441.071 
+Sample 66   Log joint likelihood = -641025.657 
+Sample 67   Log joint likelihood = -639975.496 
+Sample 68   Log joint likelihood = -639855.952 
+Sample 69   Log joint likelihood = -640043.522 
+Sample 70   Log joint likelihood = -640279.709 
+Sample 71   Log joint likelihood = -639755.810 
+Sample 72   Log joint likelihood = -640084.841 
+Sample 73   Log joint likelihood = -640431.689 
+Sample 74   Log joint likelihood = -639767.665 
+Sample 75   Log joint likelihood = -640211.304 
+Sample 76   Log joint likelihood = -640084.464 
+Sample 77   Log joint likelihood = -639717.493 
+Sample 78   Log joint likelihood = -639468.209 
+Sample 79   Log joint likelihood = -639253.747 
+Sample 80   Log joint likelihood = -638998.762 
+Sample 81   Log joint likelihood = -638990.914 
+Sample 82   Log joint likelihood = -638992.780 
+Sample 83   Log joint likelihood = -638692.532 
+Sample 84   Log joint likelihood = -638615.256 
+Sample 85   Log joint likelihood = -638075.363 
+Sample 86   Log joint likelihood = -637770.003 
+Sample 87   Log joint likelihood = -637386.407 
+Sample 88   Log joint likelihood = -637869.003 
+Sample 89   Log joint likelihood = -638206.142 
+Sample 90   Log joint likelihood = -637972.935 
+Sample 91   Log joint likelihood = -637596.579 
+Sample 92   Log joint likelihood = -637942.854 
+Sample 93   Log joint likelihood = -637776.226 
+Sample 94   Log joint likelihood = -637621.998 
+Sample 95   Log joint likelihood = -637346.310 
+Sample 96   Log joint likelihood = -637361.608 
+Sample 97   Log joint likelihood = -637410.484 
+Sample 98   Log joint likelihood = -636869.282 
+Sample 99   Log joint likelihood = -636508.696 
+Sample 100   Log joint likelihood = -636475.101 
+Sample 101   Log joint likelihood = -636358.931 
+Sample 102   Log joint likelihood = -637134.987 
+Sample 103   Log joint likelihood = -636558.079 
+Sample 104   Log joint likelihood = -636783.188 
+Sample 105   Log joint likelihood = -636802.668 
+Sample 106   Log joint likelihood = -636586.361 
+Sample 107   Log joint likelihood = -636436.543 
+Sample 108   Log joint likelihood = -636087.397 
+Sample 109   Log joint likelihood = -636066.563 
+Sample 110   Log joint likelihood = -636394.649 
+Sample 111   Log joint likelihood = -637340.400 
+Sample 112   Log joint likelihood = -635918.477 
+Sample 113   Log joint likelihood = -636601.408 
+Sample 114   Log joint likelihood = -636621.027 
+Sample 115   Log joint likelihood = -636445.869 
+Sample 116   Log joint likelihood = -636609.828 
+Sample 117   Log joint likelihood = -636251.989 
+Sample 118   Log joint likelihood = -635954.109 
+Sample 119   Log joint likelihood = -636366.623 
+Sample 120   Log joint likelihood = -636375.165 
+Sample 121   Log joint likelihood = -636480.796 
+Sample 122   Log joint likelihood = -636430.954 
+Sample 123   Log joint likelihood = -637121.151 
+Sample 124   Log joint likelihood = -636905.151 
+Sample 125   Log joint likelihood = -636388.938 
+Sample 126   Log joint likelihood = -636312.571 
+Sample 127   Log joint likelihood = -636139.096 
+Sample 128   Log joint likelihood = -636257.905 
+Sample 129   Log joint likelihood = -636158.339 
+Sample 130   Log joint likelihood = -635560.551 
+Sample 131   Log joint likelihood = -635709.357 
+Sample 132   Log joint likelihood = -635909.846 
+Sample 133   Log joint likelihood = -636019.522 
+Sample 134   Log joint likelihood = -635792.440 
+Sample 135   Log joint likelihood = -635499.686 
+Sample 136   Log joint likelihood = -635723.095 
+Sample 137   Log joint likelihood = -636083.249 
+Sample 138   Log joint likelihood = -636009.197 
+Sample 139   Log joint likelihood = -635988.170 
+Sample 140   Log joint likelihood = -636268.529 
+Sample 141   Log joint likelihood = -636220.983 
+Sample 142   Log joint likelihood = -636167.114 
+Sample 143   Log joint likelihood = -636065.192 
+Sample 144   Log joint likelihood = -635908.222 
+Sample 145   Log joint likelihood = -635224.745 
+Sample 146   Log joint likelihood = -635858.060 
+Sample 147   Log joint likelihood = -635104.880 
+Sample 148   Log joint likelihood = -635022.580 
+Sample 149   Log joint likelihood = -635430.111 
+Sample 150   Log joint likelihood = -635473.251 
+Sample 151   Log joint likelihood = -635434.485 
+Sample 152   Log joint likelihood = -635274.587 
+Sample 153   Log joint likelihood = -635107.687 
+Sample 154   Log joint likelihood = -635042.843 
+Sample 155   Log joint likelihood = -635177.290 
+Sample 156   Log joint likelihood = -635340.424 
+Sample 157   Log joint likelihood = -635281.992 
+Sample 158   Log joint likelihood = -635647.747 
+Sample 159   Log joint likelihood = -635235.371 
+Sample 160   Log joint likelihood = -635284.841 
+Sample 161   Log joint likelihood = -634703.510 
+Sample 162   Log joint likelihood = -635048.150 
+Sample 163   Log joint likelihood = -635712.004 
+Sample 164   Log joint likelihood = -634525.733 
+Sample 165   Log joint likelihood = -634784.342 
+Sample 166   Log joint likelihood = -634681.358 
+Sample 167   Log joint likelihood = -634591.395 
+Sample 168   Log joint likelihood = -634893.518 
+Sample 169   Log joint likelihood = -634954.022 
+Sample 170   Log joint likelihood = -634984.252 
+Sample 171   Log joint likelihood = -635335.300 
+Sample 172   Log joint likelihood = -634949.542 
+Sample 173   Log joint likelihood = -635505.446 
+Sample 174   Log joint likelihood = -634822.383 
+Sample 175   Log joint likelihood = -635159.076 
+Sample 176   Log joint likelihood = -634840.103 
+Sample 177   Log joint likelihood = -634568.588 
+Sample 178   Log joint likelihood = -634184.994 
+Sample 179   Log joint likelihood = -634215.065 
+Sample 180   Log joint likelihood = -634226.378 
+Sample 181   Log joint likelihood = -633960.835 
+Sample 182   Log joint likelihood = -634042.817 
+Sample 183   Log joint likelihood = -633883.700 
+Sample 184   Log joint likelihood = -633756.591 
+Sample 185   Log joint likelihood = -634111.903 
+Sample 186   Log joint likelihood = -633427.549 
+Sample 187   Log joint likelihood = -633393.857 
+Sample 188   Log joint likelihood = -633991.478 
+Sample 189   Log joint likelihood = -634010.727 
+Sample 190   Log joint likelihood = -634237.278 
+Sample 191   Log joint likelihood = -634165.791 
+Sample 192   Log joint likelihood = -634087.397 
+Sample 193   Log joint likelihood = -633854.546 
+Sample 194   Log joint likelihood = -633864.359 
+Sample 195   Log joint likelihood = -633644.033 
+Sample 196   Log joint likelihood = -634170.274 
+Sample 197   Log joint likelihood = -634650.614 
+Sample 198   Log joint likelihood = -633954.838 
+Sample 199   Log joint likelihood = -634513.871 
+Sample 200   Log joint likelihood = -634470.320 
+Sample 201   Log joint likelihood = -634624.291 
+Sample 202   Log joint likelihood = -634125.354 
+Sample 203   Log joint likelihood = -634293.697 
+Sample 204   Log joint likelihood = -634387.928 
+Sample 205   Log joint likelihood = -634643.973 
+Sample 206   Log joint likelihood = -634759.434 
+Sample 207   Log joint likelihood = -634799.359 
+Sample 208   Log joint likelihood = -635077.216 
+Sample 209   Log joint likelihood = -635116.474 
+Sample 210   Log joint likelihood = -634902.815 
+Sample 211   Log joint likelihood = -635436.653 
+Sample 212   Log joint likelihood = -634792.603 
+Sample 213   Log joint likelihood = -635522.853 
+Sample 214   Log joint likelihood = -634930.495 
+Sample 215   Log joint likelihood = -634902.194 
+Sample 216   Log joint likelihood = -635027.487 
+Sample 217   Log joint likelihood = -635043.143 
+Sample 218   Log joint likelihood = -634467.639 
+Sample 219   Log joint likelihood = -634475.537 
+Sample 220   Log joint likelihood = -634218.844 
+Sample 221   Log joint likelihood = -634241.342 
+Sample 222   Log joint likelihood = -634056.544 
+Sample 223   Log joint likelihood = -633961.777 
+Sample 224   Log joint likelihood = -633993.451 
+Sample 225   Log joint likelihood = -634184.405 
+Sample 226   Log joint likelihood = -633594.177 
+Sample 227   Log joint likelihood = -633541.887 
+Sample 228   Log joint likelihood = -634017.326 
+Sample 229   Log joint likelihood = -634092.810 
+Sample 230   Log joint likelihood = -633498.741 
+Sample 231   Log joint likelihood = -633854.524 
+Sample 232   Log joint likelihood = -634080.394 
+Sample 233   Log joint likelihood = -633842.393 
+Sample 234   Log joint likelihood = -633505.600 
+Sample 235   Log joint likelihood = -633715.058 
+Sample 236   Log joint likelihood = -633672.970 
+Sample 237   Log joint likelihood = -634095.869 
+Sample 238   Log joint likelihood = -633825.347 
+Sample 239   Log joint likelihood = -633969.778 
+Sample 240   Log joint likelihood = -633970.538 
+Sample 241   Log joint likelihood = -633329.360 
+Sample 242   Log joint likelihood = -633340.216 
+Sample 243   Log joint likelihood = -633274.373 
+Sample 244   Log joint likelihood = -633578.692 
+Sample 245   Log joint likelihood = -633572.724 
+Sample 246   Log joint likelihood = -632842.591 
+Sample 247   Log joint likelihood = -633480.925 
+Sample 248   Log joint likelihood = -633216.014 
+Sample 249   Log joint likelihood = -633139.772 
+Sample 250   Log joint likelihood = -632900.775 
+Sample 251   Log joint likelihood = -633558.555 
+Sample 252   Log joint likelihood = -633044.587 
+Sample 253   Log joint likelihood = -632901.553 
+Sample 254   Log joint likelihood = -633139.891 
+Sample 255   Log joint likelihood = -632640.228 
+Sample 256   Log joint likelihood = -632762.269 
+Sample 257   Log joint likelihood = -632719.384 
+Sample 258   Log joint likelihood = -632764.392 
+Sample 259   Log joint likelihood = -632950.987 
+Sample 260   Log joint likelihood = -632213.361 
+Sample 261   Log joint likelihood = -632484.751 
+Sample 262   Log joint likelihood = -632309.352 
+Sample 263   Log joint likelihood = -632126.998 
+Sample 264   Log joint likelihood = -632219.442 
+Sample 265   Log joint likelihood = -632759.451 
+Sample 266   Log joint likelihood = -632399.449 
+Sample 267   Log joint likelihood = -631635.374 
+Sample 268   Log joint likelihood = -632229.547 
+Sample 269   Log joint likelihood = -632207.053 
+Sample 270   Log joint likelihood = -632552.011 
+Sample 271   Log joint likelihood = -631764.717 
+Sample 272   Log joint likelihood = -632319.978 
+Sample 273   Log joint likelihood = -632503.197 
+Sample 274   Log joint likelihood = -632349.183 
+Sample 275   Log joint likelihood = -632620.908 
+Sample 276   Log joint likelihood = -632462.992 
+Sample 277   Log joint likelihood = -632387.849 
+Sample 278   Log joint likelihood = -632641.467 
+Sample 279   Log joint likelihood = -632360.298 
+Sample 280   Log joint likelihood = -633159.399 
+Sample 281   Log joint likelihood = -633054.886 
+Sample 282   Log joint likelihood = -632537.141 
+Sample 283   Log joint likelihood = -632940.371 
+Sample 284   Log joint likelihood = -632333.247 
+Sample 285   Log joint likelihood = -632379.562 
+Sample 286   Log joint likelihood = -632916.829 
+Sample 287   Log joint likelihood = -632911.732 
+Sample 288   Log joint likelihood = -632645.923 
+Sample 289   Log joint likelihood = -633251.005 
+Sample 290   Log joint likelihood = -633219.083 
+Sample 291   Log joint likelihood = -633200.197 
+Sample 292   Log joint likelihood = -632793.411 
+Sample 293   Log joint likelihood = -632889.126 
+Sample 294   Log joint likelihood = -633010.430 
+Sample 295   Log joint likelihood = -633367.391 
+Sample 296   Log joint likelihood = -632474.295 
+Sample 297   Log joint likelihood = -632645.268 
+Sample 298   Log joint likelihood = -632718.086 
+Sample 299   Log joint likelihood = -632583.472 
+Sample 300   Log joint likelihood = -633107.736 
+Sample 301   Log joint likelihood = -633146.962 
+Sample 302   Log joint likelihood = -633206.164 
+Sample 303   Log joint likelihood = -632797.699 
+Sample 304   Log joint likelihood = -633102.634 
+Sample 305   Log joint likelihood = -632506.451 
+Sample 306   Log joint likelihood = -632591.631 
+Sample 307   Log joint likelihood = -632430.079 
+Sample 308   Log joint likelihood = -632088.212 
+Sample 309   Log joint likelihood = -632411.667 
+Sample 310   Log joint likelihood = -632578.973 
+Sample 311   Log joint likelihood = -632626.567 
+Sample 312   Log joint likelihood = -632847.903 
+Sample 313   Log joint likelihood = -632653.919 
+Sample 314   Log joint likelihood = -632502.070 
+Sample 315   Log joint likelihood = -632393.126 
+Sample 316   Log joint likelihood = -632534.181 
+Sample 317   Log joint likelihood = -632682.290 
+Sample 318   Log joint likelihood = -631937.166 
+Sample 319   Log joint likelihood = -632085.194 
+Sample 320   Log joint likelihood = -632659.863 
+Sample 321   Log joint likelihood = -632476.705 
+Sample 322   Log joint likelihood = -632630.524 
+Sample 323   Log joint likelihood = -632674.271 
+Sample 324   Log joint likelihood = -632712.461 
+Sample 325   Log joint likelihood = -632820.778 
+Sample 326   Log joint likelihood = -632389.938 
+Sample 327   Log joint likelihood = -632669.307 
+Sample 328   Log joint likelihood = -631544.654 
+Sample 329   Log joint likelihood = -631927.930 
+Sample 330   Log joint likelihood = -632169.851 
+Sample 331   Log joint likelihood = -632418.202 
+Sample 332   Log joint likelihood = -632578.893 
+Sample 333   Log joint likelihood = -632203.727 
+Sample 334   Log joint likelihood = -632676.998 
+Sample 335   Log joint likelihood = -632167.979 
+Sample 336   Log joint likelihood = -632490.922 
+Sample 337   Log joint likelihood = -631999.902 
+Sample 338   Log joint likelihood = -632601.008 
+Sample 339   Log joint likelihood = -633093.670 
+Sample 340   Log joint likelihood = -633455.089 
+Sample 341   Log joint likelihood = -632712.906 
+Sample 342   Log joint likelihood = -633020.921 
+Sample 343   Log joint likelihood = -633496.988 
+Sample 344   Log joint likelihood = -633419.919 
+Sample 345   Log joint likelihood = -633154.256 
+Sample 346   Log joint likelihood = -633293.464 
+Sample 347   Log joint likelihood = -633301.486 
+Sample 348   Log joint likelihood = -632800.016 
+Sample 349   Log joint likelihood = -633453.125 
+Sample 350   Log joint likelihood = -633058.098 
+Sample 351   Log joint likelihood = -633277.095 
+Sample 352   Log joint likelihood = -633129.527 
+Sample 353   Log joint likelihood = -633740.146 
+Sample 354   Log joint likelihood = -633427.774 
+Sample 355   Log joint likelihood = -633240.471 
+Sample 356   Log joint likelihood = -632757.225 
+Sample 357   Log joint likelihood = -632427.416 
+Sample 358   Log joint likelihood = -633084.703 
+Sample 359   Log joint likelihood = -632684.032 
+Sample 360   Log joint likelihood = -632608.778 
+Sample 361   Log joint likelihood = -632270.809 
+Sample 362   Log joint likelihood = -632906.703 
+Sample 363   Log joint likelihood = -632621.152 
+Sample 364   Log joint likelihood = -633071.909 
+Sample 365   Log joint likelihood = -632981.615 
+Sample 366   Log joint likelihood = -632856.818 
+Sample 367   Log joint likelihood = -632846.492 
+Sample 368   Log joint likelihood = -632977.374 
+Sample 369   Log joint likelihood = -633011.534 
+Sample 370   Log joint likelihood = -632812.879 
+Sample 371   Log joint likelihood = -633118.321 
+Sample 372   Log joint likelihood = -633490.864 
+Sample 373   Log joint likelihood = -632562.916 
+Sample 374   Log joint likelihood = -633124.410 
+Sample 375   Log joint likelihood = -633324.203 
+Sample 376   Log joint likelihood = -632928.013 
+Sample 377   Log joint likelihood = -632283.771 
+Sample 378   Log joint likelihood = -632632.214 
+Sample 379   Log joint likelihood = -632948.647 
+Sample 380   Log joint likelihood = -632521.938 
+Sample 381   Log joint likelihood = -632105.283 
+Sample 382   Log joint likelihood = -632390.791 
+Sample 383   Log joint likelihood = -632487.316 
+Sample 384   Log joint likelihood = -632784.857 
+Sample 385   Log joint likelihood = -633292.388 
+Sample 386   Log joint likelihood = -632519.486 
+Sample 387   Log joint likelihood = -632985.691 
+Sample 388   Log joint likelihood = -632792.447 
+Sample 389   Log joint likelihood = -632946.019 
+Sample 390   Log joint likelihood = -632906.663 
+Sample 391   Log joint likelihood = -632627.557 
+Sample 392   Log joint likelihood = -633010.350 
+Sample 393   Log joint likelihood = -632550.345 
+Sample 394   Log joint likelihood = -632313.789 
+Sample 395   Log joint likelihood = -632753.583 
+Sample 396   Log joint likelihood = -632808.066 
+Sample 397   Log joint likelihood = -632801.747 
+Sample 398   Log joint likelihood = -632556.382 
+Sample 399   Log joint likelihood = -633015.639 
+Sample 400   Log joint likelihood = -632681.711 
+Sample 401   Log joint likelihood = -632707.615 
+Sample 402   Log joint likelihood = -632203.151 
+Sample 403   Log joint likelihood = -632560.344 
+Sample 404   Log joint likelihood = -632694.879 
+Sample 405   Log joint likelihood = -632682.726 
+Sample 406   Log joint likelihood = -632754.572 
+Sample 407   Log joint likelihood = -632916.790 
+Sample 408   Log joint likelihood = -633307.024 
+Sample 409   Log joint likelihood = -633422.392 
+Sample 410   Log joint likelihood = -633573.787 
+Sample 411   Log joint likelihood = -633292.590 
+Sample 412   Log joint likelihood = -633267.458 
+Sample 413   Log joint likelihood = -633113.004 
+Sample 414   Log joint likelihood = -633420.942 
+Sample 415   Log joint likelihood = -633199.569 
+Sample 416   Log joint likelihood = -633475.959 
+Sample 417   Log joint likelihood = -632806.088 
+Sample 418   Log joint likelihood = -633086.762 
+Sample 419   Log joint likelihood = -633029.181 
+Sample 420   Log joint likelihood = -632930.111 
+Sample 421   Log joint likelihood = -632578.272 
+Sample 422   Log joint likelihood = -633034.269 
+Sample 423   Log joint likelihood = -633197.249 
+Sample 424   Log joint likelihood = -633428.561 
+Sample 425   Log joint likelihood = -633498.526 
+Sample 426   Log joint likelihood = -633633.246 
+Sample 427   Log joint likelihood = -632887.667 
+Sample 428   Log joint likelihood = -632882.878 
+Sample 429   Log joint likelihood = -632728.513 
+Sample 430   Log joint likelihood = -632728.176 
+Sample 431   Log joint likelihood = -632972.435 
+Sample 432   Log joint likelihood = -633137.709 
+Sample 433   Log joint likelihood = -632660.110 
+Sample 434   Log joint likelihood = -633055.329 
+Sample 435   Log joint likelihood = -632845.132 
+Sample 436   Log joint likelihood = -632954.010 
+Sample 437   Log joint likelihood = -632841.616 
+Sample 438   Log joint likelihood = -632308.668 
+Sample 439   Log joint likelihood = -632651.352 
+Sample 440   Log joint likelihood = -632449.877 
+Sample 441   Log joint likelihood = -632780.622 
+Sample 442   Log joint likelihood = -632808.787 
+Sample 443   Log joint likelihood = -632724.184 
+Sample 444   Log joint likelihood = -633041.012 
+Sample 445   Log joint likelihood = -632331.842 
+Sample 446   Log joint likelihood = -632849.287 
+Sample 447   Log joint likelihood = -633123.287 
+Sample 448   Log joint likelihood = -632424.624 
+Sample 449   Log joint likelihood = -632180.129 
+Sample 450   Log joint likelihood = -631897.256 
+Sample 451   Log joint likelihood = -632082.225 
+Sample 452   Log joint likelihood = -632845.035 
+Sample 453   Log joint likelihood = -632759.395 
+Sample 454   Log joint likelihood = -633187.935 
+Sample 455   Log joint likelihood = -632966.711 
+Sample 456   Log joint likelihood = -632437.996 
+Sample 457   Log joint likelihood = -632756.492 
+Sample 458   Log joint likelihood = -632617.498 
+Sample 459   Log joint likelihood = -632566.632 
+Sample 460   Log joint likelihood = -632571.616 
+Sample 461   Log joint likelihood = -632625.852 
+Sample 462   Log joint likelihood = -633009.763 
+Sample 463   Log joint likelihood = -632622.693 
+Sample 464   Log joint likelihood = -631954.623 
+Sample 465   Log joint likelihood = -632685.136 
+Sample 466   Log joint likelihood = -632527.375 
+Sample 467   Log joint likelihood = -632210.010 
+Sample 468   Log joint likelihood = -632585.918 
+Sample 469   Log joint likelihood = -632288.233 
+Sample 470   Log joint likelihood = -632126.036 
+Sample 471   Log joint likelihood = -632478.790 
+Sample 472   Log joint likelihood = -632068.812 
+Sample 473   Log joint likelihood = -631974.573 
+Sample 474   Log joint likelihood = -631809.457 
+Sample 475   Log joint likelihood = -632040.875 
+Sample 476   Log joint likelihood = -631941.122 
+Sample 477   Log joint likelihood = -632045.306 
+Sample 478   Log joint likelihood = -631101.341 
+Sample 479   Log joint likelihood = -631715.758 
+Sample 480   Log joint likelihood = -632064.757 
+Sample 481   Log joint likelihood = -631895.436 
+Sample 482   Log joint likelihood = -632150.227 
+Sample 483   Log joint likelihood = -631994.385 
+Sample 484   Log joint likelihood = -631587.052 
+Sample 485   Log joint likelihood = -631867.291 
+Sample 486   Log joint likelihood = -631398.845 
+Sample 487   Log joint likelihood = -631805.344 
+Sample 488   Log joint likelihood = -631645.890 
+Sample 489   Log joint likelihood = -631759.579 
+Sample 490   Log joint likelihood = -631603.803 
+Sample 491   Log joint likelihood = -631927.176 
+Sample 492   Log joint likelihood = -631811.951 
+Sample 493   Log joint likelihood = -631931.782 
+Sample 494   Log joint likelihood = -631944.378 
+Sample 495   Log joint likelihood = -631791.823 
+Sample 496   Log joint likelihood = -631517.736 
+Sample 497   Log joint likelihood = -632415.358 
+Sample 498   Log joint likelihood = -632126.390 
+Sample 499   Log joint likelihood = -631589.136 
+Sample 500   Log joint likelihood = -631736.006 
+Run testing importance sampling (195, 1648)
+topic_prior = [[ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]]
+	d = 0 doc_marg=-954.377778782
+	d = 1 doc_marg=-1001.36115552
+	d = 2 doc_marg=-327.347799777
+	d = 3 doc_marg=-358.085292159
+	d = 4 doc_marg=-2742.48550696
+	d = 5 doc_marg=-279.078637808
+	d = 6 doc_marg=-1327.11758613
+	d = 7 doc_marg=-1317.63484747
+	d = 8 doc_marg=-686.101908128
+	d = 9 doc_marg=-664.117247783
+	d = 10 doc_marg=-857.134515942
+	d = 11 doc_marg=-1464.08051019
+	d = 12 doc_marg=-323.599289055
+	d = 13 doc_marg=-1036.14605898
+	d = 14 doc_marg=-1603.41836198
+	d = 15 doc_marg=-447.111419502
+	d = 16 doc_marg=-162.149112738
+	d = 17 doc_marg=-1656.32933054
+	d = 18 doc_marg=-264.433229351
+	d = 19 doc_marg=-843.64158058
+	d = 20 doc_marg=-461.707440557
+	d = 21 doc_marg=-497.321659283
+	d = 22 doc_marg=-1271.80778051
+	d = 23 doc_marg=-1283.87189709
+	d = 24 doc_marg=-1506.63505841
+	d = 25 doc_marg=-1141.45413416
+	d = 26 doc_marg=-306.515068006
+	d = 27 doc_marg=-1512.62323376
+	d = 28 doc_marg=-559.784490455
+	d = 29 doc_marg=-3210.7730337
+	d = 30 doc_marg=-2077.82462681
+	d = 31 doc_marg=-2686.28429153
+	d = 32 doc_marg=-913.157652261
+	d = 33 doc_marg=-1156.02347276
+	d = 34 doc_marg=-1815.25193307
+	d = 35 doc_marg=-1918.17710853
+	d = 36 doc_marg=-5878.81858773
+	d = 37 doc_marg=-1273.33397432
+	d = 38 doc_marg=-383.030949645
+	d = 39 doc_marg=-1305.55922332
+	d = 40 doc_marg=-1963.93233918
+	d = 41 doc_marg=-591.622971791
+	d = 42 doc_marg=-205.084119701
+	d = 43 doc_marg=-664.76487374
+	d = 44 doc_marg=-427.487035546
+	d = 45 doc_marg=-573.261654637
+	d = 46 doc_marg=-159.60329095
+	d = 47 doc_marg=-430.119109879
+	d = 48 doc_marg=-655.683417097
+	d = 49 doc_marg=-819.813784054
+	d = 50 doc_marg=-646.929406381
+	d = 51 doc_marg=-2460.85273787
+	d = 52 doc_marg=-104.635423816
+	d = 53 doc_marg=-1603.345009
+	d = 54 doc_marg=-711.223886944
+	d = 55 doc_marg=-1945.2335677
+	d = 56 doc_marg=-921.134219515
+	d = 57 doc_marg=-1588.79992635
+	d = 58 doc_marg=-657.861245629
+	d = 59 doc_marg=-767.831619283
+	d = 60 doc_marg=-509.587173254
+	d = 61 doc_marg=-1666.77652797
+	d = 62 doc_marg=-670.419149084
+	d = 63 doc_marg=-1228.47092996
+	d = 64 doc_marg=-2670.06765199
+	d = 65 doc_marg=-1206.46224034
+	d = 66 doc_marg=-598.806520312
+	d = 67 doc_marg=-1632.1224617
+	d = 68 doc_marg=-810.928957825
+	d = 69 doc_marg=-906.929176371
+	d = 70 doc_marg=-422.889082593
+	d = 71 doc_marg=-1716.36542499
+	d = 72 doc_marg=-1501.79543403
+	d = 73 doc_marg=-1321.7255988
+	d = 74 doc_marg=-1206.46036276
+	d = 75 doc_marg=-449.807954956
+	d = 76 doc_marg=-1416.07456108
+	d = 77 doc_marg=-1288.21950605
+	d = 78 doc_marg=-879.919620761
+	d = 79 doc_marg=-467.155747509
+	d = 80 doc_marg=-612.651276031
+	d = 81 doc_marg=-3358.10749669
+	d = 82 doc_marg=-1089.07727773
+	d = 83 doc_marg=-1236.63428649
+	d = 84 doc_marg=-329.447297406
+	d = 85 doc_marg=-2379.39564765
+	d = 86 doc_marg=-1232.61926792
+	d = 87 doc_marg=-1567.80367061
+	d = 88 doc_marg=-437.103640532
+	d = 89 doc_marg=-456.87816895
+	d = 90 doc_marg=-832.478925805
+	d = 91 doc_marg=-1374.35669845
+	d = 92 doc_marg=-1792.34116822
+	d = 93 doc_marg=-654.123671873
+	d = 94 doc_marg=-603.173462948
+	d = 95 doc_marg=-482.382361576
+	d = 96 doc_marg=-1178.07022542
+	d = 97 doc_marg=-517.569068861
+	d = 98 doc_marg=-1187.3701194
+	d = 99 doc_marg=-1046.92757992
+	d = 100 doc_marg=-4208.82290316
+	d = 101 doc_marg=-3095.73251113
+	d = 102 doc_marg=-1781.87108258
+	d = 103 doc_marg=-1454.76938556
+	d = 104 doc_marg=-4435.32884067
+	d = 105 doc_marg=-1592.66630695
+	d = 106 doc_marg=-401.125372351
+	d = 107 doc_marg=-2334.43614022
+	d = 108 doc_marg=-1011.99340005
+	d = 109 doc_marg=-502.852427726
+	d = 110 doc_marg=-409.790421556
+	d = 111 doc_marg=-2626.73382656
+	d = 112 doc_marg=-4852.70308228
+	d = 113 doc_marg=-2218.19127236
+	d = 114 doc_marg=-1049.07534793
+	d = 115 doc_marg=-244.826939065
+	d = 116 doc_marg=-2583.61639341
+	d = 117 doc_marg=-1561.89299222
+	d = 118 doc_marg=-1635.09304574
+	d = 119 doc_marg=-1642.68039764
+	d = 120 doc_marg=-564.683114259
+	d = 121 doc_marg=-1330.93017678
+	d = 122 doc_marg=-709.255477689
+	d = 123 doc_marg=-382.463420394
+	d = 124 doc_marg=-510.351267718
+	d = 125 doc_marg=-1320.51822002
+	d = 126 doc_marg=-397.014763428
+	d = 127 doc_marg=-342.659962669
+	d = 128 doc_marg=-1393.13285065
+	d = 129 doc_marg=-2708.5017079
+	d = 130 doc_marg=-372.046540249
+	d = 131 doc_marg=-409.578618715
+	d = 132 doc_marg=-1915.28878455
+	d = 133 doc_marg=-1231.17557988
+	d = 134 doc_marg=-426.550581291
+	d = 135 doc_marg=-761.662955587
+	d = 136 doc_marg=-548.148902994
+	d = 137 doc_marg=-2073.61965227
+	d = 138 doc_marg=-1122.30338366
+	d = 139 doc_marg=-3267.14463514
+	d = 140 doc_marg=-2054.58291028
+	d = 141 doc_marg=-2398.57830702
+	d = 142 doc_marg=-303.972517969
+	d = 143 doc_marg=-206.558013671
+	d = 144 doc_marg=-1301.49470921
+	d = 145 doc_marg=-1654.37402749
+	d = 146 doc_marg=-1179.38447727
+	d = 147 doc_marg=-1100.31453351
+	d = 148 doc_marg=-405.793553514
+	d = 149 doc_marg=-487.035329833
+	d = 150 doc_marg=-467.599754971
+	d = 151 doc_marg=-695.277235083
+	d = 152 doc_marg=-365.499269187
+	d = 153 doc_marg=-604.284513111
+	d = 154 doc_marg=-2951.43889595
+	d = 155 doc_marg=-433.052882043
+	d = 156 doc_marg=-593.887746801
+	d = 157 doc_marg=-955.829932124
+	d = 158 doc_marg=-1141.64403545
+	d = 159 doc_marg=-814.771271382
+	d = 160 doc_marg=-883.533827978
+	d = 161 doc_marg=-523.425498009
+	d = 162 doc_marg=-640.482153574
+	d = 163 doc_marg=-1342.65741508
+	d = 164 doc_marg=-1148.6924817
+	d = 165 doc_marg=-1124.75874002
+	d = 166 doc_marg=-376.357059001
+	d = 167 doc_marg=-147.490216046
+	d = 168 doc_marg=-2768.12873337
+	d = 169 doc_marg=-768.569856095
+	d = 170 doc_marg=-1450.46826441
+	d = 171 doc_marg=-290.403865039
+	d = 172 doc_marg=-298.495636732
+	d = 173 doc_marg=-535.291947979
+	d = 174 doc_marg=-1189.6198802
+	d = 175 doc_marg=-113.496520568
+	d = 176 doc_marg=-113.500285852
+	d = 177 doc_marg=-2501.16110194
+	d = 178 doc_marg=-1034.89934924
+	d = 179 doc_marg=-505.435482835
+	d = 180 doc_marg=-799.603845376
+	d = 181 doc_marg=-734.809348281
+	d = 182 doc_marg=-744.926466543
+	d = 183 doc_marg=-519.008070843
+	d = 184 doc_marg=-738.173451648
+	d = 185 doc_marg=-894.384079465
+	d = 186 doc_marg=-320.863220401
+	d = 187 doc_marg=-643.842323683
+	d = 188 doc_marg=-686.674007591
+	d = 189 doc_marg=-827.911039631
+	d = 190 doc_marg=-2032.01968559
+	d = 191 doc_marg=-962.79659991
+	d = 192 doc_marg=-327.090441271
+	d = 193 doc_marg=-1419.10926416
+	d = 194 doc_marg=-1735.00255414
+Log evidence 0 = -225004.111134
+Test perplexity 0 = 24.0251651807
+
+K=500 Training fold=0
+K=500 Testing fold=1
+K=500 Training fold=2
+K=500 Training fold=3
+Run training gibbs (585, 1648)
+CGS LDA initialising
+...........................................................
+Using Numba for 3-bags LDA sampling
+Preparing words
+Preparing Z matrix
+DONE
+Sample 1   Log joint likelihood = -1882337.920 
+Sample 2   Log joint likelihood = -1117015.753 
+Sample 3   Log joint likelihood = -856160.588 
+Sample 4   Log joint likelihood = -778265.124 
+Sample 5   Log joint likelihood = -746802.891 
+Sample 6   Log joint likelihood = -730026.063 
+Sample 7   Log joint likelihood = -718860.413 
+Sample 8   Log joint likelihood = -710764.070 
+Sample 9   Log joint likelihood = -702596.917 
+Sample 10   Log joint likelihood = -696329.509 
+Sample 11   Log joint likelihood = -691324.106 
+Sample 12   Log joint likelihood = -687494.087 
+Sample 13   Log joint likelihood = -684734.266 
+Sample 14   Log joint likelihood = -680865.326 
+Sample 15   Log joint likelihood = -678990.995 
+Sample 16   Log joint likelihood = -676968.752 
+Sample 17   Log joint likelihood = -675157.220 
+Sample 18   Log joint likelihood = -673731.620 
+Sample 19   Log joint likelihood = -672670.748 
+Sample 20   Log joint likelihood = -670671.871 
+Sample 21   Log joint likelihood = -668425.082 
+Sample 22   Log joint likelihood = -667470.715 
+Sample 23   Log joint likelihood = -666254.500 
+Sample 24   Log joint likelihood = -666168.063 
+Sample 25   Log joint likelihood = -664382.089 
+Sample 26   Log joint likelihood = -662190.307 
+Sample 27   Log joint likelihood = -661112.258 
+Sample 28   Log joint likelihood = -660279.434 
+Sample 29   Log joint likelihood = -659359.249 
+Sample 30   Log joint likelihood = -658394.162 
+Sample 31   Log joint likelihood = -657435.173 
+Sample 32   Log joint likelihood = -657095.038 
+Sample 33   Log joint likelihood = -656635.484 
+Sample 34   Log joint likelihood = -655782.665 
+Sample 35   Log joint likelihood = -656003.788 
+Sample 36   Log joint likelihood = -655109.976 
+Sample 37   Log joint likelihood = -655634.299 
+Sample 38   Log joint likelihood = -654051.307 
+Sample 39   Log joint likelihood = -653099.026 
+Sample 40   Log joint likelihood = -653338.720 
+Sample 41   Log joint likelihood = -652829.944 
+Sample 42   Log joint likelihood = -652581.237 
+Sample 43   Log joint likelihood = -652641.764 
+Sample 44   Log joint likelihood = -651560.358 
+Sample 45   Log joint likelihood = -651578.411 
+Sample 46   Log joint likelihood = -651039.797 
+Sample 47   Log joint likelihood = -650910.831 
+Sample 48   Log joint likelihood = -650620.439 
+Sample 49   Log joint likelihood = -650271.370 
+Sample 50   Log joint likelihood = -650046.889 
+Sample 51   Log joint likelihood = -650250.562 
+Sample 52   Log joint likelihood = -649801.209 
+Sample 53   Log joint likelihood = -649546.470 
+Sample 54   Log joint likelihood = -649109.344 
+Sample 55   Log joint likelihood = -648906.150 
+Sample 56   Log joint likelihood = -648105.769 
+Sample 57   Log joint likelihood = -648578.430 
+Sample 58   Log joint likelihood = -648143.997 
+Sample 59   Log joint likelihood = -647981.624 
+Sample 60   Log joint likelihood = -647844.478 
+Sample 61   Log joint likelihood = -647168.816 
+Sample 62   Log joint likelihood = -647467.455 
+Sample 63   Log joint likelihood = -647790.624 
+Sample 64   Log joint likelihood = -646359.800 
+Sample 65   Log joint likelihood = -646570.258 
+Sample 66   Log joint likelihood = -646751.749 
+Sample 67   Log joint likelihood = -646774.384 
+Sample 68   Log joint likelihood = -646458.581 
+Sample 69   Log joint likelihood = -646451.708 
+Sample 70   Log joint likelihood = -646274.117 
+Sample 71   Log joint likelihood = -646318.957 
+Sample 72   Log joint likelihood = -646043.423 
+Sample 73   Log joint likelihood = -646199.756 
+Sample 74   Log joint likelihood = -646336.676 
+Sample 75   Log joint likelihood = -646325.090 
+Sample 76   Log joint likelihood = -646081.112 
+Sample 77   Log joint likelihood = -645920.271 
+Sample 78   Log joint likelihood = -646149.444 
+Sample 79   Log joint likelihood = -646229.963 
+Sample 80   Log joint likelihood = -646092.243 
+Sample 81   Log joint likelihood = -645275.954 
+Sample 82   Log joint likelihood = -645620.342 
+Sample 83   Log joint likelihood = -645440.826 
+Sample 84   Log joint likelihood = -644787.158 
+Sample 85   Log joint likelihood = -644618.490 
+Sample 86   Log joint likelihood = -644147.650 
+Sample 87   Log joint likelihood = -645006.982 
+Sample 88   Log joint likelihood = -644701.072 
+Sample 89   Log joint likelihood = -644117.506 
+Sample 90   Log joint likelihood = -644007.521 
+Sample 91   Log joint likelihood = -643273.271 
+Sample 92   Log joint likelihood = -643144.100 
+Sample 93   Log joint likelihood = -643206.842 
+Sample 94   Log joint likelihood = -643604.976 
+Sample 95   Log joint likelihood = -643498.325 
+Sample 96   Log joint likelihood = -642993.963 
+Sample 97   Log joint likelihood = -642988.867 
+Sample 98   Log joint likelihood = -642680.797 
+Sample 99   Log joint likelihood = -642906.974 
+Sample 100   Log joint likelihood = -643084.909 
+Sample 101   Log joint likelihood = -642749.270 
+Sample 102   Log joint likelihood = -642341.189 
+Sample 103   Log joint likelihood = -642042.141 
+Sample 104   Log joint likelihood = -641709.521 
+Sample 105   Log joint likelihood = -641882.764 
+Sample 106   Log joint likelihood = -641600.444 
+Sample 107   Log joint likelihood = -641447.878 
+Sample 108   Log joint likelihood = -641353.117 
+Sample 109   Log joint likelihood = -641578.985 
+Sample 110   Log joint likelihood = -642076.621 
+Sample 111   Log joint likelihood = -642217.613 
+Sample 112   Log joint likelihood = -642186.366 
+Sample 113   Log joint likelihood = -641972.541 
+Sample 114   Log joint likelihood = -642150.471 
+Sample 115   Log joint likelihood = -641787.217 
+Sample 116   Log joint likelihood = -641237.654 
+Sample 117   Log joint likelihood = -641205.058 
+Sample 118   Log joint likelihood = -640902.246 
+Sample 119   Log joint likelihood = -641776.088 
+Sample 120   Log joint likelihood = -641424.056 
+Sample 121   Log joint likelihood = -641230.583 
+Sample 122   Log joint likelihood = -641209.063 
+Sample 123   Log joint likelihood = -640643.409 
+Sample 124   Log joint likelihood = -641106.144 
+Sample 125   Log joint likelihood = -640946.891 
+Sample 126   Log joint likelihood = -640912.988 
+Sample 127   Log joint likelihood = -640474.179 
+Sample 128   Log joint likelihood = -640708.036 
+Sample 129   Log joint likelihood = -640849.481 
+Sample 130   Log joint likelihood = -640231.568 
+Sample 131   Log joint likelihood = -640177.141 
+Sample 132   Log joint likelihood = -640276.459 
+Sample 133   Log joint likelihood = -640684.700 
+Sample 134   Log joint likelihood = -640336.549 
+Sample 135   Log joint likelihood = -639614.654 
+Sample 136   Log joint likelihood = -640338.507 
+Sample 137   Log joint likelihood = -640093.186 
+Sample 138   Log joint likelihood = -640061.485 
+Sample 139   Log joint likelihood = -639588.574 
+Sample 140   Log joint likelihood = -639246.856 
+Sample 141   Log joint likelihood = -639275.310 
+Sample 142   Log joint likelihood = -639295.203 
+Sample 143   Log joint likelihood = -639094.064 
+Sample 144   Log joint likelihood = -639094.117 
+Sample 145   Log joint likelihood = -639103.686 
+Sample 146   Log joint likelihood = -639254.603 
+Sample 147   Log joint likelihood = -638982.253 
+Sample 148   Log joint likelihood = -638863.917 
+Sample 149   Log joint likelihood = -638996.296 
+Sample 150   Log joint likelihood = -639280.005 
+Sample 151   Log joint likelihood = -639527.220 
+Sample 152   Log joint likelihood = -639257.123 
+Sample 153   Log joint likelihood = -639766.719 
+Sample 154   Log joint likelihood = -639052.160 
+Sample 155   Log joint likelihood = -639324.416 
+Sample 156   Log joint likelihood = -638928.661 
+Sample 157   Log joint likelihood = -638934.448 
+Sample 158   Log joint likelihood = -638598.073 
+Sample 159   Log joint likelihood = -638784.370 
+Sample 160   Log joint likelihood = -639202.965 
+Sample 161   Log joint likelihood = -639055.566 
+Sample 162   Log joint likelihood = -638574.592 
+Sample 163   Log joint likelihood = -638474.019 
+Sample 164   Log joint likelihood = -638568.497 
+Sample 165   Log joint likelihood = -637903.901 
+Sample 166   Log joint likelihood = -638393.367 
+Sample 167   Log joint likelihood = -638141.065 
+Sample 168   Log joint likelihood = -638455.338 
+Sample 169   Log joint likelihood = -638565.599 
+Sample 170   Log joint likelihood = -638922.863 
+Sample 171   Log joint likelihood = -638750.113 
+Sample 172   Log joint likelihood = -638976.362 
+Sample 173   Log joint likelihood = -638645.306 
+Sample 174   Log joint likelihood = -638650.637 
+Sample 175   Log joint likelihood = -639102.259 
+Sample 176   Log joint likelihood = -638837.236 
+Sample 177   Log joint likelihood = -638614.788 
+Sample 178   Log joint likelihood = -638320.792 
+Sample 179   Log joint likelihood = -638571.415 
+Sample 180   Log joint likelihood = -638770.859 
+Sample 181   Log joint likelihood = -639063.568 
+Sample 182   Log joint likelihood = -639034.564 
+Sample 183   Log joint likelihood = -638901.906 
+Sample 184   Log joint likelihood = -639286.612 
+Sample 185   Log joint likelihood = -639017.447 
+Sample 186   Log joint likelihood = -639297.810 
+Sample 187   Log joint likelihood = -638789.781 
+Sample 188   Log joint likelihood = -638399.738 
+Sample 189   Log joint likelihood = -638076.766 
+Sample 190   Log joint likelihood = -638208.167 
+Sample 191   Log joint likelihood = -638222.789 
+Sample 192   Log joint likelihood = -638066.694 
+Sample 193   Log joint likelihood = -638937.260 
+Sample 194   Log joint likelihood = -638504.189 
+Sample 195   Log joint likelihood = -637903.253 
+Sample 196   Log joint likelihood = -638294.205 
+Sample 197   Log joint likelihood = -638435.820 
+Sample 198   Log joint likelihood = -637894.989 
+Sample 199   Log joint likelihood = -638690.746 
+Sample 200   Log joint likelihood = -637959.135 
+Sample 201   Log joint likelihood = -637874.704 
+Sample 202   Log joint likelihood = -637733.204 
+Sample 203   Log joint likelihood = -637757.591 
+Sample 204   Log joint likelihood = -637766.250 
+Sample 205   Log joint likelihood = -637547.274 
+Sample 206   Log joint likelihood = -637290.145 
+Sample 207   Log joint likelihood = -637329.993 
+Sample 208   Log joint likelihood = -637042.020 
+Sample 209   Log joint likelihood = -637369.907 
+Sample 210   Log joint likelihood = -636873.569 
+Sample 211   Log joint likelihood = -637185.054 
+Sample 212   Log joint likelihood = -637395.861 
+Sample 213   Log joint likelihood = -637718.666 
+Sample 214   Log joint likelihood = -637545.038 
+Sample 215   Log joint likelihood = -637477.655 
+Sample 216   Log joint likelihood = -638202.587 
+Sample 217   Log joint likelihood = -637395.277 
+Sample 218   Log joint likelihood = -637389.216 
+Sample 219   Log joint likelihood = -636864.436 
+Sample 220   Log joint likelihood = -637061.911 
+Sample 221   Log joint likelihood = -637406.948 
+Sample 222   Log joint likelihood = -637463.982 
+Sample 223   Log joint likelihood = -636822.177 
+Sample 224   Log joint likelihood = -637243.260 
+Sample 225   Log joint likelihood = -637631.657 
+Sample 226   Log joint likelihood = -637487.492 
+Sample 227   Log joint likelihood = -637405.123 
+Sample 228   Log joint likelihood = -637008.661 
+Sample 229   Log joint likelihood = -637304.199 
+Sample 230   Log joint likelihood = -637190.500 
+Sample 231   Log joint likelihood = -637156.963 
+Sample 232   Log joint likelihood = -637699.436 
+Sample 233   Log joint likelihood = -637291.286 
+Sample 234   Log joint likelihood = -637529.248 
+Sample 235   Log joint likelihood = -637809.162 
+Sample 236   Log joint likelihood = -637663.726 
+Sample 237   Log joint likelihood = -637535.935 
+Sample 238   Log joint likelihood = -637315.869 
+Sample 239   Log joint likelihood = -637156.035 
+Sample 240   Log joint likelihood = -637533.823 
+Sample 241   Log joint likelihood = -637236.215 
+Sample 242   Log joint likelihood = -637153.285 
+Sample 243   Log joint likelihood = -637312.956 
+Sample 244   Log joint likelihood = -636865.620 
+Sample 245   Log joint likelihood = -637277.465 
+Sample 246   Log joint likelihood = -637060.954 
+Sample 247   Log joint likelihood = -638008.248 
+Sample 248   Log joint likelihood = -637497.351 
+Sample 249   Log joint likelihood = -637300.234 
+Sample 250   Log joint likelihood = -637753.685 
+Sample 251   Log joint likelihood = -637291.130 
+Sample 252   Log joint likelihood = -637806.560 
+Sample 253   Log joint likelihood = -638494.318 
+Sample 254   Log joint likelihood = -637938.620 
+Sample 255   Log joint likelihood = -637664.820 
+Sample 256   Log joint likelihood = -637579.314 
+Sample 257   Log joint likelihood = -637733.191 
+Sample 258   Log joint likelihood = -637858.110 
+Sample 259   Log joint likelihood = -638073.139 
+Sample 260   Log joint likelihood = -638018.686 
+Sample 261   Log joint likelihood = -637566.468 
+Sample 262   Log joint likelihood = -638257.123 
+Sample 263   Log joint likelihood = -637688.847 
+Sample 264   Log joint likelihood = -637154.589 
+Sample 265   Log joint likelihood = -637278.754 
+Sample 266   Log joint likelihood = -637894.452 
+Sample 267   Log joint likelihood = -637669.782 
+Sample 268   Log joint likelihood = -637788.594 
+Sample 269   Log joint likelihood = -637350.438 
+Sample 270   Log joint likelihood = -637789.614 
+Sample 271   Log joint likelihood = -637535.119 
+Sample 272   Log joint likelihood = -637249.562 
+Sample 273   Log joint likelihood = -637617.546 
+Sample 274   Log joint likelihood = -637478.302 
+Sample 275   Log joint likelihood = -637949.379 
+Sample 276   Log joint likelihood = -637325.072 
+Sample 277   Log joint likelihood = -637368.814 
+Sample 278   Log joint likelihood = -637436.722 
+Sample 279   Log joint likelihood = -637849.385 
+Sample 280   Log joint likelihood = -637415.024 
+Sample 281   Log joint likelihood = -637741.995 
+Sample 282   Log joint likelihood = -638026.423 
+Sample 283   Log joint likelihood = -637614.775 
+Sample 284   Log joint likelihood = -637497.717 
+Sample 285   Log joint likelihood = -637586.659 
+Sample 286   Log joint likelihood = -637538.658 
+Sample 287   Log joint likelihood = -637620.886 
+Sample 288   Log joint likelihood = -637307.139 
+Sample 289   Log joint likelihood = -637854.462 
+Sample 290   Log joint likelihood = -637790.645 
+Sample 291   Log joint likelihood = -637740.628 
+Sample 292   Log joint likelihood = -637672.373 
+Sample 293   Log joint likelihood = -637552.651 
+Sample 294   Log joint likelihood = -638080.509 
+Sample 295   Log joint likelihood = -638095.891 
+Sample 296   Log joint likelihood = -637939.948 
+Sample 297   Log joint likelihood = -638003.443 
+Sample 298   Log joint likelihood = -637932.582 
+Sample 299   Log joint likelihood = -637240.280 
+Sample 300   Log joint likelihood = -637326.217 
+Sample 301   Log joint likelihood = -637373.403 
+Sample 302   Log joint likelihood = -637470.016 
+Sample 303   Log joint likelihood = -637455.160 
+Sample 304   Log joint likelihood = -637354.914 
+Sample 305   Log joint likelihood = -637568.441 
+Sample 306   Log joint likelihood = -637259.260 
+Sample 307   Log joint likelihood = -636893.626 
+Sample 308   Log joint likelihood = -637562.165 
+Sample 309   Log joint likelihood = -637488.549 
+Sample 310   Log joint likelihood = -637504.281 
+Sample 311   Log joint likelihood = -637430.526 
+Sample 312   Log joint likelihood = -637769.075 
+Sample 313   Log joint likelihood = -637824.964 
+Sample 314   Log joint likelihood = -637803.968 
+Sample 315   Log joint likelihood = -637816.226 
+Sample 316   Log joint likelihood = -637934.134 
+Sample 317   Log joint likelihood = -637398.430 
+Sample 318   Log joint likelihood = -637623.207 
+Sample 319   Log joint likelihood = -637590.062 
+Sample 320   Log joint likelihood = -638093.078 
+Sample 321   Log joint likelihood = -637883.386 
+Sample 322   Log joint likelihood = -637695.315 
+Sample 323   Log joint likelihood = -637707.749 
+Sample 324   Log joint likelihood = -637464.222 
+Sample 325   Log joint likelihood = -637546.532 
+Sample 326   Log joint likelihood = -637314.907 
+Sample 327   Log joint likelihood = -637209.232 
+Sample 328   Log joint likelihood = -637550.838 
+Sample 329   Log joint likelihood = -637720.143 
+Sample 330   Log joint likelihood = -637778.574 
+Sample 331   Log joint likelihood = -637151.997 
+Sample 332   Log joint likelihood = -637722.298 
+Sample 333   Log joint likelihood = -637603.946 
+Sample 334   Log joint likelihood = -637493.771 
+Sample 335   Log joint likelihood = -636932.939 
+Sample 336   Log joint likelihood = -637699.930 
+Sample 337   Log joint likelihood = -636716.079 
+Sample 338   Log joint likelihood = -637186.541 
+Sample 339   Log joint likelihood = -636831.218 
+Sample 340   Log joint likelihood = -636879.987 
+Sample 341   Log joint likelihood = -637885.855 
+Sample 342   Log joint likelihood = -636917.311 
+Sample 343   Log joint likelihood = -636996.041 
+Sample 344   Log joint likelihood = -637201.743 
+Sample 345   Log joint likelihood = -637275.314 
+Sample 346   Log joint likelihood = -637356.551 
+Sample 347   Log joint likelihood = -636461.819 
+Sample 348   Log joint likelihood = -636829.208 
+Sample 349   Log joint likelihood = -637057.528 
+Sample 350   Log joint likelihood = -636929.733 
+Sample 351   Log joint likelihood = -636946.354 
+Sample 352   Log joint likelihood = -637175.483 
+Sample 353   Log joint likelihood = -637332.935 
+Sample 354   Log joint likelihood = -637008.570 
+Sample 355   Log joint likelihood = -636877.397 
+Sample 356   Log joint likelihood = -637575.182 
+Sample 357   Log joint likelihood = -636975.209 
+Sample 358   Log joint likelihood = -637082.909 
+Sample 359   Log joint likelihood = -637238.394 
+Sample 360   Log joint likelihood = -636874.696 
+Sample 361   Log joint likelihood = -637177.134 
+Sample 362   Log joint likelihood = -636755.181 
+Sample 363   Log joint likelihood = -636767.160 
+Sample 364   Log joint likelihood = -637498.652 
+Sample 365   Log joint likelihood = -637016.384 
+Sample 366   Log joint likelihood = -636798.527 
+Sample 367   Log joint likelihood = -636828.833 
+Sample 368   Log joint likelihood = -636793.530 
+Sample 369   Log joint likelihood = -637080.000 
+Sample 370   Log joint likelihood = -636724.363 
+Sample 371   Log joint likelihood = -636354.608 
+Sample 372   Log joint likelihood = -636423.329 
+Sample 373   Log joint likelihood = -637040.062 
+Sample 374   Log joint likelihood = -636722.440 
+Sample 375   Log joint likelihood = -636614.588 
+Sample 376   Log joint likelihood = -636555.336 
+Sample 377   Log joint likelihood = -636529.893 
+Sample 378   Log joint likelihood = -636170.100 
+Sample 379   Log joint likelihood = -635450.121 
+Sample 380   Log joint likelihood = -636146.244 
+Sample 381   Log joint likelihood = -636077.637 
+Sample 382   Log joint likelihood = -636098.086 
+Sample 383   Log joint likelihood = -636030.334 
+Sample 384   Log joint likelihood = -636004.103 
+Sample 385   Log joint likelihood = -635631.754 
+Sample 386   Log joint likelihood = -636093.252 
+Sample 387   Log joint likelihood = -636316.080 
+Sample 388   Log joint likelihood = -636177.347 
+Sample 389   Log joint likelihood = -636304.078 
+Sample 390   Log joint likelihood = -636080.861 
+Sample 391   Log joint likelihood = -636218.330 
+Sample 392   Log joint likelihood = -636205.349 
+Sample 393   Log joint likelihood = -635966.394 
+Sample 394   Log joint likelihood = -636256.294 
+Sample 395   Log joint likelihood = -636657.577 
+Sample 396   Log joint likelihood = -636228.160 
+Sample 397   Log joint likelihood = -636708.430 
+Sample 398   Log joint likelihood = -636856.768 
+Sample 399   Log joint likelihood = -636304.436 
+Sample 400   Log joint likelihood = -636648.220 
+Sample 401   Log joint likelihood = -636577.966 
+Sample 402   Log joint likelihood = -636662.252 
+Sample 403   Log joint likelihood = -636217.737 
+Sample 404   Log joint likelihood = -636470.691 
+Sample 405   Log joint likelihood = -636246.038 
+Sample 406   Log joint likelihood = -636623.756 
+Sample 407   Log joint likelihood = -636889.779 
+Sample 408   Log joint likelihood = -636617.837 
+Sample 409   Log joint likelihood = -636116.792 
+Sample 410   Log joint likelihood = -636163.882 
+Sample 411   Log joint likelihood = -636384.579 
+Sample 412   Log joint likelihood = -636640.463 
+Sample 413   Log joint likelihood = -636711.369 
+Sample 414   Log joint likelihood = -636614.426 
+Sample 415   Log joint likelihood = -636702.515 
+Sample 416   Log joint likelihood = -637013.290 
+Sample 417   Log joint likelihood = -636461.581 
+Sample 418   Log joint likelihood = -636642.655 
+Sample 419   Log joint likelihood = -636543.393 
+Sample 420   Log joint likelihood = -636920.019 
+Sample 421   Log joint likelihood = -637231.462 
+Sample 422   Log joint likelihood = -637410.650 
+Sample 423   Log joint likelihood = -637219.753 
+Sample 424   Log joint likelihood = -637002.881 
+Sample 425   Log joint likelihood = -637496.717 
+Sample 426   Log joint likelihood = -636719.390 
+Sample 427   Log joint likelihood = -636225.692 
+Sample 428   Log joint likelihood = -636262.983 
+Sample 429   Log joint likelihood = -636635.282 
+Sample 430   Log joint likelihood = -636494.211 
+Sample 431   Log joint likelihood = -636539.764 
+Sample 432   Log joint likelihood = -636607.064 
+Sample 433   Log joint likelihood = -636544.995 
+Sample 434   Log joint likelihood = -636088.113 
+Sample 435   Log joint likelihood = -636030.392 
+Sample 436   Log joint likelihood = -636227.261 
+Sample 437   Log joint likelihood = -636544.417 
+Sample 438   Log joint likelihood = -636515.106 
+Sample 439   Log joint likelihood = -636404.224 
+Sample 440   Log joint likelihood = -636436.020 
+Sample 441   Log joint likelihood = -636572.893 
+Sample 442   Log joint likelihood = -636606.488 
+Sample 443   Log joint likelihood = -636675.374 
+Sample 444   Log joint likelihood = -636430.888 
+Sample 445   Log joint likelihood = -637032.936 
+Sample 446   Log joint likelihood = -636841.623 
+Sample 447   Log joint likelihood = -636856.221 
+Sample 448   Log joint likelihood = -636896.633 
+Sample 449   Log joint likelihood = -636380.582 
+Sample 450   Log joint likelihood = -636308.596 
+Sample 451   Log joint likelihood = -636253.696 
+Sample 452   Log joint likelihood = -636885.292 
+Sample 453   Log joint likelihood = -636324.126 
+Sample 454   Log joint likelihood = -637036.199 
+Sample 455   Log joint likelihood = -636142.033 
+Sample 456   Log joint likelihood = -636784.588 
+Sample 457   Log joint likelihood = -636055.285 
+Sample 458   Log joint likelihood = -636008.253 
+Sample 459   Log joint likelihood = -635975.592 
+Sample 460   Log joint likelihood = -636233.065 
+Sample 461   Log joint likelihood = -636417.274 
+Sample 462   Log joint likelihood = -636414.582 
+Sample 463   Log joint likelihood = -636209.837 
+Sample 464   Log joint likelihood = -636338.935 
+Sample 465   Log joint likelihood = -636402.487 
+Sample 466   Log joint likelihood = -636356.871 
+Sample 467   Log joint likelihood = -636525.363 
+Sample 468   Log joint likelihood = -636570.857 
+Sample 469   Log joint likelihood = -636694.983 
+Sample 470   Log joint likelihood = -636659.132 
+Sample 471   Log joint likelihood = -636069.100 
+Sample 472   Log joint likelihood = -636160.896 
+Sample 473   Log joint likelihood = -635718.842 
+Sample 474   Log joint likelihood = -635618.212 
+Sample 475   Log joint likelihood = -635135.097 
+Sample 476   Log joint likelihood = -635088.377 
+Sample 477   Log joint likelihood = -634665.318 
+Sample 478   Log joint likelihood = -635483.478 
+Sample 479   Log joint likelihood = -635585.504 
+Sample 480   Log joint likelihood = -635412.195 
+Sample 481   Log joint likelihood = -635083.697 
+Sample 482   Log joint likelihood = -635170.382 
+Sample 483   Log joint likelihood = -635069.371 
+Sample 484   Log joint likelihood = -635095.093 
+Sample 485   Log joint likelihood = -634831.832 
+Sample 486   Log joint likelihood = -635317.525 
+Sample 487   Log joint likelihood = -634747.580 
+Sample 488   Log joint likelihood = -634836.332 
+Sample 489   Log joint likelihood = -634808.067 
+Sample 490   Log joint likelihood = -635202.664 
+Sample 491   Log joint likelihood = -635237.866 
+Sample 492   Log joint likelihood = -635362.551 
+Sample 493   Log joint likelihood = -634824.452 
+Sample 494   Log joint likelihood = -634199.182 
+Sample 495   Log joint likelihood = -634295.680 
+Sample 496   Log joint likelihood = -634523.964 
+Sample 497   Log joint likelihood = -634941.627 
+Sample 498   Log joint likelihood = -634910.983 
+Sample 499   Log joint likelihood = -634620.413 
+Sample 500   Log joint likelihood = -634866.685 
+Run testing importance sampling (195, 1648)
+topic_prior = [[ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]]
+	d = 0 doc_marg=-347.414580601
+	d = 1 doc_marg=-322.055275317
+	d = 2 doc_marg=-329.70865994
+	d = 3 doc_marg=-1129.89837674
+	d = 4 doc_marg=-1867.84554058
+	d = 5 doc_marg=-163.646470859
+	d = 6 doc_marg=-1302.65619336
+	d = 7 doc_marg=-1151.87631585
+	d = 8 doc_marg=-685.699129814
+	d = 9 doc_marg=-667.069087613
+	d = 10 doc_marg=-865.058954094
+	d = 11 doc_marg=-1544.39164841
+	d = 12 doc_marg=-428.12182012
+	d = 13 doc_marg=-302.664364523
+	d = 14 doc_marg=-2423.13175369
+	d = 15 doc_marg=-390.258201775
+	d = 16 doc_marg=-195.706816358
+	d = 17 doc_marg=-2026.89320082
+	d = 18 doc_marg=-247.88149559
+	d = 19 doc_marg=-831.829518802
+	d = 20 doc_marg=-600.425898888
+	d = 21 doc_marg=-1187.71871929
+	d = 22 doc_marg=-1339.71366325
+	d = 23 doc_marg=-1284.73937824
+	d = 24 doc_marg=-2420.88033626
+	d = 25 doc_marg=-784.077164459
+	d = 26 doc_marg=-249.865347334
+	d = 27 doc_marg=-716.424958582
+	d = 28 doc_marg=-548.128022322
+	d = 29 doc_marg=-1820.2227125
+	d = 30 doc_marg=-3238.70983568
+	d = 31 doc_marg=-2717.31504241
+	d = 32 doc_marg=-920.249336316
+	d = 33 doc_marg=-1102.95582962
+	d = 34 doc_marg=-1812.63201875
+	d = 35 doc_marg=-3125.01489583
+	d = 36 doc_marg=-3800.42120413
+	d = 37 doc_marg=-1278.09205886
+	d = 38 doc_marg=-384.722539055
+	d = 39 doc_marg=-1175.13245282
+	d = 40 doc_marg=-3555.36168537
+	d = 41 doc_marg=-662.824658589
+	d = 42 doc_marg=-239.483407821
+	d = 43 doc_marg=-662.012188236
+	d = 44 doc_marg=-365.271902549
+	d = 45 doc_marg=-572.437086287
+	d = 46 doc_marg=-159.68279211
+	d = 47 doc_marg=-397.837700731
+	d = 48 doc_marg=-679.425820913
+	d = 49 doc_marg=-804.60832221
+	d = 50 doc_marg=-1470.15793611
+	d = 51 doc_marg=-1170.96892348
+	d = 52 doc_marg=-104.631702276
+	d = 53 doc_marg=-2331.19754144
+	d = 54 doc_marg=-796.100707805
+	d = 55 doc_marg=-2429.04548953
+	d = 56 doc_marg=-931.229754024
+	d = 57 doc_marg=-1455.56134072
+	d = 58 doc_marg=-882.731511418
+	d = 59 doc_marg=-760.519196576
+	d = 60 doc_marg=-498.636316429
+	d = 61 doc_marg=-2115.60408438
+	d = 62 doc_marg=-1178.51053643
+	d = 63 doc_marg=-1218.36933603
+	d = 64 doc_marg=-1481.01416137
+	d = 65 doc_marg=-1742.90866719
+	d = 66 doc_marg=-606.664700436
+	d = 67 doc_marg=-1595.43941872
+	d = 68 doc_marg=-1156.47074474
+	d = 69 doc_marg=-889.826174333
+	d = 70 doc_marg=-430.335718309
+	d = 71 doc_marg=-1096.0517633
+	d = 72 doc_marg=-1495.20832268
+	d = 73 doc_marg=-1278.23287987
+	d = 74 doc_marg=-1095.03494306
+	d = 75 doc_marg=-448.791789458
+	d = 76 doc_marg=-1437.17392628
+	d = 77 doc_marg=-1270.11162831
+	d = 78 doc_marg=-878.374088678
+	d = 79 doc_marg=-469.04118457
+	d = 80 doc_marg=-620.652953454
+	d = 81 doc_marg=-3407.57399533
+	d = 82 doc_marg=-1121.85599667
+	d = 83 doc_marg=-1480.336793
+	d = 84 doc_marg=-281.755959777
+	d = 85 doc_marg=-2953.39174569
+	d = 86 doc_marg=-1116.77169317
+	d = 87 doc_marg=-1027.32213771
+	d = 88 doc_marg=-325.123799704
+	d = 89 doc_marg=-463.473222856
+	d = 90 doc_marg=-1527.88125473
+	d = 91 doc_marg=-1475.67274634
+	d = 92 doc_marg=-921.234228486
+	d = 93 doc_marg=-618.5769372
+	d = 94 doc_marg=-523.083024567
+	d = 95 doc_marg=-475.675459729
+	d = 96 doc_marg=-1117.01867565
+	d = 97 doc_marg=-518.513684251
+	d = 98 doc_marg=-1249.87785425
+	d = 99 doc_marg=-1239.20983394
+	d = 100 doc_marg=-4150.58963585
+	d = 101 doc_marg=-3232.25412186
+	d = 102 doc_marg=-1762.05793364
+	d = 103 doc_marg=-1538.77292354
+	d = 104 doc_marg=-7143.27992027
+	d = 105 doc_marg=-1518.57932552
+	d = 106 doc_marg=-392.978878813
+	d = 107 doc_marg=-3209.51484084
+	d = 108 doc_marg=-927.759441969
+	d = 109 doc_marg=-415.049085043
+	d = 110 doc_marg=-328.156772865
+	d = 111 doc_marg=-2486.23422817
+	d = 112 doc_marg=-4829.85319192
+	d = 113 doc_marg=-981.337282344
+	d = 114 doc_marg=-1239.29085809
+	d = 115 doc_marg=-215.120732864
+	d = 116 doc_marg=-2191.52950626
+	d = 117 doc_marg=-1821.0439083
+	d = 118 doc_marg=-1300.79514104
+	d = 119 doc_marg=-1617.88865262
+	d = 120 doc_marg=-573.276039356
+	d = 121 doc_marg=-1158.37991816
+	d = 122 doc_marg=-711.141894731
+	d = 123 doc_marg=-385.968708506
+	d = 124 doc_marg=-514.211880732
+	d = 125 doc_marg=-1556.12167539
+	d = 126 doc_marg=-383.101973086
+	d = 127 doc_marg=-342.866229304
+	d = 128 doc_marg=-1371.7180837
+	d = 129 doc_marg=-2902.49725326
+	d = 130 doc_marg=-489.788542245
+	d = 131 doc_marg=-414.205880798
+	d = 132 doc_marg=-2008.48494781
+	d = 133 doc_marg=-1237.36265343
+	d = 134 doc_marg=-442.391846739
+	d = 135 doc_marg=-788.094248675
+	d = 136 doc_marg=-524.907380152
+	d = 137 doc_marg=-2458.68469458
+	d = 138 doc_marg=-996.035575649
+	d = 139 doc_marg=-3461.97858772
+	d = 140 doc_marg=-2313.9840868
+	d = 141 doc_marg=-2691.67342348
+	d = 142 doc_marg=-335.419719056
+	d = 143 doc_marg=-207.117183793
+	d = 144 doc_marg=-1284.12046112
+	d = 145 doc_marg=-1480.00880904
+	d = 146 doc_marg=-773.815318397
+	d = 147 doc_marg=-1088.4937691
+	d = 148 doc_marg=-339.910273942
+	d = 149 doc_marg=-764.100199468
+	d = 150 doc_marg=-489.580921874
+	d = 151 doc_marg=-682.766357815
+	d = 152 doc_marg=-363.705108766
+	d = 153 doc_marg=-596.114951154
+	d = 154 doc_marg=-1733.15534011
+	d = 155 doc_marg=-421.386608357
+	d = 156 doc_marg=-489.84278664
+	d = 157 doc_marg=-930.944816958
+	d = 158 doc_marg=-1099.33105999
+	d = 159 doc_marg=-951.362516233
+	d = 160 doc_marg=-798.104377546
+	d = 161 doc_marg=-463.48936009
+	d = 162 doc_marg=-566.942979036
+	d = 163 doc_marg=-1484.07879888
+	d = 164 doc_marg=-1242.48271488
+	d = 165 doc_marg=-939.907427522
+	d = 166 doc_marg=-380.529285251
+	d = 167 doc_marg=-148.225251387
+	d = 168 doc_marg=-2763.70977144
+	d = 169 doc_marg=-922.304933161
+	d = 170 doc_marg=-1459.74233547
+	d = 171 doc_marg=-286.874494481
+	d = 172 doc_marg=-295.418610571
+	d = 173 doc_marg=-529.649727156
+	d = 174 doc_marg=-693.488729713
+	d = 175 doc_marg=-119.814065557
+	d = 176 doc_marg=-119.818821591
+	d = 177 doc_marg=-1920.89069781
+	d = 178 doc_marg=-1019.22756047
+	d = 179 doc_marg=-461.852722362
+	d = 180 doc_marg=-1664.80718792
+	d = 181 doc_marg=-703.281557225
+	d = 182 doc_marg=-710.690556485
+	d = 183 doc_marg=-507.522623334
+	d = 184 doc_marg=-711.479500719
+	d = 185 doc_marg=-884.540466999
+	d = 186 doc_marg=-313.231931913
+	d = 187 doc_marg=-663.138240781
+	d = 188 doc_marg=-720.429917404
+	d = 189 doc_marg=-839.497852164
+	d = 190 doc_marg=-2126.01337764
+	d = 191 doc_marg=-984.593133853
+	d = 192 doc_marg=-325.040519035
+	d = 193 doc_marg=-1462.7388931
+	d = 194 doc_marg=-1779.66442932
+Log evidence 1 = -227082.501829
+Test perplexity 1 = 24.7411434721
+
+K=500 Training fold=0
+K=500 Training fold=1
+K=500 Testing fold=2
+K=500 Training fold=3
+Run training gibbs (585, 1648)
+CGS LDA initialising
+...........................................................
+Using Numba for 3-bags LDA sampling
+Preparing words
+Preparing Z matrix
+DONE
+Sample 1   Log joint likelihood = -1823912.240 
+Sample 2   Log joint likelihood = -1083907.157 
+Sample 3   Log joint likelihood = -821924.115 
+Sample 4   Log joint likelihood = -748210.994 
+Sample 5   Log joint likelihood = -718100.180 
+Sample 6   Log joint likelihood = -700720.650 
+Sample 7   Log joint likelihood = -688642.421 
+Sample 8   Log joint likelihood = -680436.645 
+Sample 9   Log joint likelihood = -673094.564 
+Sample 10   Log joint likelihood = -666924.898 
+Sample 11   Log joint likelihood = -662876.094 
+Sample 12   Log joint likelihood = -659705.927 
+Sample 13   Log joint likelihood = -656774.716 
+Sample 14   Log joint likelihood = -652874.178 
+Sample 15   Log joint likelihood = -649604.035 
+Sample 16   Log joint likelihood = -647798.466 
+Sample 17   Log joint likelihood = -645022.539 
+Sample 18   Log joint likelihood = -643184.308 
+Sample 19   Log joint likelihood = -641542.824 
+Sample 20   Log joint likelihood = -640368.496 
+Sample 21   Log joint likelihood = -638460.626 
+Sample 22   Log joint likelihood = -636581.172 
+Sample 23   Log joint likelihood = -635828.135 
+Sample 24   Log joint likelihood = -634653.131 
+Sample 25   Log joint likelihood = -633233.386 
+Sample 26   Log joint likelihood = -632772.753 
+Sample 27   Log joint likelihood = -631336.783 
+Sample 28   Log joint likelihood = -631147.048 
+Sample 29   Log joint likelihood = -631038.250 
+Sample 30   Log joint likelihood = -630203.211 
+Sample 31   Log joint likelihood = -629676.291 
+Sample 32   Log joint likelihood = -628972.838 
+Sample 33   Log joint likelihood = -627734.307 
+Sample 34   Log joint likelihood = -627793.616 
+Sample 35   Log joint likelihood = -627116.831 
+Sample 36   Log joint likelihood = -627391.654 
+Sample 37   Log joint likelihood = -626297.820 
+Sample 38   Log joint likelihood = -626277.034 
+Sample 39   Log joint likelihood = -625884.367 
+Sample 40   Log joint likelihood = -625684.132 
+Sample 41   Log joint likelihood = -625134.608 
+Sample 42   Log joint likelihood = -624512.403 
+Sample 43   Log joint likelihood = -623937.557 
+Sample 44   Log joint likelihood = -623728.065 
+Sample 45   Log joint likelihood = -623690.932 
+Sample 46   Log joint likelihood = -623619.556 
+Sample 47   Log joint likelihood = -622934.603 
+Sample 48   Log joint likelihood = -623539.509 
+Sample 49   Log joint likelihood = -622938.132 
+Sample 50   Log joint likelihood = -623131.012 
+Sample 51   Log joint likelihood = -622666.496 
+Sample 52   Log joint likelihood = -622630.593 
+Sample 53   Log joint likelihood = -622118.874 
+Sample 54   Log joint likelihood = -622625.865 
+Sample 55   Log joint likelihood = -622201.046 
+Sample 56   Log joint likelihood = -622209.084 
+Sample 57   Log joint likelihood = -621944.856 
+Sample 58   Log joint likelihood = -622312.003 
+Sample 59   Log joint likelihood = -621794.100 
+Sample 60   Log joint likelihood = -621465.374 
+Sample 61   Log joint likelihood = -621273.004 
+Sample 62   Log joint likelihood = -621468.759 
+Sample 63   Log joint likelihood = -620891.036 
+Sample 64   Log joint likelihood = -621004.339 
+Sample 65   Log joint likelihood = -620769.267 
+Sample 66   Log joint likelihood = -620706.551 
+Sample 67   Log joint likelihood = -620210.941 
+Sample 68   Log joint likelihood = -620037.356 
+Sample 69   Log joint likelihood = -619788.674 
+Sample 70   Log joint likelihood = -619934.498 
+Sample 71   Log joint likelihood = -619906.274 
+Sample 72   Log joint likelihood = -620105.569 
+Sample 73   Log joint likelihood = -619687.726 
+Sample 74   Log joint likelihood = -619803.285 
+Sample 75   Log joint likelihood = -620068.004 
+Sample 76   Log joint likelihood = -619679.456 
+Sample 77   Log joint likelihood = -619676.858 
+Sample 78   Log joint likelihood = -619868.713 
+Sample 79   Log joint likelihood = -619355.231 
+Sample 80   Log joint likelihood = -619359.605 
+Sample 81   Log joint likelihood = -619310.710 
+Sample 82   Log joint likelihood = -618453.878 
+Sample 83   Log joint likelihood = -618883.037 
+Sample 84   Log joint likelihood = -618631.515 
+Sample 85   Log joint likelihood = -618818.577 
+Sample 86   Log joint likelihood = -618508.568 
+Sample 87   Log joint likelihood = -618112.325 
+Sample 88   Log joint likelihood = -618171.428 
+Sample 89   Log joint likelihood = -618196.228 
+Sample 90   Log joint likelihood = -618513.231 
+Sample 91   Log joint likelihood = -618599.249 
+Sample 92   Log joint likelihood = -618270.243 
+Sample 93   Log joint likelihood = -618059.282 
+Sample 94   Log joint likelihood = -617969.972 
+Sample 95   Log joint likelihood = -617108.072 
+Sample 96   Log joint likelihood = -617525.459 
+Sample 97   Log joint likelihood = -617811.216 
+Sample 98   Log joint likelihood = -617832.069 
+Sample 99   Log joint likelihood = -617852.761 
+Sample 100   Log joint likelihood = -618177.472 
+Sample 101   Log joint likelihood = -618069.177 
+Sample 102   Log joint likelihood = -617874.010 
+Sample 103   Log joint likelihood = -617501.179 
+Sample 104   Log joint likelihood = -617848.622 
+Sample 105   Log joint likelihood = -618129.243 
+Sample 106   Log joint likelihood = -617474.148 
+Sample 107   Log joint likelihood = -617419.533 
+Sample 108   Log joint likelihood = -616473.942 
+Sample 109   Log joint likelihood = -617055.721 
+Sample 110   Log joint likelihood = -616825.749 
+Sample 111   Log joint likelihood = -616775.301 
+Sample 112   Log joint likelihood = -616320.914 
+Sample 113   Log joint likelihood = -616615.871 
+Sample 114   Log joint likelihood = -617049.368 
+Sample 115   Log joint likelihood = -616290.854 
+Sample 116   Log joint likelihood = -616324.797 
+Sample 117   Log joint likelihood = -616645.459 
+Sample 118   Log joint likelihood = -616239.919 
+Sample 119   Log joint likelihood = -616347.874 
+Sample 120   Log joint likelihood = -616897.259 
+Sample 121   Log joint likelihood = -617252.903 
+Sample 122   Log joint likelihood = -616750.261 
+Sample 123   Log joint likelihood = -616790.980 
+Sample 124   Log joint likelihood = -616283.194 
+Sample 125   Log joint likelihood = -616384.525 
+Sample 126   Log joint likelihood = -616710.508 
+Sample 127   Log joint likelihood = -617004.891 
+Sample 128   Log joint likelihood = -616568.235 
+Sample 129   Log joint likelihood = -616812.287 
+Sample 130   Log joint likelihood = -617109.172 
+Sample 131   Log joint likelihood = -616665.655 
+Sample 132   Log joint likelihood = -616374.717 
+Sample 133   Log joint likelihood = -616519.651 
+Sample 134   Log joint likelihood = -616957.619 
+Sample 135   Log joint likelihood = -616799.246 
+Sample 136   Log joint likelihood = -616803.532 
+Sample 137   Log joint likelihood = -616797.495 
+Sample 138   Log joint likelihood = -617149.283 
+Sample 139   Log joint likelihood = -616608.663 
+Sample 140   Log joint likelihood = -616029.042 
+Sample 141   Log joint likelihood = -616245.269 
+Sample 142   Log joint likelihood = -616257.734 
+Sample 143   Log joint likelihood = -616118.773 
+Sample 144   Log joint likelihood = -615874.402 
+Sample 145   Log joint likelihood = -615907.415 
+Sample 146   Log joint likelihood = -616212.814 
+Sample 147   Log joint likelihood = -615934.609 
+Sample 148   Log joint likelihood = -616171.675 
+Sample 149   Log joint likelihood = -615865.448 
+Sample 150   Log joint likelihood = -615835.203 
+Sample 151   Log joint likelihood = -615394.826 
+Sample 152   Log joint likelihood = -616099.653 
+Sample 153   Log joint likelihood = -616085.434 
+Sample 154   Log joint likelihood = -615862.614 
+Sample 155   Log joint likelihood = -615488.369 
+Sample 156   Log joint likelihood = -615000.353 
+Sample 157   Log joint likelihood = -614755.011 
+Sample 158   Log joint likelihood = -614562.102 
+Sample 159   Log joint likelihood = -614290.293 
+Sample 160   Log joint likelihood = -614337.131 
+Sample 161   Log joint likelihood = -614686.295 
+Sample 162   Log joint likelihood = -615288.362 
+Sample 163   Log joint likelihood = -614609.084 
+Sample 164   Log joint likelihood = -615034.042 
+Sample 165   Log joint likelihood = -614560.502 
+Sample 166   Log joint likelihood = -614044.495 
+Sample 167   Log joint likelihood = -614711.087 
+Sample 168   Log joint likelihood = -614472.967 
+Sample 169   Log joint likelihood = -614334.745 
+Sample 170   Log joint likelihood = -613985.020 
+Sample 171   Log joint likelihood = -614076.842 
+Sample 172   Log joint likelihood = -614236.501 
+Sample 173   Log joint likelihood = -613703.420 
+Sample 174   Log joint likelihood = -614497.930 
+Sample 175   Log joint likelihood = -614307.685 
+Sample 176   Log joint likelihood = -614510.159 
+Sample 177   Log joint likelihood = -614489.875 
+Sample 178   Log joint likelihood = -614611.770 
+Sample 179   Log joint likelihood = -614616.360 
+Sample 180   Log joint likelihood = -614681.711 
+Sample 181   Log joint likelihood = -614798.086 
+Sample 182   Log joint likelihood = -614864.338 
+Sample 183   Log joint likelihood = -613781.723 
+Sample 184   Log joint likelihood = -613655.175 
+Sample 185   Log joint likelihood = -613934.771 
+Sample 186   Log joint likelihood = -614010.155 
+Sample 187   Log joint likelihood = -613937.192 
+Sample 188   Log joint likelihood = -613433.275 
+Sample 189   Log joint likelihood = -613280.314 
+Sample 190   Log joint likelihood = -613443.289 
+Sample 191   Log joint likelihood = -613873.437 
+Sample 192   Log joint likelihood = -613988.797 
+Sample 193   Log joint likelihood = -613954.651 
+Sample 194   Log joint likelihood = -613956.877 
+Sample 195   Log joint likelihood = -613760.401 
+Sample 196   Log joint likelihood = -613511.836 
+Sample 197   Log joint likelihood = -614061.341 
+Sample 198   Log joint likelihood = -613955.534 
+Sample 199   Log joint likelihood = -613731.223 
+Sample 200   Log joint likelihood = -613739.385 
+Sample 201   Log joint likelihood = -613680.070 
+Sample 202   Log joint likelihood = -613914.500 
+Sample 203   Log joint likelihood = -614013.364 
+Sample 204   Log joint likelihood = -613471.372 
+Sample 205   Log joint likelihood = -614255.260 
+Sample 206   Log joint likelihood = -613934.215 
+Sample 207   Log joint likelihood = -614046.987 
+Sample 208   Log joint likelihood = -614117.952 
+Sample 209   Log joint likelihood = -614016.628 
+Sample 210   Log joint likelihood = -614218.709 
+Sample 211   Log joint likelihood = -614106.357 
+Sample 212   Log joint likelihood = -614017.962 
+Sample 213   Log joint likelihood = -614088.300 
+Sample 214   Log joint likelihood = -613985.083 
+Sample 215   Log joint likelihood = -613623.100 
+Sample 216   Log joint likelihood = -613926.682 
+Sample 217   Log joint likelihood = -614633.889 
+Sample 218   Log joint likelihood = -614183.844 
+Sample 219   Log joint likelihood = -614751.490 
+Sample 220   Log joint likelihood = -614164.503 
+Sample 221   Log joint likelihood = -614415.295 
+Sample 222   Log joint likelihood = -614232.948 
+Sample 223   Log joint likelihood = -614297.639 
+Sample 224   Log joint likelihood = -614171.995 
+Sample 225   Log joint likelihood = -613738.574 
+Sample 226   Log joint likelihood = -614323.788 
+Sample 227   Log joint likelihood = -614562.375 
+Sample 228   Log joint likelihood = -614070.754 
+Sample 229   Log joint likelihood = -613884.704 
+Sample 230   Log joint likelihood = -614028.763 
+Sample 231   Log joint likelihood = -614303.281 
+Sample 232   Log joint likelihood = -614210.471 
+Sample 233   Log joint likelihood = -614098.842 
+Sample 234   Log joint likelihood = -613724.299 
+Sample 235   Log joint likelihood = -613838.327 
+Sample 236   Log joint likelihood = -613695.781 
+Sample 237   Log joint likelihood = -613761.333 
+Sample 238   Log joint likelihood = -614165.351 
+Sample 239   Log joint likelihood = -614135.725 
+Sample 240   Log joint likelihood = -614228.223 
+Sample 241   Log joint likelihood = -614256.056 
+Sample 242   Log joint likelihood = -613729.622 
+Sample 243   Log joint likelihood = -613958.822 
+Sample 244   Log joint likelihood = -613744.730 
+Sample 245   Log joint likelihood = -614164.335 
+Sample 246   Log joint likelihood = -613699.175 
+Sample 247   Log joint likelihood = -613810.819 
+Sample 248   Log joint likelihood = -613338.891 
+Sample 249   Log joint likelihood = -613724.853 
+Sample 250   Log joint likelihood = -613473.644 
+Sample 251   Log joint likelihood = -613453.445 
+Sample 252   Log joint likelihood = -613603.137 
+Sample 253   Log joint likelihood = -613938.037 
+Sample 254   Log joint likelihood = -613776.576 
+Sample 255   Log joint likelihood = -613962.910 
+Sample 256   Log joint likelihood = -613389.481 
+Sample 257   Log joint likelihood = -613247.338 
+Sample 258   Log joint likelihood = -613609.616 
+Sample 259   Log joint likelihood = -613164.039 
+Sample 260   Log joint likelihood = -613862.101 
+Sample 261   Log joint likelihood = -613213.002 
+Sample 262   Log joint likelihood = -613079.384 
+Sample 263   Log joint likelihood = -613165.269 
+Sample 264   Log joint likelihood = -612973.565 
+Sample 265   Log joint likelihood = -612966.215 
+Sample 266   Log joint likelihood = -612844.757 
+Sample 267   Log joint likelihood = -612718.507 
+Sample 268   Log joint likelihood = -613022.301 
+Sample 269   Log joint likelihood = -612955.972 
+Sample 270   Log joint likelihood = -613023.205 
+Sample 271   Log joint likelihood = -612993.982 
+Sample 272   Log joint likelihood = -612989.476 
+Sample 273   Log joint likelihood = -612484.005 
+Sample 274   Log joint likelihood = -612217.945 
+Sample 275   Log joint likelihood = -612805.986 
+Sample 276   Log joint likelihood = -612814.543 
+Sample 277   Log joint likelihood = -612982.084 
+Sample 278   Log joint likelihood = -612508.937 
+Sample 279   Log joint likelihood = -613079.920 
+Sample 280   Log joint likelihood = -613114.440 
+Sample 281   Log joint likelihood = -612572.344 
+Sample 282   Log joint likelihood = -613161.006 
+Sample 283   Log joint likelihood = -612807.689 
+Sample 284   Log joint likelihood = -612926.691 
+Sample 285   Log joint likelihood = -613711.763 
+Sample 286   Log joint likelihood = -613134.701 
+Sample 287   Log joint likelihood = -613612.733 
+Sample 288   Log joint likelihood = -613995.395 
+Sample 289   Log joint likelihood = -613347.907 
+Sample 290   Log joint likelihood = -613142.366 
+Sample 291   Log joint likelihood = -613195.341 
+Sample 292   Log joint likelihood = -613236.674 
+Sample 293   Log joint likelihood = -613545.378 
+Sample 294   Log joint likelihood = -613567.753 
+Sample 295   Log joint likelihood = -613340.320 
+Sample 296   Log joint likelihood = -613555.972 
+Sample 297   Log joint likelihood = -613230.667 
+Sample 298   Log joint likelihood = -613439.551 
+Sample 299   Log joint likelihood = -613785.998 
+Sample 300   Log joint likelihood = -614043.480 
+Sample 301   Log joint likelihood = -613917.108 
+Sample 302   Log joint likelihood = -613530.220 
+Sample 303   Log joint likelihood = -613485.636 
+Sample 304   Log joint likelihood = -613709.164 
+Sample 305   Log joint likelihood = -613518.751 
+Sample 306   Log joint likelihood = -613362.756 
+Sample 307   Log joint likelihood = -613777.820 
+Sample 308   Log joint likelihood = -613080.327 
+Sample 309   Log joint likelihood = -613440.945 
+Sample 310   Log joint likelihood = -613992.839 
+Sample 311   Log joint likelihood = -613720.337 
+Sample 312   Log joint likelihood = -613389.975 
+Sample 313   Log joint likelihood = -613025.024 
+Sample 314   Log joint likelihood = -612441.929 
+Sample 315   Log joint likelihood = -613518.155 
+Sample 316   Log joint likelihood = -612915.600 
+Sample 317   Log joint likelihood = -613023.374 
+Sample 318   Log joint likelihood = -612754.462 
+Sample 319   Log joint likelihood = -612914.739 
+Sample 320   Log joint likelihood = -612988.225 
+Sample 321   Log joint likelihood = -613322.853 
+Sample 322   Log joint likelihood = -612979.610 
+Sample 323   Log joint likelihood = -613508.851 
+Sample 324   Log joint likelihood = -613189.092 
+Sample 325   Log joint likelihood = -612554.732 
+Sample 326   Log joint likelihood = -613043.787 
+Sample 327   Log joint likelihood = -612612.781 
+Sample 328   Log joint likelihood = -613293.044 
+Sample 329   Log joint likelihood = -613085.868 
+Sample 330   Log joint likelihood = -613201.810 
+Sample 331   Log joint likelihood = -613989.641 
+Sample 332   Log joint likelihood = -613430.604 
+Sample 333   Log joint likelihood = -613124.048 
+Sample 334   Log joint likelihood = -613355.600 
+Sample 335   Log joint likelihood = -613333.144 
+Sample 336   Log joint likelihood = -613231.488 
+Sample 337   Log joint likelihood = -612838.495 
+Sample 338   Log joint likelihood = -613664.486 
+Sample 339   Log joint likelihood = -613544.567 
+Sample 340   Log joint likelihood = -613076.440 
+Sample 341   Log joint likelihood = -613824.966 
+Sample 342   Log joint likelihood = -613537.964 
+Sample 343   Log joint likelihood = -613600.506 
+Sample 344   Log joint likelihood = -612637.407 
+Sample 345   Log joint likelihood = -613074.809 
+Sample 346   Log joint likelihood = -613104.059 
+Sample 347   Log joint likelihood = -612583.890 
+Sample 348   Log joint likelihood = -613054.457 
+Sample 349   Log joint likelihood = -613207.465 
+Sample 350   Log joint likelihood = -613190.766 
+Sample 351   Log joint likelihood = -612793.472 
+Sample 352   Log joint likelihood = -613155.778 
+Sample 353   Log joint likelihood = -612838.298 
+Sample 354   Log joint likelihood = -613186.429 
+Sample 355   Log joint likelihood = -613150.723 
+Sample 356   Log joint likelihood = -612841.169 
+Sample 357   Log joint likelihood = -612954.845 
+Sample 358   Log joint likelihood = -612811.483 
+Sample 359   Log joint likelihood = -613299.703 
+Sample 360   Log joint likelihood = -612854.364 
+Sample 361   Log joint likelihood = -613133.777 
+Sample 362   Log joint likelihood = -613520.631 
+Sample 363   Log joint likelihood = -613062.444 
+Sample 364   Log joint likelihood = -613701.022 
+Sample 365   Log joint likelihood = -612833.521 
+Sample 366   Log joint likelihood = -613004.473 
+Sample 367   Log joint likelihood = -612985.998 
+Sample 368   Log joint likelihood = -613471.852 
+Sample 369   Log joint likelihood = -613098.358 
+Sample 370   Log joint likelihood = -613303.148 
+Sample 371   Log joint likelihood = -613466.053 
+Sample 372   Log joint likelihood = -613302.124 
+Sample 373   Log joint likelihood = -613276.193 
+Sample 374   Log joint likelihood = -613501.479 
+Sample 375   Log joint likelihood = -613512.592 
+Sample 376   Log joint likelihood = -613165.461 
+Sample 377   Log joint likelihood = -613454.296 
+Sample 378   Log joint likelihood = -613165.352 
+Sample 379   Log joint likelihood = -612921.324 
+Sample 380   Log joint likelihood = -613084.347 
+Sample 381   Log joint likelihood = -612982.366 
+Sample 382   Log joint likelihood = -612776.044 
+Sample 383   Log joint likelihood = -612899.635 
+Sample 384   Log joint likelihood = -613163.270 
+Sample 385   Log joint likelihood = -612870.801 
+Sample 386   Log joint likelihood = -613238.522 
+Sample 387   Log joint likelihood = -612823.193 
+Sample 388   Log joint likelihood = -612658.539 
+Sample 389   Log joint likelihood = -612576.257 
+Sample 390   Log joint likelihood = -612193.428 
+Sample 391   Log joint likelihood = -612213.651 
+Sample 392   Log joint likelihood = -612148.176 
+Sample 393   Log joint likelihood = -612555.181 
+Sample 394   Log joint likelihood = -612801.698 
+Sample 395   Log joint likelihood = -612356.975 
+Sample 396   Log joint likelihood = -613046.652 
+Sample 397   Log joint likelihood = -612676.405 
+Sample 398   Log joint likelihood = -612989.726 
+Sample 399   Log joint likelihood = -612607.919 
+Sample 400   Log joint likelihood = -612562.313 
+Sample 401   Log joint likelihood = -612878.080 
+Sample 402   Log joint likelihood = -612132.771 
+Sample 403   Log joint likelihood = -612712.194 
+Sample 404   Log joint likelihood = -612702.862 
+Sample 405   Log joint likelihood = -611965.377 
+Sample 406   Log joint likelihood = -612383.643 
+Sample 407   Log joint likelihood = -612247.488 
+Sample 408   Log joint likelihood = -612264.325 
+Sample 409   Log joint likelihood = -611737.383 
+Sample 410   Log joint likelihood = -612760.954 
+Sample 411   Log joint likelihood = -612734.041 
+Sample 412   Log joint likelihood = -612302.168 
+Sample 413   Log joint likelihood = -611919.286 
+Sample 414   Log joint likelihood = -612181.987 
+Sample 415   Log joint likelihood = -612624.799 
+Sample 416   Log joint likelihood = -612465.392 
+Sample 417   Log joint likelihood = -612781.344 
+Sample 418   Log joint likelihood = -612617.088 
+Sample 419   Log joint likelihood = -612171.262 
+Sample 420   Log joint likelihood = -613159.080 
+Sample 421   Log joint likelihood = -612359.403 
+Sample 422   Log joint likelihood = -613228.457 
+Sample 423   Log joint likelihood = -613001.013 
+Sample 424   Log joint likelihood = -612770.778 
+Sample 425   Log joint likelihood = -612756.885 
+Sample 426   Log joint likelihood = -612684.325 
+Sample 427   Log joint likelihood = -613132.640 
+Sample 428   Log joint likelihood = -612591.173 
+Sample 429   Log joint likelihood = -612804.968 
+Sample 430   Log joint likelihood = -613065.722 
+Sample 431   Log joint likelihood = -613198.865 
+Sample 432   Log joint likelihood = -612791.455 
+Sample 433   Log joint likelihood = -612176.087 
+Sample 434   Log joint likelihood = -613037.766 
+Sample 435   Log joint likelihood = -612562.655 
+Sample 436   Log joint likelihood = -612838.363 
+Sample 437   Log joint likelihood = -612549.874 
+Sample 438   Log joint likelihood = -612489.263 
+Sample 439   Log joint likelihood = -612511.744 
+Sample 440   Log joint likelihood = -612629.256 
+Sample 441   Log joint likelihood = -612538.463 
+Sample 442   Log joint likelihood = -612229.766 
+Sample 443   Log joint likelihood = -612798.948 
+Sample 444   Log joint likelihood = -612848.847 
+Sample 445   Log joint likelihood = -613329.577 
+Sample 446   Log joint likelihood = -612822.741 
+Sample 447   Log joint likelihood = -612305.476 
+Sample 448   Log joint likelihood = -612661.822 
+Sample 449   Log joint likelihood = -612772.133 
+Sample 450   Log joint likelihood = -612631.356 
+Sample 451   Log joint likelihood = -612366.213 
+Sample 452   Log joint likelihood = -612772.655 
+Sample 453   Log joint likelihood = -612076.851 
+Sample 454   Log joint likelihood = -612559.248 
+Sample 455   Log joint likelihood = -612824.913 
+Sample 456   Log joint likelihood = -612392.804 
+Sample 457   Log joint likelihood = -612489.691 
+Sample 458   Log joint likelihood = -612692.247 
+Sample 459   Log joint likelihood = -612333.723 
+Sample 460   Log joint likelihood = -612076.487 
+Sample 461   Log joint likelihood = -612343.559 
+Sample 462   Log joint likelihood = -612198.280 
+Sample 463   Log joint likelihood = -612200.731 
+Sample 464   Log joint likelihood = -612273.934 
+Sample 465   Log joint likelihood = -611893.400 
+Sample 466   Log joint likelihood = -612390.808 
+Sample 467   Log joint likelihood = -612431.936 
+Sample 468   Log joint likelihood = -612101.662 
+Sample 469   Log joint likelihood = -612630.777 
+Sample 470   Log joint likelihood = -612452.462 
+Sample 471   Log joint likelihood = -612148.464 
+Sample 472   Log joint likelihood = -612294.106 
+Sample 473   Log joint likelihood = -612674.115 
+Sample 474   Log joint likelihood = -612881.651 
+Sample 475   Log joint likelihood = -613057.988 
+Sample 476   Log joint likelihood = -612582.629 
+Sample 477   Log joint likelihood = -612912.630 
+Sample 478   Log joint likelihood = -612699.036 
+Sample 479   Log joint likelihood = -613228.991 
+Sample 480   Log joint likelihood = -612692.341 
+Sample 481   Log joint likelihood = -613784.175 
+Sample 482   Log joint likelihood = -612960.733 
+Sample 483   Log joint likelihood = -612900.335 
+Sample 484   Log joint likelihood = -613209.778 
+Sample 485   Log joint likelihood = -613275.075 
+Sample 486   Log joint likelihood = -612870.289 
+Sample 487   Log joint likelihood = -612699.554 
+Sample 488   Log joint likelihood = -611970.902 
+Sample 489   Log joint likelihood = -612255.717 
+Sample 490   Log joint likelihood = -612681.524 
+Sample 491   Log joint likelihood = -612260.628 
+Sample 492   Log joint likelihood = -612596.130 
+Sample 493   Log joint likelihood = -612761.353 
+Sample 494   Log joint likelihood = -612093.530 
+Sample 495   Log joint likelihood = -612363.222 
+Sample 496   Log joint likelihood = -612647.280 
+Sample 497   Log joint likelihood = -612522.260 
+Sample 498   Log joint likelihood = -612342.228 
+Sample 499   Log joint likelihood = -612454.219 
+Sample 500   Log joint likelihood = -612250.624 
+Run testing importance sampling (195, 1648)
+topic_prior = [[ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]]
+	d = 0 doc_marg=-285.7514469
+	d = 1 doc_marg=-392.627726996
+	d = 2 doc_marg=-303.476349136
+	d = 3 doc_marg=-380.7617373
+	d = 4 doc_marg=-1869.0082311
+	d = 5 doc_marg=-185.382428331
+	d = 6 doc_marg=-1354.50588158
+	d = 7 doc_marg=-1147.04933696
+	d = 8 doc_marg=-686.106638727
+	d = 9 doc_marg=-658.314377162
+	d = 10 doc_marg=-991.143292653
+	d = 11 doc_marg=-3416.91238325
+	d = 12 doc_marg=-338.576072153
+	d = 13 doc_marg=-354.919022205
+	d = 14 doc_marg=-1611.04297403
+	d = 15 doc_marg=-713.118438017
+	d = 16 doc_marg=-158.667377584
+	d = 17 doc_marg=-1660.59280066
+	d = 18 doc_marg=-379.612891693
+	d = 19 doc_marg=-893.1791094
+	d = 20 doc_marg=-462.552130167
+	d = 21 doc_marg=-498.099065861
+	d = 22 doc_marg=-1272.45693966
+	d = 23 doc_marg=-1240.86976696
+	d = 24 doc_marg=-1593.45965152
+	d = 25 doc_marg=-798.32310548
+	d = 26 doc_marg=-364.45593511
+	d = 27 doc_marg=-662.295277814
+	d = 28 doc_marg=-538.937244485
+	d = 29 doc_marg=-1905.44375686
+	d = 30 doc_marg=-2135.1038966
+	d = 31 doc_marg=-4804.35809612
+	d = 32 doc_marg=-1586.92537476
+	d = 33 doc_marg=-1169.57405361
+	d = 34 doc_marg=-1827.72674894
+	d = 35 doc_marg=-1994.8321038
+	d = 36 doc_marg=-3777.75589099
+	d = 37 doc_marg=-1530.55317283
+	d = 38 doc_marg=-475.376679829
+	d = 39 doc_marg=-1201.14425856
+	d = 40 doc_marg=-1964.52028003
+	d = 41 doc_marg=-578.345496055
+	d = 42 doc_marg=-196.085234384
+	d = 43 doc_marg=-1101.82286071
+	d = 44 doc_marg=-377.185770422
+	d = 45 doc_marg=-681.386428239
+	d = 46 doc_marg=-160.662640188
+	d = 47 doc_marg=-392.291513642
+	d = 48 doc_marg=-900.257916782
+	d = 49 doc_marg=-1196.04003109
+	d = 50 doc_marg=-564.024557366
+	d = 51 doc_marg=-1190.33645921
+	d = 52 doc_marg=-104.583863574
+	d = 53 doc_marg=-1618.48718542
+	d = 54 doc_marg=-664.338803103
+	d = 55 doc_marg=-1859.86216371
+	d = 56 doc_marg=-1168.19607757
+	d = 57 doc_marg=-1326.51100178
+	d = 58 doc_marg=-698.854551015
+	d = 59 doc_marg=-818.053247621
+	d = 60 doc_marg=-488.54349662
+	d = 61 doc_marg=-1656.73911791
+	d = 62 doc_marg=-682.763056289
+	d = 63 doc_marg=-1429.67949395
+	d = 64 doc_marg=-1481.06768489
+	d = 65 doc_marg=-1277.42303423
+	d = 66 doc_marg=-773.656649068
+	d = 67 doc_marg=-1867.76731778
+	d = 68 doc_marg=-839.400311832
+	d = 69 doc_marg=-949.780308202
+	d = 70 doc_marg=-405.679338555
+	d = 71 doc_marg=-1180.41515409
+	d = 72 doc_marg=-1697.3819674
+	d = 73 doc_marg=-1321.86587138
+	d = 74 doc_marg=-1214.28109456
+	d = 75 doc_marg=-542.76328075
+	d = 76 doc_marg=-1429.42565314
+	d = 77 doc_marg=-1273.91710353
+	d = 78 doc_marg=-1628.14264828
+	d = 79 doc_marg=-473.834683921
+	d = 80 doc_marg=-599.572013669
+	d = 81 doc_marg=-3825.09559898
+	d = 82 doc_marg=-1190.18296345
+	d = 83 doc_marg=-1227.13428253
+	d = 84 doc_marg=-887.048249157
+	d = 85 doc_marg=-2549.71785046
+	d = 86 doc_marg=-1180.68941884
+	d = 87 doc_marg=-1134.00845629
+	d = 88 doc_marg=-331.136400133
+	d = 89 doc_marg=-465.704174778
+	d = 90 doc_marg=-831.046359223
+	d = 91 doc_marg=-1431.00269146
+	d = 92 doc_marg=-911.086692084
+	d = 93 doc_marg=-628.20764763
+	d = 94 doc_marg=-586.296717521
+	d = 95 doc_marg=-466.95699559
+	d = 96 doc_marg=-1182.92862176
+	d = 97 doc_marg=-927.02332488
+	d = 98 doc_marg=-1096.12142763
+	d = 99 doc_marg=-1091.01924422
+	d = 100 doc_marg=-4171.44217047
+	d = 101 doc_marg=-3645.21678856
+	d = 102 doc_marg=-2486.91046315
+	d = 103 doc_marg=-1448.90650536
+	d = 104 doc_marg=-4310.74097981
+	d = 105 doc_marg=-1459.35036621
+	d = 106 doc_marg=-398.48147333
+	d = 107 doc_marg=-2439.19533613
+	d = 108 doc_marg=-998.004054825
+	d = 109 doc_marg=-723.630694812
+	d = 110 doc_marg=-330.310558014
+	d = 111 doc_marg=-2203.93926542
+	d = 112 doc_marg=-6336.09235956
+	d = 113 doc_marg=-979.89303747
+	d = 114 doc_marg=-1029.38932572
+	d = 115 doc_marg=-842.31505755
+	d = 116 doc_marg=-2429.03466606
+	d = 117 doc_marg=-1602.55491745
+	d = 118 doc_marg=-1300.22347098
+	d = 119 doc_marg=-1619.28104712
+	d = 120 doc_marg=-562.149816839
+	d = 121 doc_marg=-2116.31616272
+	d = 122 doc_marg=-670.470020192
+	d = 123 doc_marg=-385.95446364
+	d = 124 doc_marg=-514.391065968
+	d = 125 doc_marg=-1325.07594891
+	d = 126 doc_marg=-426.791406018
+	d = 127 doc_marg=-343.791317959
+	d = 128 doc_marg=-2058.17608563
+	d = 129 doc_marg=-3357.48545675
+	d = 130 doc_marg=-361.749885879
+	d = 131 doc_marg=-420.156055056
+	d = 132 doc_marg=-1959.8727678
+	d = 133 doc_marg=-1142.61084624
+	d = 134 doc_marg=-453.29057907
+	d = 135 doc_marg=-789.680114011
+	d = 136 doc_marg=-535.108003844
+	d = 137 doc_marg=-1999.70211565
+	d = 138 doc_marg=-2198.34323822
+	d = 139 doc_marg=-5630.81204463
+	d = 140 doc_marg=-3662.07988298
+	d = 141 doc_marg=-3837.53717478
+	d = 142 doc_marg=-296.355349419
+	d = 143 doc_marg=-206.707111294
+	d = 144 doc_marg=-2250.91489887
+	d = 145 doc_marg=-1469.73839881
+	d = 146 doc_marg=-731.302296041
+	d = 147 doc_marg=-1094.82640874
+	d = 148 doc_marg=-266.098568344
+	d = 149 doc_marg=-424.676628772
+	d = 150 doc_marg=-467.782604241
+	d = 151 doc_marg=-712.487516162
+	d = 152 doc_marg=-373.09150094
+	d = 153 doc_marg=-589.579496837
+	d = 154 doc_marg=-1702.23212748
+	d = 155 doc_marg=-413.307449286
+	d = 156 doc_marg=-498.970265301
+	d = 157 doc_marg=-1529.96427694
+	d = 158 doc_marg=-1063.32296532
+	d = 159 doc_marg=-807.896359953
+	d = 160 doc_marg=-873.522957947
+	d = 161 doc_marg=-454.410537397
+	d = 162 doc_marg=-561.142029477
+	d = 163 doc_marg=-1411.90921526
+	d = 164 doc_marg=-1204.10220311
+	d = 165 doc_marg=-987.266887453
+	d = 166 doc_marg=-376.237847502
+	d = 167 doc_marg=-146.766867309
+	d = 168 doc_marg=-2910.60273302
+	d = 169 doc_marg=-771.360957035
+	d = 170 doc_marg=-1875.45417568
+	d = 171 doc_marg=-306.930844489
+	d = 172 doc_marg=-333.570314683
+	d = 173 doc_marg=-599.599224091
+	d = 174 doc_marg=-702.376661746
+	d = 175 doc_marg=-119.334028301
+	d = 176 doc_marg=-119.330687936
+	d = 177 doc_marg=-1919.36929439
+	d = 178 doc_marg=-1053.7079098
+	d = 179 doc_marg=-427.07122573
+	d = 180 doc_marg=-809.658241128
+	d = 181 doc_marg=-708.345680933
+	d = 182 doc_marg=-720.870810828
+	d = 183 doc_marg=-524.822556546
+	d = 184 doc_marg=-688.483992017
+	d = 185 doc_marg=-853.734695327
+	d = 186 doc_marg=-309.777535498
+	d = 187 doc_marg=-680.187392864
+	d = 188 doc_marg=-719.625139155
+	d = 189 doc_marg=-854.844700615
+	d = 190 doc_marg=-2220.49713623
+	d = 191 doc_marg=-904.218528612
+	d = 192 doc_marg=-328.832452614
+	d = 193 doc_marg=-1375.99420095
+	d = 194 doc_marg=-1645.50328266
+Log evidence 2 = -231244.518306
+Test perplexity 2 = 26.2396877174
+
+K=500 Training fold=0
+K=500 Training fold=1
+K=500 Training fold=2
+K=500 Testing fold=3
+Run training gibbs (585, 1648)
+CGS LDA initialising
+...........................................................
+Using Numba for 3-bags LDA sampling
+Preparing words
+Preparing Z matrix
+DONE
+Sample 1   Log joint likelihood = -1904374.078 
+Sample 2   Log joint likelihood = -1130770.091 
+Sample 3   Log joint likelihood = -862622.195 
+Sample 4   Log joint likelihood = -786439.242 
+Sample 5   Log joint likelihood = -757968.523 
+Sample 6   Log joint likelihood = -740764.099 
+Sample 7   Log joint likelihood = -729673.466 
+Sample 8   Log joint likelihood = -721100.132 
+Sample 9   Log joint likelihood = -714670.977 
+Sample 10   Log joint likelihood = -709194.140 
+Sample 11   Log joint likelihood = -704644.980 
+Sample 12   Log joint likelihood = -699313.363 
+Sample 13   Log joint likelihood = -696746.859 
+Sample 14   Log joint likelihood = -694250.969 
+Sample 15   Log joint likelihood = -692512.655 
+Sample 16   Log joint likelihood = -690082.359 
+Sample 17   Log joint likelihood = -687368.042 
+Sample 18   Log joint likelihood = -685810.034 
+Sample 19   Log joint likelihood = -684870.987 
+Sample 20   Log joint likelihood = -683049.211 
+Sample 21   Log joint likelihood = -681277.343 
+Sample 22   Log joint likelihood = -680368.778 
+Sample 23   Log joint likelihood = -678818.551 
+Sample 24   Log joint likelihood = -677403.023 
+Sample 25   Log joint likelihood = -676141.864 
+Sample 26   Log joint likelihood = -675129.982 
+Sample 27   Log joint likelihood = -674257.860 
+Sample 28   Log joint likelihood = -673320.791 
+Sample 29   Log joint likelihood = -671511.071 
+Sample 30   Log joint likelihood = -671731.798 
+Sample 31   Log joint likelihood = -670608.211 
+Sample 32   Log joint likelihood = -669872.773 
+Sample 33   Log joint likelihood = -669028.513 
+Sample 34   Log joint likelihood = -668174.786 
+Sample 35   Log joint likelihood = -667987.820 
+Sample 36   Log joint likelihood = -667530.358 
+Sample 37   Log joint likelihood = -667595.453 
+Sample 38   Log joint likelihood = -666660.802 
+Sample 39   Log joint likelihood = -666163.209 
+Sample 40   Log joint likelihood = -665657.901 
+Sample 41   Log joint likelihood = -665690.121 
+Sample 42   Log joint likelihood = -665712.080 
+Sample 43   Log joint likelihood = -664911.384 
+Sample 44   Log joint likelihood = -664446.780 
+Sample 45   Log joint likelihood = -663572.026 
+Sample 46   Log joint likelihood = -663583.009 
+Sample 47   Log joint likelihood = -663420.904 
+Sample 48   Log joint likelihood = -662609.461 
+Sample 49   Log joint likelihood = -662078.798 
+Sample 50   Log joint likelihood = -662512.564 
+Sample 51   Log joint likelihood = -662433.688 
+Sample 52   Log joint likelihood = -661669.568 
+Sample 53   Log joint likelihood = -661027.649 
+Sample 54   Log joint likelihood = -660544.089 
+Sample 55   Log joint likelihood = -660355.268 
+Sample 56   Log joint likelihood = -660523.182 
+Sample 57   Log joint likelihood = -659719.272 
+Sample 58   Log joint likelihood = -659931.886 
+Sample 59   Log joint likelihood = -660060.357 
+Sample 60   Log joint likelihood = -659262.155 
+Sample 61   Log joint likelihood = -659017.992 
+Sample 62   Log joint likelihood = -659015.730 
+Sample 63   Log joint likelihood = -658841.869 
+Sample 64   Log joint likelihood = -659132.907 
+Sample 65   Log joint likelihood = -658448.517 
+Sample 66   Log joint likelihood = -659004.614 
+Sample 67   Log joint likelihood = -658771.524 
+Sample 68   Log joint likelihood = -658274.904 
+Sample 69   Log joint likelihood = -658936.594 
+Sample 70   Log joint likelihood = -658994.663 
+Sample 71   Log joint likelihood = -658441.844 
+Sample 72   Log joint likelihood = -658260.570 
+Sample 73   Log joint likelihood = -657826.416 
+Sample 74   Log joint likelihood = -657434.143 
+Sample 75   Log joint likelihood = -657952.737 
+Sample 76   Log joint likelihood = -657480.253 
+Sample 77   Log joint likelihood = -658068.345 
+Sample 78   Log joint likelihood = -657575.828 
+Sample 79   Log joint likelihood = -657951.015 
+Sample 80   Log joint likelihood = -657539.429 
+Sample 81   Log joint likelihood = -657832.116 
+Sample 82   Log joint likelihood = -657435.763 
+Sample 83   Log joint likelihood = -657263.357 
+Sample 84   Log joint likelihood = -656781.894 
+Sample 85   Log joint likelihood = -656635.143 
+Sample 86   Log joint likelihood = -657379.649 
+Sample 87   Log joint likelihood = -657536.007 
+Sample 88   Log joint likelihood = -657040.547 
+Sample 89   Log joint likelihood = -657399.021 
+Sample 90   Log joint likelihood = -656634.991 
+Sample 91   Log joint likelihood = -656570.090 
+Sample 92   Log joint likelihood = -656572.637 
+Sample 93   Log joint likelihood = -656842.242 
+Sample 94   Log joint likelihood = -657149.356 
+Sample 95   Log joint likelihood = -656394.862 
+Sample 96   Log joint likelihood = -656704.977 
+Sample 97   Log joint likelihood = -657376.052 
+Sample 98   Log joint likelihood = -656448.068 
+Sample 99   Log joint likelihood = -656058.111 
+Sample 100   Log joint likelihood = -656625.747 
+Sample 101   Log joint likelihood = -655686.374 
+Sample 102   Log joint likelihood = -655867.014 
+Sample 103   Log joint likelihood = -655500.613 
+Sample 104   Log joint likelihood = -655460.999 
+Sample 105   Log joint likelihood = -656092.100 
+Sample 106   Log joint likelihood = -655922.190 
+Sample 107   Log joint likelihood = -656238.622 
+Sample 108   Log joint likelihood = -655407.537 
+Sample 109   Log joint likelihood = -655170.765 
+Sample 110   Log joint likelihood = -654937.008 
+Sample 111   Log joint likelihood = -655167.958 
+Sample 112   Log joint likelihood = -655394.448 
+Sample 113   Log joint likelihood = -655037.858 
+Sample 114   Log joint likelihood = -655104.327 
+Sample 115   Log joint likelihood = -655198.883 
+Sample 116   Log joint likelihood = -654870.147 
+Sample 117   Log joint likelihood = -655365.770 
+Sample 118   Log joint likelihood = -655111.944 
+Sample 119   Log joint likelihood = -655239.378 
+Sample 120   Log joint likelihood = -654943.145 
+Sample 121   Log joint likelihood = -655209.503 
+Sample 122   Log joint likelihood = -654617.414 
+Sample 123   Log joint likelihood = -654809.082 
+Sample 124   Log joint likelihood = -654216.646 
+Sample 125   Log joint likelihood = -653725.727 
+Sample 126   Log joint likelihood = -653606.821 
+Sample 127   Log joint likelihood = -654087.125 
+Sample 128   Log joint likelihood = -653578.558 
+Sample 129   Log joint likelihood = -653534.795 
+Sample 130   Log joint likelihood = -652824.016 
+Sample 131   Log joint likelihood = -652795.242 
+Sample 132   Log joint likelihood = -652515.506 
+Sample 133   Log joint likelihood = -652128.936 
+Sample 134   Log joint likelihood = -652688.515 
+Sample 135   Log joint likelihood = -652517.799 
+Sample 136   Log joint likelihood = -652102.520 
+Sample 137   Log joint likelihood = -651880.101 
+Sample 138   Log joint likelihood = -652580.045 
+Sample 139   Log joint likelihood = -652296.675 
+Sample 140   Log joint likelihood = -652116.147 
+Sample 141   Log joint likelihood = -651264.780 
+Sample 142   Log joint likelihood = -652360.333 
+Sample 143   Log joint likelihood = -651745.645 
+Sample 144   Log joint likelihood = -651327.280 
+Sample 145   Log joint likelihood = -651370.280 
+Sample 146   Log joint likelihood = -651315.104 
+Sample 147   Log joint likelihood = -651002.489 
+Sample 148   Log joint likelihood = -651472.949 
+Sample 149   Log joint likelihood = -651213.233 
+Sample 150   Log joint likelihood = -652006.525 
+Sample 151   Log joint likelihood = -651224.158 
+Sample 152   Log joint likelihood = -651645.817 
+Sample 153   Log joint likelihood = -651051.406 
+Sample 154   Log joint likelihood = -651958.617 
+Sample 155   Log joint likelihood = -651519.431 
+Sample 156   Log joint likelihood = -651785.790 
+Sample 157   Log joint likelihood = -651788.827 
+Sample 158   Log joint likelihood = -652249.365 
+Sample 159   Log joint likelihood = -651707.857 
+Sample 160   Log joint likelihood = -651182.625 
+Sample 161   Log joint likelihood = -650988.498 
+Sample 162   Log joint likelihood = -651230.020 
+Sample 163   Log joint likelihood = -650951.864 
+Sample 164   Log joint likelihood = -651142.897 
+Sample 165   Log joint likelihood = -650683.330 
+Sample 166   Log joint likelihood = -651709.705 
+Sample 167   Log joint likelihood = -651590.743 
+Sample 168   Log joint likelihood = -651019.379 
+Sample 169   Log joint likelihood = -650849.409 
+Sample 170   Log joint likelihood = -650649.163 
+Sample 171   Log joint likelihood = -650599.184 
+Sample 172   Log joint likelihood = -650465.918 
+Sample 173   Log joint likelihood = -649932.852 
+Sample 174   Log joint likelihood = -650629.598 
+Sample 175   Log joint likelihood = -650224.472 
+Sample 176   Log joint likelihood = -649989.211 
+Sample 177   Log joint likelihood = -649776.103 
+Sample 178   Log joint likelihood = -650194.852 
+Sample 179   Log joint likelihood = -649675.972 
+Sample 180   Log joint likelihood = -649819.943 
+Sample 181   Log joint likelihood = -650214.126 
+Sample 182   Log joint likelihood = -649732.772 
+Sample 183   Log joint likelihood = -649739.139 
+Sample 184   Log joint likelihood = -649831.950 
+Sample 185   Log joint likelihood = -649433.941 
+Sample 186   Log joint likelihood = -649475.096 
+Sample 187   Log joint likelihood = -649631.457 
+Sample 188   Log joint likelihood = -649429.050 
+Sample 189   Log joint likelihood = -649629.459 
+Sample 190   Log joint likelihood = -649335.078 
+Sample 191   Log joint likelihood = -649016.600 
+Sample 192   Log joint likelihood = -648866.678 
+Sample 193   Log joint likelihood = -648627.979 
+Sample 194   Log joint likelihood = -648625.944 
+Sample 195   Log joint likelihood = -648595.469 
+Sample 196   Log joint likelihood = -648949.388 
+Sample 197   Log joint likelihood = -649220.121 
+Sample 198   Log joint likelihood = -649537.264 
+Sample 199   Log joint likelihood = -649400.501 
+Sample 200   Log joint likelihood = -648939.614 
+Sample 201   Log joint likelihood = -649336.453 
+Sample 202   Log joint likelihood = -649261.914 
+Sample 203   Log joint likelihood = -648916.375 
+Sample 204   Log joint likelihood = -648449.035 
+Sample 205   Log joint likelihood = -648701.510 
+Sample 206   Log joint likelihood = -648795.663 
+Sample 207   Log joint likelihood = -648556.444 
+Sample 208   Log joint likelihood = -648604.357 
+Sample 209   Log joint likelihood = -648170.166 
+Sample 210   Log joint likelihood = -648408.032 
+Sample 211   Log joint likelihood = -648671.175 
+Sample 212   Log joint likelihood = -648302.000 
+Sample 213   Log joint likelihood = -648334.422 
+Sample 214   Log joint likelihood = -648196.840 
+Sample 215   Log joint likelihood = -648110.189 
+Sample 216   Log joint likelihood = -647946.644 
+Sample 217   Log joint likelihood = -647976.738 
+Sample 218   Log joint likelihood = -647752.724 
+Sample 219   Log joint likelihood = -647570.459 
+Sample 220   Log joint likelihood = -647702.045 
+Sample 221   Log joint likelihood = -647530.150 
+Sample 222   Log joint likelihood = -647620.049 
+Sample 223   Log joint likelihood = -647226.098 
+Sample 224   Log joint likelihood = -647485.391 
+Sample 225   Log joint likelihood = -647480.096 
+Sample 226   Log joint likelihood = -647109.383 
+Sample 227   Log joint likelihood = -646403.346 
+Sample 228   Log joint likelihood = -646926.806 
+Sample 229   Log joint likelihood = -646423.507 
+Sample 230   Log joint likelihood = -646762.295 
+Sample 231   Log joint likelihood = -646771.967 
+Sample 232   Log joint likelihood = -647141.761 
+Sample 233   Log joint likelihood = -646922.021 
+Sample 234   Log joint likelihood = -646752.181 
+Sample 235   Log joint likelihood = -646480.493 
+Sample 236   Log joint likelihood = -646729.615 
+Sample 237   Log joint likelihood = -647067.055 
+Sample 238   Log joint likelihood = -646572.167 
+Sample 239   Log joint likelihood = -646635.730 
+Sample 240   Log joint likelihood = -646717.811 
+Sample 241   Log joint likelihood = -646537.866 
+Sample 242   Log joint likelihood = -647029.167 
+Sample 243   Log joint likelihood = -646733.485 
+Sample 244   Log joint likelihood = -646402.965 
+Sample 245   Log joint likelihood = -646766.156 
+Sample 246   Log joint likelihood = -647360.179 
+Sample 247   Log joint likelihood = -647639.476 
+Sample 248   Log joint likelihood = -647416.672 
+Sample 249   Log joint likelihood = -647231.475 
+Sample 250   Log joint likelihood = -646453.609 
+Sample 251   Log joint likelihood = -646916.737 
+Sample 252   Log joint likelihood = -646981.676 
+Sample 253   Log joint likelihood = -646693.612 
+Sample 254   Log joint likelihood = -646758.336 
+Sample 255   Log joint likelihood = -646697.179 
+Sample 256   Log joint likelihood = -646460.346 
+Sample 257   Log joint likelihood = -646785.037 
+Sample 258   Log joint likelihood = -647319.890 
+Sample 259   Log joint likelihood = -646434.235 
+Sample 260   Log joint likelihood = -646298.856 
+Sample 261   Log joint likelihood = -646541.697 
+Sample 262   Log joint likelihood = -646578.057 
+Sample 263   Log joint likelihood = -646664.970 
+Sample 264   Log joint likelihood = -646693.576 
+Sample 265   Log joint likelihood = -647068.037 
+Sample 266   Log joint likelihood = -646725.384 
+Sample 267   Log joint likelihood = -646415.146 
+Sample 268   Log joint likelihood = -646875.271 
+Sample 269   Log joint likelihood = -646452.623 
+Sample 270   Log joint likelihood = -646861.267 
+Sample 271   Log joint likelihood = -645981.749 
+Sample 272   Log joint likelihood = -646413.507 
+Sample 273   Log joint likelihood = -646352.413 
+Sample 274   Log joint likelihood = -646252.026 
+Sample 275   Log joint likelihood = -646556.756 
+Sample 276   Log joint likelihood = -646637.889 
+Sample 277   Log joint likelihood = -646903.556 
+Sample 278   Log joint likelihood = -646682.744 
+Sample 279   Log joint likelihood = -647431.630 
+Sample 280   Log joint likelihood = -647051.789 
+Sample 281   Log joint likelihood = -646778.767 
+Sample 282   Log joint likelihood = -647250.040 
+Sample 283   Log joint likelihood = -647091.503 
+Sample 284   Log joint likelihood = -647106.272 
+Sample 285   Log joint likelihood = -647135.617 
+Sample 286   Log joint likelihood = -646601.607 
+Sample 287   Log joint likelihood = -646603.544 
+Sample 288   Log joint likelihood = -646685.810 
+Sample 289   Log joint likelihood = -646709.096 
+Sample 290   Log joint likelihood = -647049.423 
+Sample 291   Log joint likelihood = -647240.940 
+Sample 292   Log joint likelihood = -647088.629 
+Sample 293   Log joint likelihood = -646892.368 
+Sample 294   Log joint likelihood = -646511.968 
+Sample 295   Log joint likelihood = -647433.791 
+Sample 296   Log joint likelihood = -647455.306 
+Sample 297   Log joint likelihood = -647218.241 
+Sample 298   Log joint likelihood = -646748.407 
+Sample 299   Log joint likelihood = -647094.010 
+Sample 300   Log joint likelihood = -647514.010 
+Sample 301   Log joint likelihood = -646971.259 
+Sample 302   Log joint likelihood = -647521.399 
+Sample 303   Log joint likelihood = -646322.401 
+Sample 304   Log joint likelihood = -646827.618 
+Sample 305   Log joint likelihood = -646676.881 
+Sample 306   Log joint likelihood = -647073.064 
+Sample 307   Log joint likelihood = -646876.994 
+Sample 308   Log joint likelihood = -647018.237 
+Sample 309   Log joint likelihood = -646930.450 
+Sample 310   Log joint likelihood = -646836.675 
+Sample 311   Log joint likelihood = -646699.188 
+Sample 312   Log joint likelihood = -646876.421 
+Sample 313   Log joint likelihood = -647051.201 
+Sample 314   Log joint likelihood = -647059.686 
+Sample 315   Log joint likelihood = -647125.480 
+Sample 316   Log joint likelihood = -647572.146 
+Sample 317   Log joint likelihood = -647054.023 
+Sample 318   Log joint likelihood = -647459.029 
+Sample 319   Log joint likelihood = -646997.972 
+Sample 320   Log joint likelihood = -646529.906 
+Sample 321   Log joint likelihood = -647014.990 
+Sample 322   Log joint likelihood = -646764.717 
+Sample 323   Log joint likelihood = -646848.517 
+Sample 324   Log joint likelihood = -646940.684 
+Sample 325   Log joint likelihood = -646829.586 
+Sample 326   Log joint likelihood = -646854.621 
+Sample 327   Log joint likelihood = -647063.426 
+Sample 328   Log joint likelihood = -646824.357 
+Sample 329   Log joint likelihood = -647041.070 
+Sample 330   Log joint likelihood = -646903.763 
+Sample 331   Log joint likelihood = -646443.130 
+Sample 332   Log joint likelihood = -645877.002 
+Sample 333   Log joint likelihood = -646218.090 
+Sample 334   Log joint likelihood = -646709.353 
+Sample 335   Log joint likelihood = -646524.213 
+Sample 336   Log joint likelihood = -646176.093 
+Sample 337   Log joint likelihood = -646731.616 
+Sample 338   Log joint likelihood = -647046.343 
+Sample 339   Log joint likelihood = -647211.392 
+Sample 340   Log joint likelihood = -646991.377 
+Sample 341   Log joint likelihood = -646686.503 
+Sample 342   Log joint likelihood = -646339.120 
+Sample 343   Log joint likelihood = -646831.313 
+Sample 344   Log joint likelihood = -647200.428 
+Sample 345   Log joint likelihood = -646172.442 
+Sample 346   Log joint likelihood = -646939.657 
+Sample 347   Log joint likelihood = -646589.647 
+Sample 348   Log joint likelihood = -646442.664 
+Sample 349   Log joint likelihood = -646731.092 
+Sample 350   Log joint likelihood = -647026.043 
+Sample 351   Log joint likelihood = -646658.395 
+Sample 352   Log joint likelihood = -646941.671 
+Sample 353   Log joint likelihood = -647130.209 
+Sample 354   Log joint likelihood = -647352.904 
+Sample 355   Log joint likelihood = -647032.741 
+Sample 356   Log joint likelihood = -646936.590 
+Sample 357   Log joint likelihood = -646788.002 
+Sample 358   Log joint likelihood = -647019.557 
+Sample 359   Log joint likelihood = -647205.019 
+Sample 360   Log joint likelihood = -647408.171 
+Sample 361   Log joint likelihood = -646970.093 
+Sample 362   Log joint likelihood = -646948.100 
+Sample 363   Log joint likelihood = -647026.211 
+Sample 364   Log joint likelihood = -646595.881 
+Sample 365   Log joint likelihood = -646828.485 
+Sample 366   Log joint likelihood = -646941.015 
+Sample 367   Log joint likelihood = -646833.748 
+Sample 368   Log joint likelihood = -646809.231 
+Sample 369   Log joint likelihood = -647352.913 
+Sample 370   Log joint likelihood = -646734.399 
+Sample 371   Log joint likelihood = -646773.760 
+Sample 372   Log joint likelihood = -646708.000 
+Sample 373   Log joint likelihood = -646545.203 
+Sample 374   Log joint likelihood = -646534.810 
+Sample 375   Log joint likelihood = -646156.178 
+Sample 376   Log joint likelihood = -646574.675 
+Sample 377   Log joint likelihood = -646196.208 
+Sample 378   Log joint likelihood = -645992.897 
+Sample 379   Log joint likelihood = -646457.406 
+Sample 380   Log joint likelihood = -646746.416 
+Sample 381   Log joint likelihood = -646644.518 
+Sample 382   Log joint likelihood = -646432.688 
+Sample 383   Log joint likelihood = -645958.944 
+Sample 384   Log joint likelihood = -646400.749 
+Sample 385   Log joint likelihood = -646349.010 
+Sample 386   Log joint likelihood = -646627.603 
+Sample 387   Log joint likelihood = -646804.759 
+Sample 388   Log joint likelihood = -646300.901 
+Sample 389   Log joint likelihood = -646464.055 
+Sample 390   Log joint likelihood = -646335.017 
+Sample 391   Log joint likelihood = -646308.963 
+Sample 392   Log joint likelihood = -646982.110 
+Sample 393   Log joint likelihood = -646944.934 
+Sample 394   Log joint likelihood = -646756.313 
+Sample 395   Log joint likelihood = -646434.271 
+Sample 396   Log joint likelihood = -646418.818 
+Sample 397   Log joint likelihood = -646058.554 
+Sample 398   Log joint likelihood = -646951.309 
+Sample 399   Log joint likelihood = -646667.653 
+Sample 400   Log joint likelihood = -647015.351 
+Sample 401   Log joint likelihood = -646606.421 
+Sample 402   Log joint likelihood = -646571.724 
+Sample 403   Log joint likelihood = -646806.453 
+Sample 404   Log joint likelihood = -646445.037 
+Sample 405   Log joint likelihood = -646318.925 
+Sample 406   Log joint likelihood = -646240.470 
+Sample 407   Log joint likelihood = -646756.665 
+Sample 408   Log joint likelihood = -646850.507 
+Sample 409   Log joint likelihood = -646746.876 
+Sample 410   Log joint likelihood = -646649.614 
+Sample 411   Log joint likelihood = -646657.025 
+Sample 412   Log joint likelihood = -647462.394 
+Sample 413   Log joint likelihood = -646878.243 
+Sample 414   Log joint likelihood = -646984.097 
+Sample 415   Log joint likelihood = -646970.292 
+Sample 416   Log joint likelihood = -646496.412 
+Sample 417   Log joint likelihood = -646258.198 
+Sample 418   Log joint likelihood = -646317.443 
+Sample 419   Log joint likelihood = -646771.309 
+Sample 420   Log joint likelihood = -646325.273 
+Sample 421   Log joint likelihood = -646815.008 
+Sample 422   Log joint likelihood = -646415.457 
+Sample 423   Log joint likelihood = -646516.757 
+Sample 424   Log joint likelihood = -646453.779 
+Sample 425   Log joint likelihood = -646299.544 
+Sample 426   Log joint likelihood = -646268.035 
+Sample 427   Log joint likelihood = -645952.280 
+Sample 428   Log joint likelihood = -646396.263 
+Sample 429   Log joint likelihood = -646488.395 
+Sample 430   Log joint likelihood = -646473.203 
+Sample 431   Log joint likelihood = -646895.461 
+Sample 432   Log joint likelihood = -646912.624 
+Sample 433   Log joint likelihood = -646608.678 
+Sample 434   Log joint likelihood = -646528.626 
+Sample 435   Log joint likelihood = -647146.611 
+Sample 436   Log joint likelihood = -646810.453 
+Sample 437   Log joint likelihood = -647012.719 
+Sample 438   Log joint likelihood = -646741.874 
+Sample 439   Log joint likelihood = -646401.049 
+Sample 440   Log joint likelihood = -645868.255 
+Sample 441   Log joint likelihood = -646488.421 
+Sample 442   Log joint likelihood = -646906.153 
+Sample 443   Log joint likelihood = -646590.638 
+Sample 444   Log joint likelihood = -646894.713 
+Sample 445   Log joint likelihood = -646290.345 
+Sample 446   Log joint likelihood = -646417.807 
+Sample 447   Log joint likelihood = -646277.069 
+Sample 448   Log joint likelihood = -646357.985 
+Sample 449   Log joint likelihood = -646492.708 
+Sample 450   Log joint likelihood = -646779.857 
+Sample 451   Log joint likelihood = -646384.974 
+Sample 452   Log joint likelihood = -646061.480 
+Sample 453   Log joint likelihood = -646487.802 
+Sample 454   Log joint likelihood = -646098.612 
+Sample 455   Log joint likelihood = -646543.753 
+Sample 456   Log joint likelihood = -646123.859 
+Sample 457   Log joint likelihood = -645734.086 
+Sample 458   Log joint likelihood = -645931.613 
+Sample 459   Log joint likelihood = -646497.421 
+Sample 460   Log joint likelihood = -646679.061 
+Sample 461   Log joint likelihood = -646443.024 
+Sample 462   Log joint likelihood = -646312.699 
+Sample 463   Log joint likelihood = -646527.933 
+Sample 464   Log joint likelihood = -647001.618 
+Sample 465   Log joint likelihood = -647115.446 
+Sample 466   Log joint likelihood = -646911.837 
+Sample 467   Log joint likelihood = -646968.182 
+Sample 468   Log joint likelihood = -647419.038 
+Sample 469   Log joint likelihood = -646975.909 
+Sample 470   Log joint likelihood = -646968.294 
+Sample 471   Log joint likelihood = -647507.392 
+Sample 472   Log joint likelihood = -647147.035 
+Sample 473   Log joint likelihood = -647343.978 
+Sample 474   Log joint likelihood = -646985.763 
+Sample 475   Log joint likelihood = -646950.651 
+Sample 476   Log joint likelihood = -646774.914 
+Sample 477   Log joint likelihood = -646774.679 
+Sample 478   Log joint likelihood = -647382.118 
+Sample 479   Log joint likelihood = -646919.454 
+Sample 480   Log joint likelihood = -646650.026 
+Sample 481   Log joint likelihood = -646892.535 
+Sample 482   Log joint likelihood = -646939.666 
+Sample 483   Log joint likelihood = -647235.711 
+Sample 484   Log joint likelihood = -646919.541 
+Sample 485   Log joint likelihood = -647331.776 
+Sample 486   Log joint likelihood = -646684.411 
+Sample 487   Log joint likelihood = -646760.346 
+Sample 488   Log joint likelihood = -646576.947 
+Sample 489   Log joint likelihood = -647038.140 
+Sample 490   Log joint likelihood = -646611.230 
+Sample 491   Log joint likelihood = -646437.511 
+Sample 492   Log joint likelihood = -646246.569 
+Sample 493   Log joint likelihood = -646683.550 
+Sample 494   Log joint likelihood = -646994.678 
+Sample 495   Log joint likelihood = -647360.945 
+Sample 496   Log joint likelihood = -647141.234 
+Sample 497   Log joint likelihood = -646173.588 
+Sample 498   Log joint likelihood = -646600.281 
+Sample 499   Log joint likelihood = -646956.432 
+Sample 500   Log joint likelihood = -646954.167 
+Run testing importance sampling (195, 1648)
+topic_prior = [[ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]
+ [ 0.1]]
+	d = 0 doc_marg=-285.625504685
+	d = 1 doc_marg=-250.801405158
+	d = 2 doc_marg=-973.925829472
+	d = 3 doc_marg=-359.001524538
+	d = 4 doc_marg=-1869.82710669
+	d = 5 doc_marg=-154.335946559
+	d = 6 doc_marg=-1555.44074566
+	d = 7 doc_marg=-1101.43835666
+	d = 8 doc_marg=-1994.87135195
+	d = 9 doc_marg=-906.857828815
+	d = 10 doc_marg=-2013.50147816
+	d = 11 doc_marg=-1464.08928993
+	d = 12 doc_marg=-338.434758911
+	d = 13 doc_marg=-323.647395633
+	d = 14 doc_marg=-1668.06527896
+	d = 15 doc_marg=-396.048358122
+	d = 16 doc_marg=-196.336124391
+	d = 17 doc_marg=-1657.28877303
+	d = 18 doc_marg=-330.479876316
+	d = 19 doc_marg=-1256.52062764
+	d = 20 doc_marg=-469.564836287
+	d = 21 doc_marg=-494.086878965
+	d = 22 doc_marg=-1212.89118348
+	d = 23 doc_marg=-2149.40657229
+	d = 24 doc_marg=-1565.28036747
+	d = 25 doc_marg=-783.749509461
+	d = 26 doc_marg=-264.718639126
+	d = 27 doc_marg=-665.745921014
+	d = 28 doc_marg=-574.37707224
+	d = 29 doc_marg=-1739.72242261
+	d = 30 doc_marg=-2219.07456246
+	d = 31 doc_marg=-2690.92928021
+	d = 32 doc_marg=-1006.5921229
+	d = 33 doc_marg=-1171.42236427
+	d = 34 doc_marg=-2586.61361262
+	d = 35 doc_marg=-1821.97894776
+	d = 36 doc_marg=-3837.4952892
+	d = 37 doc_marg=-1304.9187775
+	d = 38 doc_marg=-410.49983244
+	d = 39 doc_marg=-1253.78734283
+	d = 40 doc_marg=-1963.59049253
+	d = 41 doc_marg=-579.377146751
+	d = 42 doc_marg=-269.675315015
+	d = 43 doc_marg=-662.834169101
+	d = 44 doc_marg=-398.477601597
+	d = 45 doc_marg=-594.900637322
+	d = 46 doc_marg=-161.135607956
+	d = 47 doc_marg=-435.205807201
+	d = 48 doc_marg=-660.45816337
+	d = 49 doc_marg=-809.564589557
+	d = 50 doc_marg=-563.222305025
+	d = 51 doc_marg=-1140.88001833
+	d = 52 doc_marg=-103.652132043
+	d = 53 doc_marg=-1477.193538
+	d = 54 doc_marg=-644.600332373
+	d = 55 doc_marg=-1942.31912276
+	d = 56 doc_marg=-927.84044159
+	d = 57 doc_marg=-1417.00616816
+	d = 58 doc_marg=-649.022395716
+	d = 59 doc_marg=-762.64003159
+	d = 60 doc_marg=-638.684922629
+	d = 61 doc_marg=-1729.09423067
+	d = 62 doc_marg=-641.672010902
+	d = 63 doc_marg=-1246.23191278
+	d = 64 doc_marg=-1476.06926957
+	d = 65 doc_marg=-1289.59175903
+	d = 66 doc_marg=-569.662823621
+	d = 67 doc_marg=-1551.91173307
+	d = 68 doc_marg=-776.883499661
+	d = 69 doc_marg=-892.691982814
+	d = 70 doc_marg=-419.918904322
+	d = 71 doc_marg=-1110.20196107
+	d = 72 doc_marg=-1598.9860826
+	d = 73 doc_marg=-1457.90306813
+	d = 74 doc_marg=-1699.23875036
+	d = 75 doc_marg=-481.982747996
+	d = 76 doc_marg=-2183.56254104
+	d = 77 doc_marg=-1677.58776463
+	d = 78 doc_marg=-895.731040158
+	d = 79 doc_marg=-466.664594575
+	d = 80 doc_marg=-647.05112538
+	d = 81 doc_marg=-3339.72141545
+	d = 82 doc_marg=-1895.7573815
+	d = 83 doc_marg=-1231.94205358
+	d = 84 doc_marg=-281.452544435
+	d = 85 doc_marg=-2379.52051384
+	d = 86 doc_marg=-1158.55249517
+	d = 87 doc_marg=-1035.40838436
+	d = 88 doc_marg=-346.887664284
+	d = 89 doc_marg=-452.301134192
+	d = 90 doc_marg=-730.538752659
+	d = 91 doc_marg=-1402.72873288
+	d = 92 doc_marg=-1073.98777722
+	d = 93 doc_marg=-754.940769896
+	d = 94 doc_marg=-605.341800345
+	d = 95 doc_marg=-499.006752141
+	d = 96 doc_marg=-2140.84572469
+	d = 97 doc_marg=-516.580944333
+	d = 98 doc_marg=-1672.21656363
+	d = 99 doc_marg=-1025.56941757
+	d = 100 doc_marg=-5311.27034879
+	d = 101 doc_marg=-3141.27050895
+	d = 102 doc_marg=-1676.22777045
+	d = 103 doc_marg=-1316.27509289
+	d = 104 doc_marg=-4187.90798287
+	d = 105 doc_marg=-2122.39871996
+	d = 106 doc_marg=-467.208719458
+	d = 107 doc_marg=-2340.23639915
+	d = 108 doc_marg=-935.796399322
+	d = 109 doc_marg=-410.593534372
+	d = 110 doc_marg=-322.571775926
+	d = 111 doc_marg=-2334.78812974
+	d = 112 doc_marg=-5026.23843579
+	d = 113 doc_marg=-990.262684145
+	d = 114 doc_marg=-1032.98026326
+	d = 115 doc_marg=-221.855720603
+	d = 116 doc_marg=-2480.7205271
+	d = 117 doc_marg=-1561.63879909
+	d = 118 doc_marg=-1448.85281149
+	d = 119 doc_marg=-1802.63105586
+	d = 120 doc_marg=-580.165407787
+	d = 121 doc_marg=-1307.49732881
+	d = 122 doc_marg=-811.335576434
+	d = 123 doc_marg=-421.358444168
+	d = 124 doc_marg=-552.47132369
+	d = 125 doc_marg=-1331.02433087
+	d = 126 doc_marg=-401.084614632
+	d = 127 doc_marg=-343.92449059
+	d = 128 doc_marg=-1294.22018334
+	d = 129 doc_marg=-2836.21773752
+	d = 130 doc_marg=-391.756629291
+	d = 131 doc_marg=-583.114849092
+	d = 132 doc_marg=-1949.68233051
+	d = 133 doc_marg=-1562.32744733
+	d = 134 doc_marg=-476.173711575
+	d = 135 doc_marg=-865.413486467
+	d = 136 doc_marg=-553.453042166
+	d = 137 doc_marg=-1925.5982495
+	d = 138 doc_marg=-997.860738683
+	d = 139 doc_marg=-3289.12321372
+	d = 140 doc_marg=-2119.63077388
+	d = 141 doc_marg=-2505.57408783
+	d = 142 doc_marg=-337.581052441
+	d = 143 doc_marg=-205.769051253
+	d = 144 doc_marg=-1306.36897951
+	d = 145 doc_marg=-1459.74455974
+	d = 146 doc_marg=-710.618958876
+	d = 147 doc_marg=-1879.33364936
+	d = 148 doc_marg=-274.822553729
+	d = 149 doc_marg=-426.452876385
+	d = 150 doc_marg=-882.796670556
+	d = 151 doc_marg=-697.26452916
+	d = 152 doc_marg=-376.584770642
+	d = 153 doc_marg=-703.06862142
+	d = 154 doc_marg=-1751.51989308
+	d = 155 doc_marg=-417.087815461
+	d = 156 doc_marg=-534.732640167
+	d = 157 doc_marg=-964.191783101
+	d = 158 doc_marg=-1077.57575433
+	d = 159 doc_marg=-817.480028526
+	d = 160 doc_marg=-916.755528835
+	d = 161 doc_marg=-476.972481098
+	d = 162 doc_marg=-606.118421891
+	d = 163 doc_marg=-1414.49123221
+	d = 164 doc_marg=-1204.13314866
+	d = 165 doc_marg=-922.307528708
+	d = 166 doc_marg=-376.268750577
+	d = 167 doc_marg=-146.507740452
+	d = 168 doc_marg=-4213.45869778
+	d = 169 doc_marg=-847.034126641
+	d = 170 doc_marg=-1646.7549563
+	d = 171 doc_marg=-313.172496363
+	d = 172 doc_marg=-311.968869
+	d = 173 doc_marg=-542.954483244
+	d = 174 doc_marg=-700.453864097
+	d = 175 doc_marg=-125.57551992
+	d = 176 doc_marg=-125.580331784
+	d = 177 doc_marg=-1990.66260444
+	d = 178 doc_marg=-1030.19827198
+	d = 179 doc_marg=-613.16649147
+	d = 180 doc_marg=-790.546531564
+	d = 181 doc_marg=-732.199487036
+	d = 182 doc_marg=-738.559108454
+	d = 183 doc_marg=-534.673535374
+	d = 184 doc_marg=-744.403033344
+	d = 185 doc_marg=-912.211941098
+	d = 186 doc_marg=-337.883219018
+	d = 187 doc_marg=-654.407881269
+	d = 188 doc_marg=-704.717910256
+	d = 189 doc_marg=-902.028422217
+	d = 190 doc_marg=-2323.62460156
+	d = 191 doc_marg=-918.561697971
+	d = 192 doc_marg=-354.100757469
+	d = 193 doc_marg=-1410.81592649
+	d = 194 doc_marg=-1674.78773827
+Log evidence 3 = -222789.397861
+Test perplexity 3 = 23.2850136319
+
+
+Cross-validation done!
+K=500,mean_approximate_log_evidence=-222789.397861,mean_perplexity=24.5727525005

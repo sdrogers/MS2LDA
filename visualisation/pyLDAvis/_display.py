@@ -222,7 +222,7 @@ def display(data, local=False, **kwargs):
 
     return HTML(prepared_data_to_html(data, **kwargs))
 
-def show(data, topic_plotter=None, ip='127.0.0.1', port=8888, n_retries=50,
+def show(data, topic_plotter, ip='127.0.0.1', port=8888, n_retries=50,
          local=True, open_browser=True, http_server=None, **kwargs):
     """Starts a local webserver and opens the visualization in a browser.
 
@@ -257,12 +257,12 @@ def show(data, topic_plotter=None, ip='127.0.0.1', port=8888, n_retries=50,
         kwargs['ldavis_url'] = '/LDAvis.js'
         kwargs['d3_url'] = '/d3.js'
         kwargs['ldavis_css_url'] = '/LDAvis.css'
-        files = {'/LDAvis.js': ["text/javascript",
-                               open(urls.LDAVIS_LOCAL, 'r').read()],
-                 '/LDAvis.css': ["text/css",
-                                 open(urls.LDAVIS_CSS_LOCAL, 'r').read()],
-                 '/d3.js': ["text/javascript",
-                            open(urls.D3_LOCAL, 'r').read()]}
+        files = {
+                 '/graph.html': ["text/html", open(urls.LDAVIS_GRAPH_LOCAL, 'r').read()],
+                 '/LDAvis.js': ["text/javascript", open(urls.LDAVIS_LOCAL, 'r').read()],
+                 '/LDAvis.css': ["text/css", open(urls.LDAVIS_CSS_LOCAL, 'r').read()],
+                 '/d3.js': ["text/javascript", open(urls.D3_LOCAL, 'r').read()]
+                 }
     else:
         files = None
 

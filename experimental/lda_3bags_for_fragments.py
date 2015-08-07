@@ -139,7 +139,7 @@ class ThreeBags_Ms2Lda(Ms2Lda):
         plotter.plot_lda_fragments(consistency=consistency, sort_by=sort_by, 
                                    selected_topics=selected_topics, interactive=interactive) 
         if interactive:
-            self.model.visualise(topic_plotter=plotter)                                           
+            self.model.visualise(plotter)                                           
     
 def test_lda():
 

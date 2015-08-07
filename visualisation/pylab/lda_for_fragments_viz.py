@@ -51,13 +51,16 @@ class Ms2Lda_Viz(object):
         # also create a matrix of topics and their h-indices for later use in front-end visualisation
         if interactive:        
             num_topics = len(sorted_topic_counts)
-            self.topic_ranking = np.zeros((num_topics, 2), dtype=int)
+            topic_degree = self._in_degree()
+            self.topic_ranking = np.zeros((num_topics, 3), dtype=int)
             for k in range(num_topics):
                 item = sorted_topic_counts[k]
-                self.topic_ranking[k, 0] = item[0] # the topic id
+                topic_id = item[0]
+                self.topic_ranking[k, 0] = topic_id
                 self.topic_ranking[k, 1] = item[1] # the h-index or in-degree of that topic
-            self.sort_by_min = np.min(self.topic_ranking[:, 1])
-            self.sort_by_max = np.max(self.topic_ranking[:, 1])
+                self.topic_ranking[k, 2] = topic_degree[topic_id]
+            self.sort_by_min = np.min(self.topic_ranking[:, 2])
+            self.sort_by_max = np.max(self.topic_ranking[:, 2])
         
         return topic_sort_criteria, sorted_topic_counts                
                 
@@ -70,6 +73,7 @@ class Ms2Lda_Viz(object):
                                                               selected_topics=selected_topics, interactive=interactive)               
         self.topic_plots = {}
         self.topic_ms1_count = {}
+        self.topic_coordinates = {}
         for (i, c) in sorted_topic_counts:
             
             # skip non-selected topics
@@ -316,21 +320,33 @@ class Ms2Lda_Viz(object):
             # make plot for every parent peak
             num_peaks = len(parent_ids)
             if not interactive:
+            
                 for n in range(num_peaks):
                         self._make_ms1_plot(i, n, parent_masses, parent_rts, parent_ids, 
                            parent_all_fragments, parent_topic_fragments, parent_topic_losses,
                            wordfreq, consistency, max_parent_mz)
                         plt.show()
-            else:
+
+            else: # interactive mode
+
+                # set MS1 plot data
                 plot_data = (parent_masses, parent_rts, parent_ids, 
                            parent_all_fragments, parent_topic_fragments, parent_topic_losses,
                            wordfreq, consistency, max_parent_mz)
                 self.topic_plots[i] = plot_data
                 self.topic_ms1_count[i] = num_peaks
                 print "Topic " + str(i) + " has " + str(num_peaks) + " ms1 peaks"
+                
+                # set coordinate of each circle
+                x_coord = topic_ranking[i]
+                y_coord = num_peaks
+                self.topic_coordinates.update({i:(x_coord, y_coord)})
                     
-            # break        
-        
+            # break
+
+        # convert topic_coordinates from dictionary to a list of coordinates, sorted by the topic id
+        sorted_coords = sorted(self.topic_coordinates.iteritems(), key=lambda key_value: key_value[0])
+        self.topic_coordinates = [item[1] for item in sorted_coords]        
         
     def plot_for_web(self, i, n):
         if i in self.topic_plots:
@@ -347,17 +363,17 @@ class Ms2Lda_Viz(object):
                        wordfreq, consistency, max_parent_mz):
         
         parent_fontspec = {
-            'size':'10', 
+            'size':'12', 
             'color':'blue', 
             'weight':'bold'
         }
         fragment_fontspec = {
-            'size':'8', 
+            'size':'12', 
             'color':'#800000', 
             'weight':'bold'
         }
         loss_fontspec = {
-            'size':'8', 
+            'size':'12', 
             'color':'green', 
             'weight':'bold'
         }        
