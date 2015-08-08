@@ -322,8 +322,8 @@ class CollapseGibbsLda(object):
         data['term_frequency'] = np.sum(self.ckn, axis=0)    
         data['topic_ranking'] = topic_plotter.topic_ranking
         data['topic_coordinates'] = topic_plotter.topic_coordinates
-        data['plot_opts'] = {'xlab': 'h-index', 'ylab': 'degree', 'sort_by' : topic_plotter.sort_by}
-        data['lambda_step'] = 1               
+        data['plot_opts'] = {'xlab': 'h-index', 'ylab': 'log(degree)', 'sort_by' : topic_plotter.sort_by}
+        data['lambda_step'] = 5            
         data['lambda_min'] = self._round_nicely(topic_plotter.sort_by_min)
         data['lambda_max'] = self._round_nicely(topic_plotter.sort_by_max)
         vis_data = pyLDAvis.prepare(**data)   

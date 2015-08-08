@@ -7,6 +7,7 @@ from pandas.core.frame import DataFrame
 import matplotlib.patches as mpatches
 import numpy as np
 import pylab as plt
+import math
 
 
 class Ms2Lda_Viz(object):
@@ -339,7 +340,7 @@ class Ms2Lda_Viz(object):
                 
                 # set coordinate of each circle
                 x_coord = topic_ranking[i]
-                y_coord = num_peaks
+                y_coord = math.log10(num_peaks)   
                 self.topic_coordinates.update({i:(x_coord, y_coord)})
                     
             # break
