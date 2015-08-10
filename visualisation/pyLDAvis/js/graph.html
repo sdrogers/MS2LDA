@@ -170,12 +170,56 @@ text {
 	            set_highlight(d);
 	        })
 	        .on("mousedown", function(d) {
+	        	
 	            d3.event.stopPropagation();
 	            focus_node = d;
 	            set_focus(d)
 	            if (highlight_node === null) {
 	            	set_highlight(d)
 	            }
+
+	            // highlight the topic in the main window too
+	            tokens = d.name.split('_')
+				node_type = tokens[0]
+	            if (node_type.toLowerCase() === 'topic') {
+	            
+		            // select the topic in the main window
+		            vis_state = window.opener.vis_state	            
+		            n = parseInt(tokens[1])
+		            circles = vis_state['circles']
+		            selected_circle = circles[0][n]
+		            circle_id = selected_circle.id
+
+		            parent_document = window.opener.document
+		            
+					// find the old topic
+		            address_bar_val = window.location.search
+		            function get(name){
+		               if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
+		                  return decodeURIComponent(name[1]);
+		            }
+					visID = get('visID')
+	    			topicID = visID + "-topic";
+				    docPrev = visID + "-prev";
+				    docNext = visID + "-next";
+					
+				    // set as off if it's different from the current one
+					old_topic = topicID + vis_state.topic
+		            if (vis_state.topic > 0 && old_topic != circle_id) {
+		            	var topic_off = window.opener.topic_off
+		                topic_off(parent_document.getElementById(old_topic));
+		            }
+
+				    // set the currently selected topic and also enable the button to browse the MS1
+		            parent_document.getElementById(topicID).value = vis_state.topic = n+1; 	// +1 because we index circles from 1,..
+					parent_document.getElementById(topicID+"_shown").value = n;  				// but we show circle labels from 0,..
+		            parent_document.getElementById(docPrev).removeAttribute("disabled");
+		            parent_document.getElementById(docNext).removeAttribute("disabled");				              
+					topic_on = window.opener.topic_on
+					topic_on(selected_circle, true);	            	
+	            	
+	            }
+	            	            
 	        })
 	        .on("mouseout", function(d) {
 	            exit_highlight();

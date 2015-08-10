@@ -4,9 +4,33 @@
 
 'use strict';
 
+// Set up a few global variables to hold the data. 
+var vis_state = {
+        lambda: undefined,
+        topic: 0,
+        term: "",
+        circles: undefined,
+        active_topics: []
+    };
+
+// placeholder for the topic_on and topic_off functions 
+// since it will also be called from another file for the graph
+var topic_on = undefined;
+var topic_off = undefined;
+
 var LDAvis = function(to_select, data_or_file_name) {
 
-    // This section sets up the logic for event handling
+	var K, // number of topics
+    R, // number of terms to display in bar chart
+    mdsData, // (x,y) locations and topic proportions
+    mdsData3, // topic proportions for all terms in the viz
+    lamData, // all terms that are among the top-R most relevant for all topics, lambda values
+    lambda = {
+        old: 1,
+        current: 1
+    };
+	
+    // This section sets up the logic for event handling -- UNUSED
     var current_clicked = {
         what: "nothing",
         element: undefined
@@ -18,26 +42,9 @@ var LDAvis = function(to_select, data_or_file_name) {
     old_winning_state = {
         what: "nothing",
         element: undefined
-    },
-    vis_state = {
-        lambda: undefined,
-        topic: 0,
-        term: "",
-        circles: undefined,
-        active_topics: []
-    };
-
-    // Set up a few 'global' variables to hold the data:
-    var K, // number of topics
-        R, // number of terms to display in bar chart
-        mdsData, // (x,y) locations and topic proportions
-        mdsData3, // topic proportions for all terms in the viz
-        lamData, // all terms that are among the top-R most relevant for all topics, lambda values
-        lambda = {
-            old: 1,
-            current: 1
-        },
-        color1 = "#1f77b4", // baseline color for default topic circles and overall term frequencies
+    }
+    
+    var color1 = "#1f77b4", // baseline color for default topic circles and overall term frequencies
         color2 = "#d62728"; // 'highlight' color for selected topics and term-topic frequencies
 
     // Set the duration of each half of the transition:
@@ -327,7 +334,7 @@ var LDAvis = function(to_select, data_or_file_name) {
         // show force-directed graph in a new window
         d3.select("#" + showGraph)
             .on("click", function() {
-            	var address = '/graph.html?degree=' + vis_state.lambda
+            	var address = '/graph.html?degree=' + vis_state.lambda + '&visID=' + visID
             	var new_window = window.open(address, '', 'height=800, width=800');
             	if (window.focus) {
             		new_window.focus();
@@ -1282,7 +1289,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 
         // function to update bar chart when a topic is selected
         // the circle argument should be the appropriate circle element
-        function topic_on(circle, is_clicked) {
+        topic_on = function(circle, is_clicked) {
             if (circle == null) return null;
             if (typeof is_clicked === 'undefined') { is_clicked = false; }
 
@@ -1426,8 +1433,7 @@ var LDAvis = function(to_select, data_or_file_name) {
   
         }
 
-
-        function topic_off(circle) {
+        topic_off = function(circle) {
             if (circle == null) return circle;
             // go back to original opacity/fill
             circle.style.opacity = base_opacity;
