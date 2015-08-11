@@ -861,20 +861,20 @@ var LDAvis = function(to_select, data_or_file_name) {
 
             var previous = document.createElement("button");
             previous.setAttribute("id", topicDown);
-            previous.setAttribute("style", "margin-left: 5px");
+            previous.setAttribute("style", "margin-left: 5px; display: none;");
             previous.innerHTML = "Previous Topic";
             topicDiv.appendChild(previous);
 
             var next = document.createElement("button");
             next.setAttribute("id", topicUp);
-            next.setAttribute("style", "margin-left: 5px");
+            next.setAttribute("style", "margin-left: 5px; display: none;");
             next.innerHTML = "Next Topic";
             topicDiv.appendChild(next);
 
             var clear = document.createElement("button");
             clear.setAttribute("id", topicClear);
             clear.setAttribute("style", "margin-left: 5px");
-            clear.innerHTML = "Clear Topic";
+            clear.innerHTML = "Reset";
             topicDiv.appendChild(clear);
 
             var hide = document.createElement("button");
