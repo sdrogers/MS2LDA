@@ -97,6 +97,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 	var topicHide = topicID + "-hide";
 	var docPrev = visID + "-prev";
 	var docNext = visID + "-next";
+	var docShow = visID + "-showms1";
 	var showGraph = visID + "-showgraph";
 
 	var leftPanelID = visID + "-leftpanel";
@@ -243,6 +244,10 @@ var LDAvis = function(to_select, data_or_file_name) {
 									+ value_new), true);
 							vis_state.topic = value_new;
 							document
+								.getElementById(docShow)
+								.setAttribute("style",
+										"position: absolute; top: 490px; left: 900px; width: 80px; visibility: visible");
+							document
 									.getElementById(docPrev)
 									.setAttribute("style",
 											"position: absolute; top: 490px; left: 985px; width: 80px; visibility: visible");
@@ -304,6 +309,10 @@ var LDAvis = function(to_select, data_or_file_name) {
 									+ value_new), true);
 							vis_state.topic = value_new;
 							document
+								.getElementById(docShow)
+								.setAttribute("style",
+										"position: absolute; top: 490px; left: 900px; width: 80px; visibility: visible");
+							document
 									.getElementById(docPrev)
 									.setAttribute("style",
 											"position: absolute; top: 490px; left: 985px; width: 80px; visibility: visible");
@@ -352,6 +361,10 @@ var LDAvis = function(to_select, data_or_file_name) {
 					// make sure topic input box value and fragment
 					// reflects clicked selection
 					document.getElementById(topicID).value = vis_state.topic = d + 1; // +1 because we index circles from 1 ... 
+					document
+						.getElementById(docShow)
+						.setAttribute("style",
+								"position: absolute; top: 490px; left: 900px; width: 80px; visibility: visible");
 					document
 							.getElementById(docPrev)
 							.setAttribute("style",
@@ -431,6 +444,20 @@ var LDAvis = function(to_select, data_or_file_name) {
 							"/topic?action=next&ts=" + n);
 				});
 
+		// select ms1 peak in a new window
+		d3.select("#" + docShow).on(
+				"click",
+				function() {
+					var d = new Date();
+					var n = d.getTime();
+					var address = '/topic?action=show&ts=' + n;
+					var new_window = window.open(address, '',
+							'height=560, width=900');
+					if (window.focus) {
+						new_window.focus();
+					}
+				});
+		
 		// show force-directed graph in a new window
 		d3.select("#" + showGraph).on(
 				"click",
@@ -481,6 +508,10 @@ var LDAvis = function(to_select, data_or_file_name) {
 																					// labels
 																					// from
 																					// 0,..
+							document
+								.getElementById(docShow)
+								.setAttribute("style",
+										"position: absolute; top: 490px; left: 900px; width: 80px; visibility: visible");
 							document
 									.getElementById(docPrev)
 									.setAttribute("style",
@@ -728,6 +759,10 @@ var LDAvis = function(to_select, data_or_file_name) {
 							document.getElementById(topicID).value = vis_state.topic = d.topics;
 							document.getElementById(topicID + "_shown").value = d.topics - 1;
 							document
+								.getElementById(docShow)
+								.setAttribute("style",
+										"position: absolute; top: 490px; left: 900px; width: 80px; visibility: visible");
+							document
 									.getElementById(docPrev)
 									.setAttribute("style",
 											"position: absolute; top: 490px; left: 985px; width: 80px; visibility: visible");
@@ -917,7 +952,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 			topicLabel.setAttribute("for", topicID);
 			topicLabel.setAttribute("style",
 					"font-family: sans-serif; font-size: 14px");
-			topicLabel.innerHTML = "Selected Topic: <span id='" + topicID
+			topicLabel.innerHTML = "Type the topic number and press enter: <span id='" + topicID
 					+ "-value'></span>";
 			topicDiv.appendChild(topicLabel);
 
@@ -944,24 +979,29 @@ var LDAvis = function(to_select, data_or_file_name) {
 			previous.setAttribute("id", topicDown);
 			previous.setAttribute("style", "margin-left: 5px; display: none;");
 			previous.innerHTML = "Previous Topic";
+			// previous.title = "Select the previous topic."
 			topicDiv.appendChild(previous);
 
 			var next = document.createElement("button");
 			next.setAttribute("id", topicUp);
 			next.setAttribute("style", "margin-left: 5px; display: none;");
 			next.innerHTML = "Next Topic";
+			// next.title = "Select the next topic."
 			topicDiv.appendChild(next);
 
 			var clear = document.createElement("button");
 			clear.setAttribute("id", topicClear);
 			clear.setAttribute("style", "margin-left: 5px");
 			clear.innerHTML = "Reset";
+			// clear.title = "Reset the currently selected topic."
 			topicDiv.appendChild(clear);
 
 			var hide = document.createElement("button");
 			hide.setAttribute("id", topicHide);
 			hide.setAttribute("style", "margin-left: 5px");
 			hide.innerHTML = "Hide Label";
+			// hide.title = "Hide the labels on the plot."
+			
 			topicDiv.appendChild(hide);
 
 			var prevBtn = document.createElement("button");
@@ -970,6 +1010,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 					.setAttribute("style",
 							"position: absolute; top: 490px; left: 985px; width: 80px; visibility: hidden");
 			prevBtn.innerHTML = "Prev MS1";
+			// prevBtn.title = "Display the previous MS1 peak that has been assigned to this topic."
 			topicDiv.appendChild(prevBtn);
 
 			var nextBtn = document.createElement("button");
@@ -978,13 +1019,24 @@ var LDAvis = function(to_select, data_or_file_name) {
 					.setAttribute("style",
 							"position: absolute; top: 490px; left: 1070px; width: 80px; visibility: hidden");
 			nextBtn.innerHTML = "Next MS1";
+			// nextBtn.title = "Display the next MS1 peak that has been assigned to this topic."
 			topicDiv.appendChild(nextBtn);
 
+			var showMs1Btn = document.createElement("button");
+			showMs1Btn.setAttribute("id", docShow);
+			showMs1Btn
+					.setAttribute("style",
+							"position: absolute; top: 490px; left: 900px; width: 80px; visibility: hidden");
+			showMs1Btn.innerHTML = "Show MS1";
+			// showMs1Btn.title = "Show MS1 plot in a new window."
+			topicDiv.appendChild(showMs1Btn);
+			
 			var showGraphBtn = document.createElement("button");
 			showGraphBtn.setAttribute("id", showGraph);
 			showGraphBtn.setAttribute("style",
 					"margin: 5px; position: absolute; right: 0; bottom: 0");
 			showGraphBtn.innerHTML = "Show Graph";
+			// showGraphBtn.title = "Display a network graph of topics and their related MS1 peaks."
 
 			var showGraphImg = document.createElement("img");
 			showGraphImg
@@ -1782,6 +1834,10 @@ var LDAvis = function(to_select, data_or_file_name) {
 			vis_state.term = "";
 			document.getElementById(topicID).value = vis_state.topic = 0;
 			document.getElementById(topicID + "_shown").value = 'None';
+			document
+				.getElementById(docShow)
+				.setAttribute("style",
+						"position: absolute; top: 490px; left: 900px; width: 80px; visibility: hidden");
 			document
 					.getElementById(docPrev)
 					.setAttribute("style",

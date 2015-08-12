@@ -94,6 +94,8 @@ def generate_handler(html, files=None, topic_plotter=None):
                     topic_id = GlobalVariable.selected_topic_id
                     if (GlobalVariable.ms1_idx - 1) >= 0:
                         GlobalVariable.ms1_idx -= 1
+                elif action == 'show':
+                    topic_id = GlobalVariable.selected_topic_id                    
 
                 # get the image content
                 fig = topic_plotter.plot_for_web(topic_id, GlobalVariable.ms1_idx)
