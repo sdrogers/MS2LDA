@@ -223,8 +223,8 @@ text {
 				    // set the currently selected topic and also enable the button to browse the MS1
 		            parent_document.getElementById(topicID).value = vis_state.topic = n+1; 	// +1 because we index circles from 1,..
 					parent_document.getElementById(topicID+"_shown").value = n;  				// but we show circle labels from 0,..
-		            parent_document.getElementById(docPrev).removeAttribute("disabled");
-		            parent_document.getElementById(docNext).removeAttribute("disabled");				              
+	                parent_document.getElementById(docPrev).setAttribute("style", "position: absolute; top: 490px; left: 985px; width: 80px; visibility: visible");
+	                parent_document.getElementById(docNext).setAttribute("style", "position: absolute; top: 490px; left: 1070px; width: 80px; visibility: visible");
 					topic_on = window.opener.topic_on
 					topic_on(selected_circle, true);	            	
 	            	
