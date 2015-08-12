@@ -4,8 +4,11 @@ create_peaklist <- function(peaks) {
     
     # get ms1 peaks
     ms1 <- peaks[which(peaks$msLevel==1),]
+
+    # keep MS1 peaks greater than this intensity
+    ms1 <- ms1[which(ms1$intensity >= 520000),]
     
-    # keep peaks with RT > 3 mins and < 21 mins
+    # keep MS1 peaks with RT > 3 mins and < 21 mins
     ms1 <- ms1[which(ms1$rt >= 3*60),]
     ms1 <- ms1[which(ms1$rt <= 21*60),]
     

@@ -43,11 +43,11 @@ def generate_handler(html, files=None, topic_plotter=None):
     if files is None:
         files = {}
     
-    # add default logo to files
-    logo_url = urls.DEFAULT_LOGO_LOCAL
-    logo_content_type = 'image/png'
-    logo_content = StringIO.StringIO(urlopen(logo_url).read()).read()
-    files['/images/default_logo.png'] = (logo_content_type, logo_content)
+    # add default images to files
+    logo_content = StringIO.StringIO(urlopen(urls.DEFAULT_LOGO_LOCAL).read()).read()
+    show_graph_content = StringIO.StringIO(urlopen(urls.DEFAULT_SHOW_GRAPH_LOCAL).read()).read()
+    files['/images/default_logo.png'] = ('image/png', logo_content)
+    files['/images/graph_example.jpg'] = ('image/jpg', show_graph_content)
 
     class MyHandler(server.BaseHTTPRequestHandler):
 

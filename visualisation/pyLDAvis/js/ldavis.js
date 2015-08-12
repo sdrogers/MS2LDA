@@ -217,8 +217,9 @@ var LDAvis = function(to_select, data_or_file_name) {
                 topic_off(document.getElementById(topicID + value_old));
                 topic_on(document.getElementById(topicID + value_new), true);
                 vis_state.topic = value_new;
-                document.getElementById(docPrev).removeAttribute("disabled");
-                document.getElementById(docNext).removeAttribute("disabled");
+                document.getElementById(docPrev).setAttribute("style", "position: absolute; top: 490px; left: 985px; width: 80px; visibility: visible");
+                document.getElementById(docNext).setAttribute("style", "position: absolute; top: 490px; left: 1070px; width: 80px; visibility: visible");
+                
 //                state_save(true);
             });
 
@@ -256,8 +257,8 @@ var LDAvis = function(to_select, data_or_file_name) {
                 topic_off(document.getElementById(topicID + value_old));
                 topic_on(document.getElementById(topicID + value_new), true);
                 vis_state.topic = value_new;
-                document.getElementById(docPrev).removeAttribute("disabled");
-                document.getElementById(docNext).removeAttribute("disabled");
+                document.getElementById(docPrev).setAttribute("style", "position: absolute; top: 490px; left: 985px; width: 80px; visibility: visible");
+                document.getElementById(docNext).setAttribute("style", "position: absolute; top: 490px; left: 1070px; width: 80px; visibility: visible");
 //                state_save(true);
             });
 
@@ -357,8 +358,8 @@ var LDAvis = function(to_select, data_or_file_name) {
             // make sure topic input box value and fragment reflects clicked selection
             document.getElementById(topicID).value = vis_state.topic = d+1; 	// +1 because we index circles from 1,..
 			document.getElementById(topicID+"_shown").value = d;  				// but we show circle labels from 0,..
-            document.getElementById(docPrev).removeAttribute("disabled");
-            document.getElementById(docNext).removeAttribute("disabled");				              
+            document.getElementById(docPrev).setAttribute("style", "position: absolute; top: 490px; left: 985px; width: 80px; visibility: visible");
+            document.getElementById(docNext).setAttribute("style", "position: absolute; top: 490px; left: 1070px; width: 80px; visibility: visible");
             topic_on(selected_circle, true);    			
 		});
         
@@ -630,8 +631,8 @@ var LDAvis = function(to_select, data_or_file_name) {
                 // make sure topic input box value and fragment reflects clicked selection
                 document.getElementById(topicID).value = vis_state.topic = d.topics;
 				document.getElementById(topicID+"_shown").value = d.topics-1;  
-                document.getElementById(docPrev).removeAttribute("disabled");
-                document.getElementById(docNext).removeAttribute("disabled");				              
+                document.getElementById(docPrev).setAttribute("style", "position: absolute; top: 490px; left: 985px; width: 80px; visibility: visible");
+                document.getElementById(docNext).setAttribute("style", "position: absolute; top: 490px; left: 1070px; width: 80px; visibility: visible");
 //                state_save(true);
                 topic_on(this, true);
             })
@@ -827,12 +828,12 @@ var LDAvis = function(to_select, data_or_file_name) {
             // create container div for topic and lambda input:
             var inputDiv = document.createElement("div");
             inputDiv.setAttribute("id", topID);
-            inputDiv.setAttribute("style", "width: 1210px; border: 2px lightgrey solid;"); // to match the width of the main svg element
+            inputDiv.setAttribute("style", "width: 1210px;"); // to match the width of the main svg element
             document.getElementById(visID).appendChild(inputDiv);
 
             // topic input container:
             var topicDiv = document.createElement("div");
-            topicDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; width: " + mdswidth*1.9 + "px; height: 75px; float: left");
+            topicDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; width: 1200px; height: 80px; float: left; position: relative");
             inputDiv.appendChild(topicDiv);
 
             var topicLabel = document.createElement("label");
@@ -885,26 +886,30 @@ var LDAvis = function(to_select, data_or_file_name) {
 
             var prevBtn = document.createElement("button");
             prevBtn.setAttribute("id", docPrev);
-            prevBtn.setAttribute("style", "margin-left: 5px");
-            prevBtn.setAttribute("disabled", "disabled");
+            prevBtn.setAttribute("style", "position: absolute; top: 490px; left: 985px; width: 80px; visibility: hidden");
             prevBtn.innerHTML = "Prev MS1";
             topicDiv.appendChild(prevBtn);
-
+            
             var nextBtn = document.createElement("button");
             nextBtn.setAttribute("id", docNext);
-            nextBtn.setAttribute("style", "margin-left: 5px");
-            nextBtn.setAttribute("disabled", "disabled");
+            nextBtn.setAttribute("style", "position: absolute; top: 490px; left: 1070px; width: 80px; visibility: hidden");
             nextBtn.innerHTML = "Next MS1";
             topicDiv.appendChild(nextBtn);
 
             var showGraphBtn = document.createElement("button");
             showGraphBtn.setAttribute("id", showGraph);
-            showGraphBtn.setAttribute("style", "margin-left: 5px");
+            showGraphBtn.setAttribute("style", "margin: 5px; position: absolute; right: 0; bottom: 0");
             showGraphBtn.innerHTML = "Show Graph";
+
+            var showGraphImg = document.createElement("img");
+			showGraphImg.setAttribute("style", "margin: 5px; margin-right: 25px; position: absolute; right: 0; top: 0; width: 50; height: 50");
+			showGraphImg.setAttribute("src", "/images/graph_example.jpg");
+
             topicDiv.appendChild(showGraphBtn);            
+            topicDiv.appendChild(showGraphImg);            
             
             var topicRankingDiv = document.createElement("div");
-            topicRankingDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; " + 
+            topicRankingDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: none; " + 
                "width: 150px; height: 75px; overflow-y: scroll; overflow-x: hidden; font-family: sans-serif; font-size: 11px;");
             var topicRankingContent = "";
             for (var i = 0; i < K; i++) {
@@ -924,7 +929,7 @@ var LDAvis = function(to_select, data_or_file_name) {
             var lambdaDiv = document.createElement("div");
             lambdaDiv.setAttribute("id", lambdaInputID);
 //            lambdaDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; height: 50px; width: " + lambdaDivWidth + "px; float: right; margin-right: 30px; display: none");
-            lambdaDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; height: 50px; width: " + lambdaDivWidth + "px; float: lefts; margin-right: 30px");
+            lambdaDiv.setAttribute("style", "padding: 5px; background-color: #e8e8e8; display: inline-block; height: 50px; width: " + lambdaDivWidth + "px; position: absolute; bottom: 0; left: 0");
             topicDiv.appendChild(lambdaDiv);
 
             var lambdaZero = document.createElement("div");
@@ -1730,8 +1735,8 @@ var LDAvis = function(to_select, data_or_file_name) {
             vis_state.term = "";
             document.getElementById(topicID).value = vis_state.topic = 0;
             document.getElementById(topicID+"_shown").value = 'None';             
-            document.getElementById(docPrev).setAttribute("disabled", "disabled");
-            document.getElementById(docNext).setAttribute("disabled", "disabled");
+            document.getElementById(docPrev).setAttribute("style", "position: absolute; top: 490px; left: 985px; width: 80px; visibility: hidden");
+            document.getElementById(docNext).setAttribute("style", "position: absolute; top: 490px; left: 1070px; width: 80px; visibility: hidden");
 //            state_save(true);
         }
 

@@ -22,6 +22,7 @@ D3_LOCAL = os.path.join(LOCAL_JS_DIR, "d3.v3.min.js")
 
 LOCAL_IMAGE_DIR = os.path.join(__path__[0], "images")
 DEFAULT_LOGO_LOCAL = os.path.join(LOCAL_IMAGE_DIR, "placeholder2.png")
+DEFAULT_SHOW_GRAPH_LOCAL = os.path.join(LOCAL_IMAGE_DIR, "show_graph2.jpg")
 
 if DEV:
     LDAVIS_URL = os.path.join(LOCAL_JS_DIR, "ldavis.js")
