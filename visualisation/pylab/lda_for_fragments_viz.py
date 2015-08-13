@@ -27,6 +27,7 @@ class Ms2Lda_Viz(object):
             topic_sort_criteria = self._h_index() 
         elif sort_by == 'in_degree':
             topic_sort_criteria = self._in_degree() 
+        print "DONE!"
         
         sorted_topic_counts = sorted(topic_sort_criteria.items(), key=operator.itemgetter(1), reverse=True)
         if not interactive:
@@ -81,14 +82,14 @@ class Ms2Lda_Viz(object):
             if selected_topics is not None:
                 if i not in selected_topics:
                     continue
-            
-            if sort_by == 'h_index':
-                print "Topic " + str(i) + " h-index=" + str(topic_ranking[i])
-            elif sort_by == 'in_degree':
-                print "Topic " + str(i) + " in-degree=" + str(topic_ranking[i])
-            if not interactive:
-                print "====================="
-                print
+
+            if not interactive:            
+                if sort_by == 'h_index':
+                    print "Topic " + str(i) + " h-index=" + str(topic_ranking[i])
+                elif sort_by == 'in_degree':
+                    print "Topic " + str(i) + " in-degree=" + str(topic_ranking[i])
+                    print "====================="
+                    print
 
             column_values = np.array(self.docdf.columns.values)    
             doc_dist = self.docdf.iloc[[i]].as_matrix().flatten()
@@ -338,7 +339,7 @@ class Ms2Lda_Viz(object):
                            wordfreq, consistency, max_parent_mz)
                 self.topic_plots[i] = plot_data
                 self.topic_ms1_count[i] = num_peaks
-                print "Topic " + str(i) + " has " + str(num_peaks) + " ms1 peaks"
+                print "Generating plots for topic " + str(i) + " h-index = " + str(topic_ranking[i]) + " degree = " + str(num_peaks)
                 
                 # set coordinate of each circle
                 x_coord = topic_ranking[i]
@@ -532,14 +533,14 @@ class Ms2Lda_Viz(object):
                            head_width=txt_width/4, head_length=txt_height*0.25, 
                            zorder=0,length_includes_head=True)
     
-    # compute the h-index of topics
+    # compute the h-index of topics TODO: this only works for fragment and loss words!
     def _h_index(self):
                 
-        topic_fragments = self.model.topic_word_
+        K = self.model.K
         topic_counts = {}
 
-        for i, topic_dist in enumerate(topic_fragments):
-            
+        for i in range(K):
+                        
             sys.stdout.flush()
             
             # find the words in this topic above the threshold
@@ -583,20 +584,36 @@ class Ms2Lda_Viz(object):
                     # convert from pandas dataframes to list
                     fragment_bin_ids = fragment_bin_ids.values.ravel().tolist()
                     loss_bin_ids = loss_bin_ids.values.ravel().tolist()
-                    
+                                        
+                    # this code is too slow!
                     # count the citation numbers
-                    for cited in fragment_bin_ids:
-                        if cited == 'nan':
-                            continue
-                        else:
-                            if cited in fragment_words:
-                                fragment_words[cited] = fragment_words[cited] + 1
-                    for cited in loss_bin_ids:
-                        if cited == 'nan':
-                            continue
-                        else:
-                            if cited in loss_words:
-                                loss_words[cited] = loss_words[cited] + 1
+#                     for cited in fragment_bin_ids:
+#                         if cited == 'nan':
+#                             continue
+#                         else:
+#                             if cited in fragment_words:
+#                                 fragment_words[cited] = fragment_words[cited] + 1
+#                     for cited in loss_bin_ids:
+#                         if cited == 'nan':
+#                             continue
+#                         else:
+#                             if cited in loss_words:
+#                                 loss_words[cited] = loss_words[cited] + 1
+
+                    # convert to dictionary for quick lookup
+                    word_dict = {}
+                    for word in fragment_bin_ids:
+                        word_dict.update({word:word})
+                    for word in loss_bin_ids:
+                        word_dict.update({word:word})
+
+                    # count the citation numbers                                
+                    for word in fragment_words:
+                        if word in word_dict:
+                            fragment_words[word] = fragment_words[word] + 1
+                    for word in loss_words:
+                        if word in word_dict:
+                            loss_words[word] = loss_words[word] + 1
                     
                     # make a dataframe of the articles & citation counts
                     fragment_df = DataFrame(fragment_words, index=['counts']).transpose()
@@ -611,7 +628,8 @@ class Ms2Lda_Viz(object):
                             h_index += 1
                         else:
                             break
-    
+
+                print " - topic " + str(i) + " h-index = " + str(h_index)
                 topic_counts[i] = h_index
             
         return topic_counts

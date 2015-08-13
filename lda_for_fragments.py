@@ -246,59 +246,39 @@ class Ms2Lda(object):
         self.model.run(n_burn, n_samples, n_thin, use_native=use_native)
         stop = timeit.default_timer()
         print "DONE. Time=" + str(stop-start)
-                        
-    def write_results(self, results_prefix):
+        
+    def do_thresholding(self, th_doc_topic=0.05, th_topic_word=0.0):
 
         previous_model = self.model.previous_model
         selected_topics = None
         if previous_model is not None and hasattr(previous_model, 'selected_topics'):
             selected_topics = previous_model.selected_topics
-        
-        # create topic-word output file
-        # the column names of each topic is assigned here
-        topic_names = []
-        outfile = self._get_outfile(results_prefix, '_topics.csv') 
-        print "Writing topics to " + outfile
-        topic_word = self.model.topic_word_
-        with open(outfile,'w') as f:
             
-            counter = 0
-            for i, topic_dist in enumerate(topic_word):
-
-                ordering = np.argsort(topic_dist)
-                vocab = self.df.columns.values                
-                topic_words = np.array(vocab)[ordering][::-1]
-                dist = topic_dist[ordering][::-1]
-                
-                if selected_topics is not None:
-                    if i < len(selected_topics):
-                        topic_name = 'Fixed Topic {}'.format(selected_topics[i])
-                    else:
-                        topic_name = 'Topic {}'.format(counter)
-                        counter += 1
+        # get rid of small values in the matrices of the results
+        # if epsilon > 0, then the specified value will be used for thresholding
+        # otherwise, the smallest value for each row in the matrix is used instead
+        self.topic_word = self.model.threshold_matrix(self.model.topic_word_, epsilon=th_topic_word)
+        self.doc_topic = self.model.threshold_matrix(self.model.doc_topic_, epsilon=th_doc_topic)
+        
+        self.topic_names = []
+        counter = 0
+        for i, topic_dist in enumerate(self.topic_word):
+            if selected_topics is not None:
+                if i < len(selected_topics):
+                    topic_name = 'Fixed Topic {}'.format(selected_topics[i])
                 else:
-                    topic_name = 'Topic {}'.format(i)                    
-                f.write(topic_name)
-                topic_names.append(topic_name)
-                
-                # filter entries to display by epsilon
-                for j in range(len(topic_words)):
-                    if dist[j] > self.EPSILON:
-                        f.write(',{}'.format(topic_words[j]))
-                    else:
-                        break
-                f.write('\n')
-    
-        outfile = self._get_outfile(results_prefix, '_all.csv') 
-        print "Writing fragments x topics to " + outfile
-
+                    topic_name = 'Topic {}'.format(counter)
+                    counter += 1
+            else:
+                topic_name = 'Topic {}'.format(i)                    
+            self.topic_names.append(topic_name)
+        
         # create document-topic output file        
-        topic = self.model.topic_word_
         masses = np.array(self.df.transpose().index)
         d = {}
         for i in np.arange(self.n_topics):
-            topic_name = topic_names[i]
-            topic_series = pd.Series(topic[i], index=masses)
+            topic_name = self.topic_names[i]
+            topic_series = pd.Series(self.topic_word[i], index=masses)
             d[topic_name] = topic_series
         self.topicdf = pd.DataFrame(d)
         
@@ -307,23 +287,15 @@ class Ms2Lda(object):
         cols = self.topicdf.columns.tolist()
         sorted_cols = self._natural_sort(cols)
         self.topicdf = self.topicdf[sorted_cols]        
-
-        # threshold topicdf to get rid of small values
-        def f(x):
-            if x < self.EPSILON: return 0
-            else: return x
-        self.topicdf = self.topicdf.applymap(f)
-        self.topicdf.to_csv(outfile)
     
         # create topic-docs output file
-        doc = self.model.doc_topic_
-        (n_doc, a) = doc.shape
+        (n_doc, a) = self.doc_topic.shape
         topic_index = np.arange(self.n_topics)
         doc_names = np.array(self.df.index)
         d = {}
         for i in np.arange(n_doc):
             doc_name = doc_names[i]
-            doc_series = pd.Series(doc[i], index=topic_index)
+            doc_series = pd.Series(self.doc_topic[i], index=topic_index)
             d[doc_name] = doc_series
         self.docdf = pd.DataFrame(d)
         
@@ -336,7 +308,6 @@ class Ms2Lda(object):
         # self.docdf.to_csv(outfile)
 
         # threshold docdf to get rid of small values and also scale it
-        self.docdf = self.docdf.applymap(f)                
         for i, row in self.docdf.iterrows(): # iterate through the rows
             doc = self.docdf.ix[:, i]
             selected = doc[doc>0]
@@ -344,6 +315,37 @@ class Ms2Lda(object):
             selected = selected * count
             self.docdf.ix[:, i] = selected
         self.docdf = self.docdf.replace(np.nan, 0)
+                                
+    def write_results(self, results_prefix):
+        
+        # create topic-word output file
+        outfile = self._get_outfile(results_prefix, '_topics.csv') 
+        print "Writing topics to " + outfile
+        with open(outfile,'w') as f:
+            
+            for i, topic_dist in enumerate(self.topic_word):
+
+                ordering = np.argsort(topic_dist)
+                vocab = self.df.columns.values                
+                topic_words = np.array(vocab)[ordering][::-1]
+                dist = topic_dist[ordering][::-1]
+                topic_name = self.topic_names[i]
+                f.write(topic_name)
+                
+                # filter entries to display
+                for j in range(len(topic_words)):
+                    if dist[j] > 0:
+                        f.write(',{}'.format(topic_words[j]))
+                    else:
+                        break
+                f.write('\n')
+    
+        # write out topicdf and docdf
+
+        outfile = self._get_outfile(results_prefix, '_all.csv') 
+        print "Writing fragments x topics to " + outfile
+        self.topicdf.to_csv(outfile)
+    
         outfile = self._get_outfile(results_prefix, '_docs.csv') 
         print "Writing topic docs to " + outfile
         self.docdf.transpose().to_csv(outfile)
@@ -375,7 +377,18 @@ class Ms2Lda(object):
                                        selected_topics=selected_topics, interactive=interactive)
             
     def print_topic_words(self):
-        self.model.print_topic_words(self.EPSILON)
+        for i, topic_dist in enumerate(self.topic_word):    
+            ordering = np.argsort(topic_dist)
+            topic_words = np.array(self.vocab)[ordering][::-1]
+            dist = topic_dist[ordering][::-1]        
+            topic_name = 'Topic {}:'.format(i)
+            print topic_name,                    
+            for j in range(len(topic_words)):
+                if dist[j] > 0:
+                    print('{} ({}),'.format(topic_words[j], dist[j])),
+                else:
+                    break
+            print "\n"
         
     def plot_posterior_alpha(self):
         posterior_alpha = self.model.posterior_alpha
