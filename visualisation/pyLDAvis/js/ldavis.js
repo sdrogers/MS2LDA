@@ -977,14 +977,14 @@ var LDAvis = function(to_select, data_or_file_name) {
 
 			var previous = document.createElement("button");
 			previous.setAttribute("id", topicDown);
-			previous.setAttribute("style", "margin-left: 5px; display: none;");
+			previous.setAttribute("style", "margin-left: 5px;");
 			previous.innerHTML = "Previous Topic";
 			// previous.title = "Select the previous topic."
 			topicDiv.appendChild(previous);
 
 			var next = document.createElement("button");
 			next.setAttribute("id", topicUp);
-			next.setAttribute("style", "margin-left: 5px; display: none;");
+			next.setAttribute("style", "margin-left: 5px;");
 			next.innerHTML = "Next Topic";
 			// next.title = "Select the next topic."
 			topicDiv.appendChild(next);
