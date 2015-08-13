@@ -1456,9 +1456,11 @@ var LDAvis = function(to_select, data_or_file_name) {
 			var degree = topic_degree_map[topics];
 			var h_index = topic_h_index_map[topics];
 			var msg = "Topic " + (topics - 1) + ", degree=" + degree
-					+ ", h-index=" + h_index + " (" + Freq + "% of tokens)";
-			d3.select("#" + barFreqsID).append("text").attr("x", 220).attr("y",
-					-410).attr("class", "bubble-tool") // set class so we can
+					+ ", h-index=" + h_index;
+						
+			d3.select("#" + barFreqsID).append("text")
+					.attr("x", 220).attr("y", -410)
+					.attr("class", "bubble-tool") // set class so we can
 														// remove it when
 														// highlight_off is
 														// called
