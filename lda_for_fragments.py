@@ -307,13 +307,13 @@ class Ms2Lda(object):
         self.docdf = self.docdf[ind]
         # self.docdf.to_csv(outfile)
 
-        # threshold docdf to get rid of small values and also scale it
-        for i, row in self.docdf.iterrows(): # iterate through the rows
-            doc = self.docdf.ix[:, i]
-            selected = doc[doc>0]
-            count = len(selected.values)
-            selected = selected * count
-            self.docdf.ix[:, i] = selected
+#         # threshold docdf to get rid of small values and also scale it
+#         for i, row in self.docdf.iterrows(): # iterate through the rows
+#             doc = self.docdf.ix[:, i]
+#             selected = doc[doc>0]
+#             count = len(selected.values)
+#             selected = selected * count
+#             self.docdf.ix[:, i] = selected
         self.docdf = self.docdf.replace(np.nan, 0)
                                 
     def write_results(self, results_prefix):
