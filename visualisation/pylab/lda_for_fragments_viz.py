@@ -66,7 +66,11 @@ class Ms2Lda_Viz(object):
         
         return topic_sort_criteria, sorted_topic_counts                
                 
-    def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", selected_topics=None, interactive=False):
+    def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", 
+                           selected_topics=None, interactive=False,
+                           to_highlight=None):
+        
+        self.to_highlight = to_highlight
                 
         if selected_topics is not None and interactive:
             raise ValueError("For interactive mode, the selected_topics parameter is not yet supported so you must visualise all topics.")

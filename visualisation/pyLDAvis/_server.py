@@ -135,7 +135,9 @@ def generate_handler(html, files=None, topic_plotter=None):
             elif self.path.startswith('/graph.json'):
                 
                 print "Serving dynamic json file -- threshold = " + str(GlobalVariable.degree)
-                json_data = lda_visualisation.get_json_from_docdf(topic_plotter.docdf.transpose(), GlobalVariable.degree)
+                json_data = lda_visualisation.get_json_from_docdf(topic_plotter.docdf.transpose(), 
+                                                                  topic_plotter.to_highlight,
+                                                                  GlobalVariable.degree)
 
 #                 print "Debugging file saved to " + json_outfile
 #                 json_outfile = '/home/joewandy/git/metabolomics_tools/justin/visualisation/pyLDAvis/json_out.json'

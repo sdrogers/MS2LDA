@@ -42,6 +42,7 @@ text {
 	var highlight_color = "blue";
 	var highlight_trans = 0.1;
 	var default_node_color = "#ccc";
+	var special_node_color = "#ff34b3";
 	//var default_node_color = "rgb(3,190,100)";
 	var default_link_color = "#888";
 	var nominal_base_node_size = 8;
@@ -138,8 +139,14 @@ text {
 	                return d.type;
 	            }))
 	        .style(tocolor, function(d) {
-	            if (isNumber(d.score) && d.score >= 0) return color(d.score);
-	            else return default_node_color;
+            	if (d.special == true) {
+            		return special_node_color;
+            	} else {
+    	            if (isNumber(d.score) && d.score >= 0) return color(d.score);
+    	            else {
+    	            	return default_node_color;	            		
+    	            }
+            	}
 	        })
 	        //.attr("r", function(d) { return size(d.size)||nominal_base_node_size; })
 	        .style("stroke-width", nominal_stroke)

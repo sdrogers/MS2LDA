@@ -318,6 +318,9 @@ class Ms2Lda(object):
                                 
     def write_results(self, results_prefix):
         
+        if not hasattr(self, 'topic_word'):
+            raise ValueError('Thresholding not done yet.')
+        
         # create topic-word output file
         outfile = self._get_outfile(results_prefix, '_topics.csv') 
         print "Writing topics to " + outfile
@@ -365,18 +368,28 @@ class Ms2Lda(object):
         plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdf)
         return plotter.rank_topics(sort_by=sort_by, selected_topics=selected_topics, top_N=top_N)
         
-    def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", selected_topics=None, interactive=False):
+    def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", 
+                           selected_topics=None, interactive=False, to_highlight=None):
+
+        if not hasattr(self, 'topic_word'):
+            raise ValueError('Thresholding not done yet.')        
+        
         plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdf)
         if interactive:
             # if interactive mode, we always sort by the h_index because we need both the h-index and degree for plotting
             plotter.plot_lda_fragments(consistency=consistency, sort_by='h_index', 
-                                       selected_topics=selected_topics, interactive=interactive)
+                                       selected_topics=selected_topics, interactive=interactive,
+                                       to_highlight=to_highlight)
             self.model.visualise(plotter)
         else:
             plotter.plot_lda_fragments(consistency=consistency, sort_by=sort_by, 
                                        selected_topics=selected_topics, interactive=interactive)
             
     def print_topic_words(self):
+        
+        if not hasattr(self, 'topic_word'):
+            raise ValueError('Thresholding not done yet.')
+        
         for i, topic_dist in enumerate(self.topic_word):    
             ordering = np.argsort(topic_dist)
             topic_words = np.array(self.vocab)[ordering][::-1]
