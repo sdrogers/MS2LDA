@@ -1034,7 +1034,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 			var showGraphBtn = document.createElement("button");
 			showGraphBtn.setAttribute("id", showGraph);
 			showGraphBtn.setAttribute("style",
-					"margin: 5px; position: absolute; right: 0; bottom: 0");
+					"margin: 5px; position: absolute; right: 0; bottom: 0; height: 80px");
 			showGraphBtn.innerHTML = "Show Graph";
 			// showGraphBtn.title = "Display a network graph of topics and their related MS1 peaks."
 
@@ -1042,7 +1042,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 			showGraphImg
 					.setAttribute(
 							"style",
-							"margin: 5px; margin-right: 25px; position: absolute; right: 0; top: 0; width: 50; height: 50");
+							"margin: 5px; margin-right: 100px; position: absolute; right: 0; top: 0; width: 80; height: 80");
 			showGraphImg.setAttribute("src", "/images/graph_example.jpg");
 
 			topicDiv.appendChild(showGraphBtn);
