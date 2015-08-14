@@ -1117,7 +1117,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 			lambdaInput.type = "range";
 			lambdaInput.min = data['lambda.min'];
 			lambdaInput.max = data['lambda.max'];
-			lambdaInput.step = 5;
+			lambdaInput.step = data['lambda.step'];
 			lambdaInput.value = vis_state.lambda;
 			lambdaInput.id = lambdaID;
 			lambdaInput.setAttribute("list", "ticks"); // to enable automatic

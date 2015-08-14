@@ -151,6 +151,8 @@ def _topic_info(topic_term_dists, topic_proportion, term_frequency, term_topic_f
     ## compute relevance and top terms for each topic
     log_lift = np.log(topic_term_dists / term_proportion)
     log_ttd = np.log(topic_term_dists)
+    
+    lambda_step = 0.1
     lambda_seq = np.arange(0, 1 + lambda_step, lambda_step)
 
     def topic_top_term_df(tup):
