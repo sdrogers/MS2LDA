@@ -35,13 +35,14 @@ text {
 	    key0 = true
 	var focus_node = null,
 	    highlight_node = null;
-	var text_center = false;
+	var text_center = true;
 	var outline = false;
 	var min_score = 0;
 	var max_score = 1;
 	var highlight_color = "blue";
 	var highlight_trans = 0.1;
 	var default_node_color = "#ccc";
+	var special_node_color = "#ff34b3";
 	//var default_node_color = "rgb(3,190,100)";
 	var default_link_color = "#888";
 	var nominal_base_node_size = 8;
@@ -57,7 +58,7 @@ text {
 	
 	var color = d3.scale.linear()
 	    .domain([min_score, (min_score + max_score) / 2, max_score])
-	    .range(["lime", "yellow", "red"]);
+	    .range(["#1f77b4", "#2ca02c", "#ff7f0e"]);
 	
 	var size = d3.scale.pow().exponent(1)
 	    .domain([1, 100])
@@ -138,8 +139,14 @@ text {
 	                return d.type;
 	            }))
 	        .style(tocolor, function(d) {
-	            if (isNumber(d.score) && d.score >= 0) return color(d.score);
-	            else return default_node_color;
+            	if (d.special == true) {
+            		return special_node_color;
+            	} else {
+    	            if (isNumber(d.score) && d.score >= 0) return color(d.score);
+    	            else {
+    	            	return default_node_color;	            		
+    	            }
+            	}
 	        })
 	        //.attr("r", function(d) { return size(d.size)||nominal_base_node_size; })
 	        .style("stroke-width", nominal_stroke)
@@ -149,7 +156,17 @@ text {
 	        .data(graph.nodes)
 	        .enter().append("text")
 	        .attr("dy", ".35em")
-	        .style("font-size", nominal_text_size + "px")
+	        .style("font-size", function (d) { 
+	        	if (d.name.indexOf("topic")>-1) {
+		        	return max_text_size*2 + "px"	        		
+	        	} else {
+		        	return nominal_text_size + "px"	        		
+	        	}
+	        })
+	        .attr("fill", function (d) {
+	        	return "black"
+	        })
+	        .style("opacity", 0)
 	
 	    if (text_center) {
 	        text.text(function(d) {
@@ -170,12 +187,56 @@ text {
 	            set_highlight(d);
 	        })
 	        .on("mousedown", function(d) {
+	        	
 	            d3.event.stopPropagation();
 	            focus_node = d;
 	            set_focus(d)
 	            if (highlight_node === null) {
 	            	set_highlight(d)
 	            }
+
+	            // highlight the topic in the main window too
+	            tokens = d.name.split('_')
+				node_type = tokens[0]
+	            if (node_type.toLowerCase() === 'topic') {
+	            
+		            // select the topic in the main window
+		            vis_state = window.opener.vis_state	            
+		            n = parseInt(tokens[1])
+		            circles = vis_state['circles']
+		            selected_circle = circles[0][n]
+		            circle_id = selected_circle.id
+
+		            parent_document = window.opener.document
+		            
+					// find the old topic
+		            address_bar_val = window.location.search
+		            function get(name){
+		               if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
+		                  return decodeURIComponent(name[1]);
+		            }
+					visID = get('visID')
+	    			topicID = visID + "-topic";
+				    docPrev = visID + "-prev";
+				    docNext = visID + "-next";
+					
+				    // set as off if it's different from the current one
+					old_topic = topicID + vis_state.topic
+		            if (vis_state.topic > 0 && old_topic != circle_id) {
+		            	var topic_off = window.opener.topic_off
+		                topic_off(parent_document.getElementById(old_topic));
+		            }
+
+				    // set the currently selected topic and also enable the button to browse the MS1
+		            parent_document.getElementById(topicID).value = vis_state.topic = n+1; 	// +1 because we index circles from 1,..
+					parent_document.getElementById(topicID+"_shown").value = n;  				// but we show circle labels from 0,..
+	                parent_document.getElementById(docPrev).setAttribute("style", "position: absolute; top: 490px; left: 985px; width: 80px; visibility: visible");
+	                parent_document.getElementById(docNext).setAttribute("style", "position: absolute; top: 490px; left: 1070px; width: 80px; visibility: visible");
+					topic_on = window.opener.topic_on
+					topic_on(selected_circle, true);	            	
+	            	
+	            }
+	            	            
 	        })
 	        .on("mouseout", function(d) {
 	            exit_highlight();
@@ -186,7 +247,7 @@ text {
 	            focus_node = null;
 	            if (highlight_trans < 1) {
 	                circle.style("opacity", 1);
-	                text.style("opacity", 1);
+	                // text.style("opacity", 1);
 	                link.style("opacity", 1);
 	            }
 	        }
@@ -202,6 +263,7 @@ text {
 	            if (highlight_color != "white") {
 	                circle.style(towhite, "white");
 	                text.style("font-weight", "normal");
+		            text.style("opacity", 0);
 	                link.style("stroke", function(o) {
 	                    return (isNumber(o.score) && o.score >= 0) ? color(o.score) : default_link_color
 	                });
@@ -215,7 +277,15 @@ text {
 	                return isConnected(d, o) ? 1 : highlight_trans;
 	            });
 	            text.style("opacity", function(o) {
-	                return isConnected(d, o) ? 1 : highlight_trans;
+	            	if (isConnected(d, o)) {
+	            		if (o.name.indexOf("topic")>-1) {
+		            		return 1;	            			
+	            		} else {
+		            		return 0.5;	            			
+	            		}
+	            	} else {
+	            		return highlight_trans;
+	            	}
 	            });
 	            link.style("opacity", function(o) {
 	                return o.source.index == d.index || o.target.index == d.index ? 1 : highlight_trans;
@@ -233,6 +303,17 @@ text {
 	            });
 	            text.style("font-weight", function(o) {
 	                return isConnected(d, o) ? "bold" : "normal";
+	            });
+	            text.style("opacity", function(o) {
+	            	if (isConnected(d, o)) {
+	            		if (o.name.indexOf("topic")>-1) {
+		            		return 1;	            			
+	            		} else {
+		            		return 0.5;	            			
+	            		}
+	            	} else {
+	            		return highlight_trans;
+	            	}
 	            });
 	            link.style("stroke", function(o) {
 	                return o.source.index == d.index || o.target.index == d.index ? highlight_color : ((isNumber(o.score) && o.score >= 0) ? color(o.score) : default_link_color);
@@ -261,11 +342,17 @@ text {
 	        if (!text_center) text.attr("dx", function(d) {
 	            return (size(d.size) * base_radius / nominal_base_node_size || base_radius);
 	        });
-	
+	        
 	        var text_size = nominal_text_size;
 	        if (nominal_text_size * zoom.scale() > max_text_size) text_size = max_text_size / zoom.scale();
-	        text.style("font-size", text_size + "px");
-	
+			text.style("font-size", function(d) {
+	        	if (d.name.indexOf("topic")>-1) {
+		        	return max_text_size*2 + "px"	        		
+	        	} else {
+		        	return text_size + "px"	        		
+	        	}				
+			});
+	        
 	        g.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 	    });
 	

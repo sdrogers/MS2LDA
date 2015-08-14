@@ -107,7 +107,10 @@ def export_docdf_to_gephi(infile, nodes_out, edges_out):
     df.to_csv(edges_out, index=False)
     print("Saved to " + edges_out)
     
-def get_json_from_docdf(docdf, threshold):
+def get_json_from_docdf(docdf, to_highlight, threshold):
+
+    if to_highlight is None:
+        to_highlight = []
 
     G = nx.Graph()
     node_names = set()
@@ -145,7 +148,12 @@ def get_json_from_docdf(docdf, threshold):
                 node_size = 10
                 node_score = 0
                 node_type = "square"
-                G.add_node(node_id, name=n, group=node_group, in_degree=0, size=node_size, score=node_score, type=node_type)
+                special = False
+                if n in to_highlight:
+                    node_size = 120
+                    node_type = "triangle-up"
+                    special = True
+                G.add_node(node_id, name=n, group=node_group, in_degree=0, size=node_size, score=node_score, type=node_type, special=special)
 
             # for topics, insert only those whose in-degree is above threshold
             elif n.startswith('topic'):
@@ -154,8 +162,10 @@ def get_json_from_docdf(docdf, threshold):
                 node_score = 1
                 node_type = "circle"
                 in_degree = G.degree(node_id)
-                if in_degree >= threshold:                
-                    G.add_node(node_id, name=n, group=node_group, in_degree=in_degree, size=in_degree*5, score=node_score, type=node_type)
+                if in_degree >= threshold:
+                    if n in to_highlight:
+                        special = True                    
+                    G.add_node(node_id, name=n, group=node_group, in_degree=in_degree, size=in_degree*5, score=node_score, type=node_type, special=special)
                     print(str(node_id) + ", " + n + " degree=" + str(in_degree) + " added")        
                 else:
                     G.remove_node(node_id)

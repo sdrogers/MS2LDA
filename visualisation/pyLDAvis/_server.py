@@ -43,11 +43,11 @@ def generate_handler(html, files=None, topic_plotter=None):
     if files is None:
         files = {}
     
-    # add default logo to files
-    logo_url = urls.DEFAULT_LOGO_LOCAL
-    logo_content_type = 'image/png'
-    logo_content = StringIO.StringIO(urlopen(logo_url).read()).read()
-    files['/images/default_logo.png'] = (logo_content_type, logo_content)
+    # add default images to files
+    logo_content = StringIO.StringIO(urlopen(urls.DEFAULT_LOGO_LOCAL).read()).read()
+    show_graph_content = StringIO.StringIO(urlopen(urls.DEFAULT_SHOW_GRAPH_LOCAL).read()).read()
+    files['/images/default_logo.png'] = ('image/png', logo_content)
+    files['/images/graph_example.jpg'] = ('image/jpg', show_graph_content)
 
     class MyHandler(server.BaseHTTPRequestHandler):
 
@@ -94,6 +94,8 @@ def generate_handler(html, files=None, topic_plotter=None):
                     topic_id = GlobalVariable.selected_topic_id
                     if (GlobalVariable.ms1_idx - 1) >= 0:
                         GlobalVariable.ms1_idx -= 1
+                elif action == 'show':
+                    topic_id = GlobalVariable.selected_topic_id                    
 
                 # get the image content
                 fig = topic_plotter.plot_for_web(topic_id, GlobalVariable.ms1_idx)
@@ -133,7 +135,9 @@ def generate_handler(html, files=None, topic_plotter=None):
             elif self.path.startswith('/graph.json'):
                 
                 print "Serving dynamic json file -- threshold = " + str(GlobalVariable.degree)
-                json_data = lda_visualisation.get_json_from_docdf(topic_plotter.docdf.transpose(), GlobalVariable.degree)
+                json_data = lda_visualisation.get_json_from_docdf(topic_plotter.docdf.transpose(), 
+                                                                  topic_plotter.to_highlight,
+                                                                  GlobalVariable.degree)
 
 #                 print "Debugging file saved to " + json_outfile
 #                 json_outfile = '/home/joewandy/git/metabolomics_tools/justin/visualisation/pyLDAvis/json_out.json'
