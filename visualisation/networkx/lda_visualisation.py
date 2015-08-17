@@ -150,8 +150,7 @@ def get_json_from_docdf(docdf, to_highlight, threshold):
                 node_type = "square"
                 special = False
                 if n in to_highlight:
-                    node_size = 120
-                    node_type = "triangle-up"
+                    node_size = 30
                     special = True
                 G.add_node(node_id, name=n, group=node_group, in_degree=0, size=node_size, score=node_score, type=node_type, special=special)
 

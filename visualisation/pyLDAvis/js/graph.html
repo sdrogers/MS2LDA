@@ -42,7 +42,7 @@ text {
 	var highlight_color = "blue";
 	var highlight_trans = 0.1;
 	var default_node_color = "#ccc";
-	var special_node_color = "#ff34b3";
+	var special_node_color = "#CC0000";
 	//var default_node_color = "rgb(3,190,100)";
 	var default_link_color = "#888";
 	var nominal_base_node_size = 8;
@@ -71,7 +71,8 @@ text {
 	
 	// Create a group for the graph plot
 	var g = svg.append("g")
-	    .attr("id", "vis-graph");
+	    .attr("id", "vis-graph")
+	    .attr("transform", "translate(267.1187199163185,285.8524262385378)scale(0.28677675605654135)")
 	svg.style("cursor", "move");
 	
 	d3.json("/graph.json", function(error, graph) {
