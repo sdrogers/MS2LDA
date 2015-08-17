@@ -1,0 +1,11 @@
+ms1_ms2_link_parameters:
+    dppm : 10                             # put whatever commemnts you want here
+    rt_window_start : 100
+    rt_window_end : 100
+    ms_msms_cut : 5E3
+    select_most_intense : TRUE
+    rt_ms1_ms2_difference : 15
+
+filtering_parameters:
+    ms1_intensity : 520000
+    ms2_intensity : 5000

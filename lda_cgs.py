@@ -323,7 +323,7 @@ class CollapseGibbsLda(object):
         data['topic_ranking'] = topic_plotter.topic_ranking
         data['topic_coordinates'] = topic_plotter.topic_coordinates
         data['plot_opts'] = {'xlab': 'h-index', 'ylab': 'log(degree)', 'sort_by' : topic_plotter.sort_by}
-        data['lambda_step'] = 5            
+        data['lambda_step'] = 5         
         data['lambda_min'] = self._round_nicely(topic_plotter.sort_by_min)
         data['lambda_max'] = self._round_nicely(topic_plotter.sort_by_max)
         vis_data = pyLDAvis.prepare(**data)   
@@ -333,20 +333,21 @@ class CollapseGibbsLda(object):
     def _round_nicely(self, x, base=5):
         return int(base * round(float(x)/base))             
         
-    def print_topic_words(self, EPSILON = 0.05):     
-        for i, topic_dist in enumerate(self.topic_word_):    
-            ordering = np.argsort(topic_dist)
-            topic_words = np.array(self.vocab)[ordering][::-1]
-            dist = topic_dist[ordering][::-1]        
-            topic_name = 'Topic {}:'.format(i)
-            print topic_name,                    
-            for j in range(len(topic_words)):
-                if dist[j] > EPSILON:
-                    print('{} ({}),'.format(topic_words[j], dist[j])),
-                else:
-                    break
-            print
-                                       
+    def threshold_matrix(self, matrix, epsilon=0.0):
+        thresholded = matrix.copy()
+        n_row, n_col = thresholded.shape
+        for i in range(n_row):
+            row = thresholded[i, :]
+            if epsilon > 0:
+                small = row < epsilon
+                row[small] = 0
+            else:
+                smallest_val = np.min(row)
+                smallest_arr = np.ones_like(row) * smallest_val
+                close = np.isclose(row, smallest_arr)
+                row[close] = 0        
+        return thresholded
+        
 def main():
 
     multiplier = 1

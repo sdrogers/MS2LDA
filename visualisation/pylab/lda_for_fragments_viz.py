@@ -27,6 +27,7 @@ class Ms2Lda_Viz(object):
             topic_sort_criteria = self._h_index() 
         elif sort_by == 'in_degree':
             topic_sort_criteria = self._in_degree() 
+        print "DONE!"
         
         sorted_topic_counts = sorted(topic_sort_criteria.items(), key=operator.itemgetter(1), reverse=True)
         if not interactive:
@@ -65,7 +66,11 @@ class Ms2Lda_Viz(object):
         
         return topic_sort_criteria, sorted_topic_counts                
                 
-    def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", selected_topics=None, interactive=False):
+    def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", 
+                           selected_topics=None, interactive=False,
+                           to_highlight=None):
+        
+        self.to_highlight = to_highlight
                 
         if selected_topics is not None and interactive:
             raise ValueError("For interactive mode, the selected_topics parameter is not yet supported so you must visualise all topics.")
@@ -74,6 +79,7 @@ class Ms2Lda_Viz(object):
                                                               selected_topics=selected_topics, interactive=interactive)               
         self.topic_plots = {}
         self.topic_ms1_count = {}
+        self.topic_ms1_ordering = {}
         self.topic_coordinates = {}
         for (i, c) in sorted_topic_counts:
             
@@ -81,14 +87,14 @@ class Ms2Lda_Viz(object):
             if selected_topics is not None:
                 if i not in selected_topics:
                     continue
-            
-            if sort_by == 'h_index':
-                print "Topic " + str(i) + " h-index=" + str(topic_ranking[i])
-            elif sort_by == 'in_degree':
-                print "Topic " + str(i) + " in-degree=" + str(topic_ranking[i])
-            if not interactive:
-                print "====================="
-                print
+
+            if not interactive:            
+                if sort_by == 'h_index':
+                    print "Topic " + str(i) + " h-index=" + str(topic_ranking[i])
+                elif sort_by == 'in_degree':
+                    print "Topic " + str(i) + " in-degree=" + str(topic_ranking[i])
+                    print "====================="
+                    print
 
             column_values = np.array(self.docdf.columns.values)    
             doc_dist = self.docdf.iloc[[i]].as_matrix().flatten()
@@ -114,15 +120,16 @@ class Ms2Lda_Viz(object):
                 print "Parent peaks"
                 print
                 print '     %s\t%s\t\t%s\t\t%s\t\t%s' % ('peakID', 'mz', 'rt', 'int', 'score')
-            else:
-                if len(top_n_docs) == 0:
-                    continue
+#             else:
+#                 if len(top_n_docs) == 0:
+#                     continue
 
             parent_ids = []
             parent_masses = []
             parent_rts = []
             parent_intensities = []
             parent_all_fragments = {}
+            parent_word_counts = []
             count = 1
             for t in zip(top_n_docs, top_n_docs_p):
     
@@ -172,7 +179,9 @@ class Ms2Lda_Viz(object):
                 count += 1
     
             sys.stdout.flush()
-            max_parent_mz = np.max(np.array(parent_masses))
+            
+            if len(parent_masses) > 0:
+                max_parent_mz = np.max(np.array(parent_masses))
 
             # argsort in descending order by p(w|d)
             word_dist = self.topicdf.transpose().iloc[[i]].as_matrix().flatten()                          
@@ -336,13 +345,46 @@ class Ms2Lda_Viz(object):
                            wordfreq, consistency, max_parent_mz)
                 self.topic_plots[i] = plot_data
                 self.topic_ms1_count[i] = num_peaks
-                print "Topic " + str(i) + " has " + str(num_peaks) + " ms1 peaks"
+                
+                print "Generating plots for topic " + str(i) + " h-index = " + str(topic_ranking[i]) + " degree = " + str(num_peaks)
                 
                 # set coordinate of each circle
                 x_coord = topic_ranking[i]
-                y_coord = math.log10(num_peaks)   
+                if num_peaks > 0:
+                    y_coord = math.log10(num_peaks)   
+                else :
+                    y_coord = 0
                 self.topic_coordinates.update({i:(x_coord, y_coord)})
-                    
+                
+                # count how many words are being plotted (above the consistency ratio) for each parent id
+                parent_word_counts = []
+                for parent_id in parent_ids:
+                    count = 0
+                    if parent_id in parent_topic_fragments:        
+                        fragments_list = parent_topic_fragments[parent_id]
+                        num_peaks = len(fragments_list)
+                        for j in range(num_peaks):
+                            item = fragments_list[j]
+                            word = item[4]                           
+                            freq = wordfreq[word]
+                            ratio = float(freq)/len(parent_ids)
+                            if ratio >= consistency:
+                                count += 1
+                    if parent_id in parent_topic_losses:        
+                        losses_list = parent_topic_losses[parent_id]
+                        num_peaks = len(losses_list)
+                        for j in range(num_peaks):
+                            word = item[4]
+                            freq = wordfreq[word]
+                            ratio = float(freq)/len(parent_ids)
+                            if ratio >= consistency:
+                                count += 1
+                    parent_word_counts.append(count)
+                 
+                parent_word_counts = np.array(parent_word_counts)
+                ms1_ordering = np.argsort(parent_word_counts)[::-1]
+                self.topic_ms1_ordering[i] = ms1_ordering                
+                                    
             # break
 
         # convert topic_coordinates from dictionary to a list of coordinates, sorted by the topic id
@@ -363,6 +405,9 @@ class Ms2Lda_Viz(object):
                        parent_all_fragments, parent_topic_fragments, parent_topic_losses,
                        wordfreq, consistency, max_parent_mz):
         
+        # get the image content but in the right order
+        pos = self.topic_ms1_ordering[i][n]
+                
         parent_fontspec = {
             'size':'12', 
             'color':'blue', 
@@ -387,37 +432,29 @@ class Ms2Lda_Viz(object):
         txt_width = 20*(plt.xlim()[1] - plt.xlim()[0])
         txt_height = 0.2*(plt.ylim()[1] - plt.ylim()[0])
 
-        # plot the parent peak first
-        parent_mass = parent_masses[n]
-        parent_rt = parent_rts[n]
+        ## handle empty topic
+        if len(parent_ids) == 0:
 
-        # TEMPORARILY HARDCODED FOR RELATIVE INTENSITY 
-        parent_intensity = 0.25
-        plt.plot((parent_mass, parent_mass), (0, parent_intensity), linewidth=2.0, color='b')
-        x = parent_mass
-        y = parent_intensity
-        parent_id = parent_ids[n]
-        label = "%.5f" % parent_mass
-        plt.text(x, y, label, **parent_fontspec)
+            parent_mass = 0
+            parent_rt = 0
+            
+        else:
 
-        # plot all the fragment peaks of this parent peak
-        fragments_list = parent_all_fragments[parent_id]
-        num_peaks = len(fragments_list)
-        for j in range(num_peaks):
-            item = fragments_list[j]
-            peakid = item[0]
-            parentid = item[1]
-            mass = item[2]
-            intensity = item[3]
-            plt.plot((mass, mass), (0, intensity), linewidth=1.0, color='#FF9933')
-
-        x_data = []
-        y_data = []
-        line_type = []
-
-        # plot the fragment peaks in this topic that also occur in this parent peak
-        if parent_id in parent_topic_fragments:        
-            fragments_list = parent_topic_fragments[parent_id]
+            # plot the parent peak first
+            parent_mass = parent_masses[pos]
+            parent_rt = parent_rts[pos]
+    
+            # TEMPORARILY HARDCODED FOR RELATIVE INTENSITY 
+            parent_intensity = 0.25
+            plt.plot((parent_mass, parent_mass), (0, parent_intensity), linewidth=2.0, color='b')
+            x = parent_mass
+            y = parent_intensity
+            parent_id = parent_ids[pos]
+            label = "%.5f" % parent_mass
+            plt.text(x, y, label, **parent_fontspec)
+    
+            # plot all the fragment peaks of this parent peak
+            fragments_list = parent_all_fragments[parent_id]
             num_peaks = len(fragments_list)
             for j in range(num_peaks):
                 item = fragments_list[j]
@@ -425,45 +462,61 @@ class Ms2Lda_Viz(object):
                 parentid = item[1]
                 mass = item[2]
                 intensity = item[3]
-                word = item[4]
-                freq = wordfreq[word]
-                ratio = float(freq)/len(parent_ids)
-                if ratio >= consistency:
-                    plt.plot((mass, mass), (0, intensity), linewidth=2.0, color='#800000')
-                    x = mass
-                    y = intensity
-                    x_data.append(x)
-                    y_data.append(y)
-                    line_type.append('fragment')
-            
-        # plot the neutral losses in this topic that also occur in this parent peak
-        if parent_id in parent_topic_losses:        
-            losses_list = parent_topic_losses[parent_id]
-            num_peaks = len(losses_list)
-            for j in range(num_peaks):
-                item = losses_list[j]
-                peakid = item[0]
-                parentid = item[1]
-                mass = item[2]
-                intensity = item[3]
-                word = item[4]
-                freq = wordfreq[word]
-                ratio = float(freq)/len(parent_ids)
-                if ratio >= consistency:
-                    plt.plot((mass, mass), (0, intensity), linewidth=2.0, color='green')
-                    x = mass
-                    y = intensity
-                    x_data.append(x)
-                    y_data.append(y)
-                    line_type.append('loss')
-            
-        # Get the corrected text positions, then write the text.
-        x_data = np.array(x_data)
-        y_data = np.array(y_data)
-        text_positions = self._get_text_positions(x_data, y_data, txt_width, txt_height)
-        self._text_plotter(x_data, y_data, line_type, text_positions, ax, txt_width, txt_height, 
-                           fragment_fontspec, loss_fontspec)
-
+                plt.plot((mass, mass), (0, intensity), linewidth=1.0, color='#FF9933')
+    
+            x_data = []
+            y_data = []
+            line_type = []
+    
+            # plot the fragment peaks in this topic that also occur in this parent peak
+            if parent_id in parent_topic_fragments:        
+                fragments_list = parent_topic_fragments[parent_id]
+                num_peaks = len(fragments_list)
+                for j in range(num_peaks):
+                    item = fragments_list[j]
+                    peakid = item[0]
+                    parentid = item[1]
+                    mass = item[2]
+                    intensity = item[3]
+                    word = item[4]
+                    freq = wordfreq[word]
+                    ratio = float(freq)/len(parent_ids)
+                    if ratio >= consistency:
+                        plt.plot((mass, mass), (0, intensity), linewidth=2.0, color='#800000')
+                        x = mass
+                        y = intensity
+                        x_data.append(x)
+                        y_data.append(y)
+                        line_type.append('fragment')
+                
+            # plot the neutral losses in this topic that also occur in this parent peak
+            if parent_id in parent_topic_losses:        
+                losses_list = parent_topic_losses[parent_id]
+                num_peaks = len(losses_list)
+                for j in range(num_peaks):
+                    item = losses_list[j]
+                    peakid = item[0]
+                    parentid = item[1]
+                    mass = item[2]
+                    intensity = item[3]
+                    word = item[4]
+                    freq = wordfreq[word]
+                    ratio = float(freq)/len(parent_ids)
+                    if ratio >= consistency:
+                        plt.plot((mass, mass), (0, intensity), linewidth=2.0, color='green')
+                        x = mass
+                        y = intensity
+                        x_data.append(x)
+                        y_data.append(y)
+                        line_type.append('loss')
+                
+            # Get the corrected text positions, then write the text.
+            x_data = np.array(x_data)
+            y_data = np.array(y_data)
+            text_positions = self._get_text_positions(x_data, y_data, txt_width, txt_height)
+            self._text_plotter(x_data, y_data, line_type, text_positions, ax, txt_width, txt_height, 
+                               fragment_fontspec, loss_fontspec)
+    
         xlim_upper = max_parent_mz + 100
         plt.xlim([0, xlim_upper])
         plt.ylim([0, 1.5])
@@ -519,14 +572,14 @@ class Ms2Lda_Viz(object):
                            head_width=txt_width/4, head_length=txt_height*0.25, 
                            zorder=0,length_includes_head=True)
     
-    # compute the h-index of topics
+    # compute the h-index of topics TODO: this only works for fragment and loss words!
     def _h_index(self):
                 
-        topic_fragments = self.model.topic_word_
+        K = self.model.K
         topic_counts = {}
 
-        for i, topic_dist in enumerate(topic_fragments):
-            
+        for i in range(K):
+                        
             sys.stdout.flush()
             
             # find the words in this topic above the threshold
@@ -570,20 +623,36 @@ class Ms2Lda_Viz(object):
                     # convert from pandas dataframes to list
                     fragment_bin_ids = fragment_bin_ids.values.ravel().tolist()
                     loss_bin_ids = loss_bin_ids.values.ravel().tolist()
-                    
+                                        
+                    # this code is too slow!
                     # count the citation numbers
-                    for cited in fragment_bin_ids:
-                        if cited == 'nan':
-                            continue
-                        else:
-                            if cited in fragment_words:
-                                fragment_words[cited] = fragment_words[cited] + 1
-                    for cited in loss_bin_ids:
-                        if cited == 'nan':
-                            continue
-                        else:
-                            if cited in loss_words:
-                                loss_words[cited] = loss_words[cited] + 1
+#                     for cited in fragment_bin_ids:
+#                         if cited == 'nan':
+#                             continue
+#                         else:
+#                             if cited in fragment_words:
+#                                 fragment_words[cited] = fragment_words[cited] + 1
+#                     for cited in loss_bin_ids:
+#                         if cited == 'nan':
+#                             continue
+#                         else:
+#                             if cited in loss_words:
+#                                 loss_words[cited] = loss_words[cited] + 1
+
+                    # convert to dictionary for quick lookup
+                    word_dict = {}
+                    for word in fragment_bin_ids:
+                        word_dict.update({word:word})
+                    for word in loss_bin_ids:
+                        word_dict.update({word:word})
+
+                    # count the citation numbers                                
+                    for word in fragment_words:
+                        if word in word_dict:
+                            fragment_words[word] = fragment_words[word] + 1
+                    for word in loss_words:
+                        if word in word_dict:
+                            loss_words[word] = loss_words[word] + 1
                     
                     # make a dataframe of the articles & citation counts
                     fragment_df = DataFrame(fragment_words, index=['counts']).transpose()
@@ -598,7 +667,8 @@ class Ms2Lda_Viz(object):
                             h_index += 1
                         else:
                             break
-    
+
+                print " - topic " + str(i) + " h-index = " + str(h_index)
                 topic_counts[i] = h_index
             
         return topic_counts
