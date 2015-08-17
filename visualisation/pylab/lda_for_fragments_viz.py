@@ -79,6 +79,7 @@ class Ms2Lda_Viz(object):
                                                               selected_topics=selected_topics, interactive=interactive)               
         self.topic_plots = {}
         self.topic_ms1_count = {}
+        self.topic_ms1_ordering = {}
         self.topic_coordinates = {}
         for (i, c) in sorted_topic_counts:
             
@@ -128,6 +129,7 @@ class Ms2Lda_Viz(object):
             parent_rts = []
             parent_intensities = []
             parent_all_fragments = {}
+            parent_word_counts = []
             count = 1
             for t in zip(top_n_docs, top_n_docs_p):
     
@@ -343,6 +345,7 @@ class Ms2Lda_Viz(object):
                            wordfreq, consistency, max_parent_mz)
                 self.topic_plots[i] = plot_data
                 self.topic_ms1_count[i] = num_peaks
+                
                 print "Generating plots for topic " + str(i) + " h-index = " + str(topic_ranking[i]) + " degree = " + str(num_peaks)
                 
                 # set coordinate of each circle
@@ -352,7 +355,36 @@ class Ms2Lda_Viz(object):
                 else :
                     y_coord = 0
                 self.topic_coordinates.update({i:(x_coord, y_coord)})
-                    
+                
+                # count how many words are being plotted (above the consistency ratio) for each parent id
+                parent_word_counts = []
+                for parent_id in parent_ids:
+                    count = 0
+                    if parent_id in parent_topic_fragments:        
+                        fragments_list = parent_topic_fragments[parent_id]
+                        num_peaks = len(fragments_list)
+                        for j in range(num_peaks):
+                            item = fragments_list[j]
+                            word = item[4]                           
+                            freq = wordfreq[word]
+                            ratio = float(freq)/len(parent_ids)
+                            if ratio >= consistency:
+                                count += 1
+                    if parent_id in parent_topic_losses:        
+                        losses_list = parent_topic_losses[parent_id]
+                        num_peaks = len(losses_list)
+                        for j in range(num_peaks):
+                            word = item[4]
+                            freq = wordfreq[word]
+                            ratio = float(freq)/len(parent_ids)
+                            if ratio >= consistency:
+                                count += 1
+                    parent_word_counts.append(count)
+                 
+                parent_word_counts = np.array(parent_word_counts)
+                ms1_ordering = np.argsort(parent_word_counts)[::-1]
+                self.topic_ms1_ordering[i] = ms1_ordering                
+                                    
             # break
 
         # convert topic_coordinates from dictionary to a list of coordinates, sorted by the topic id
@@ -373,6 +405,9 @@ class Ms2Lda_Viz(object):
                        parent_all_fragments, parent_topic_fragments, parent_topic_losses,
                        wordfreq, consistency, max_parent_mz):
         
+        # get the image content but in the right order
+        pos = self.topic_ms1_ordering[i][n]
+                
         parent_fontspec = {
             'size':'12', 
             'color':'blue', 
@@ -406,15 +441,15 @@ class Ms2Lda_Viz(object):
         else:
 
             # plot the parent peak first
-            parent_mass = parent_masses[n]
-            parent_rt = parent_rts[n]
+            parent_mass = parent_masses[pos]
+            parent_rt = parent_rts[pos]
     
             # TEMPORARILY HARDCODED FOR RELATIVE INTENSITY 
             parent_intensity = 0.25
             plt.plot((parent_mass, parent_mass), (0, parent_intensity), linewidth=2.0, color='b')
             x = parent_mass
             y = parent_intensity
-            parent_id = parent_ids[n]
+            parent_id = parent_ids[pos]
             label = "%.5f" % parent_mass
             plt.text(x, y, label, **parent_fontspec)
     
