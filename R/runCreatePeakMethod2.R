@@ -4,25 +4,35 @@
 library(xcms)
 library(Hmisc)
 
-run_create_peak_method_2 <- function(full_scan_file, fragmentation_file) {
+run_create_peak_method_2 <- function() {
  
+  full_scan_file <- config$input_files$full_scan_file
+  fragmentation_file <- config$input_files$fragmentation_file_m2
+  
     print("Running create_peak_method #2")
     
     ## do peak detection on full scan file
-    xset_full <- xcmsSet(files=full_scan_file, method="centWave", ppm=2, snthresh=3, peakwidth=c(5,100),
-                         prefilter=c(3,1000), mzdiff=0.001, integrate=0, fitgauss=FALSE, verbose.column=TRUE)
+    xset_full <- xcmsSet(files=full_scan_file, method=config$MS1_XCMS_peakpicking_settings$method, ppm=config$MS1_XCMS_peakpicking_settings$ppm, snthresh=config$MS1_XCMS_peakpicking_settings$snthres, peakwidth=c(config$MS1_XCMS_peakpicking_settings$peakwidth_from,config$MS1_XCMS_peakpicking_settings$peakwidth_to),
+                           prefilter=c(config$MS1_XCMS_peakpicking_settings$prefilter_from,config$MS1_XCMS_peakpicking_settings$prefilter_to), mzdiff=config$MS1_XCMS_peakpicking_settings$mzdiff, integrate=config$MS1_XCMS_peakpicking_settings$integrate, fitgauss=config$MS1_XCMS_peakpicking_settings$fitgauss, verbose.column=config$MS1_XCMS_peakpicking_settings$verbose.column)
     xset_full <- group(xset_full)
     
     # do peak detection on fragmentation file
-    xset <- xcmsSet(files=fragmentation_file, method="centWave", ppm=2, snthresh=3, peakwidth=c(5,100),
-                    prefilter=c(3,1000), mzdiff=0.001, integrate=0, fitgauss=FALSE, verbose.column=TRUE)
+    xset <- xcmsSet(files=fragmentation_file, method=config$MS1_XCMS_peakpicking_settings$method, ppm=config$MS1_XCMS_peakpicking_settings$ppm, snthresh=config$MS1_XCMS_peakpicking_settings$snthres, peakwidth=c(config$MS1_XCMS_peakpicking_settings$peakwidth_from,config$MS1_XCMS_peakpicking_settings$peakwidth_to),
+                    prefilter=c(config$MS1_XCMS_peakpicking_settings$prefilter_from,config$MS1_XCMS_peakpicking_settings$prefilter_to), mzdiff=config$MS1_XCMS_peakpicking_settings$mzdiff, integrate=config$MS1_XCMS_peakpicking_settings$integrate, fitgauss=config$MS1_XCMS_peakpicking_settings$fitgauss, verbose.column=config$MS1_XCMS_peakpicking_settings$verbose.column)
     xset <- group(xset)
     
     # run modified Tony's script
     source('xcmsSetFragments.modified.R')
-    frags <- xcmsSetFragments(xset, xset_full, cdf.corrected = FALSE, min.rel.int=0.01, max.frags = 5000, 
-                              msnSelect=c("precursor_int"), specFilter=c("specPeaks"), match.ppm=7, 
-                              sn=3, mzgap=0.005, min.r=0.75, min.diff=10)
+    frags <- xcmsSetFragments(xset, xset_full,
+                              cdf.corrected=config$ms1_ms2_pairing_parameters$cdf.corrected, 
+                              min.rel.int=config$filtering_parameters_MassSpectrometry_related$min.rel.int, 
+                              max.frags=config$filtering_parameters_MassSpectrometry_related$mass.frags, 
+                              msnSelect=c(config$ms1_ms2_pairing_parameters$msnSelect), 
+                              specFilter=c(config$ms1_ms2_pairing_parameters$specFilter), 
+                              match.ppm=config$ms1_ms2_pairing_parameters$match.ppm, 
+                              sn=config$filtering_parameters_MassSpectrometry_related$sn, 
+                              mzgap=config$filtering_parameters_MassSpectrometry_related$mz_gap, min.r=config$ms1_ms2_pairing_parameters$min.r, 
+                              min.diff=config$ms1_ms2_pairing_parameters$min.diff)
     peaks <- as.data.frame(frags@peaks)
     
     return(peaks)

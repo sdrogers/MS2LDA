@@ -8,31 +8,37 @@ library(mzR)
 source('cachedEic.R')
 source('cachedMsms.R')
 
-run_create_peak_method_3 <- function(input_file, fragment_mzML) {
+run_create_peak_method_3 <- function() {
 
+    MS1file <- config$input_files$input_file_forMS1peaks
+    fragmentation_file <- config$input_files$fragmentation_file_mzML
+    
     # various tolerance parameters to configure
-    dppm <- 10
-    rt_window <- c(-100, 100)
-    ms_msms_cut <- 5E3
-    select_most_intense <- TRUE
-    rt_ms1_ms2_difference <- 15
+    dppm <- config$ms1_ms2_pairing_parameters$dppm
+    rt_window <- c(config$ms1_ms2_pairing_parameters$rt_window_from, config$ms1_ms2_pairing_parameters$rt_window_to)
+    ms_msms_cut <- config$filtering_parameters_MassSpectrometry_related$ms_msms_cut
+    select_most_intense <- config$ms1_ms2_pairing_parameters$select_most_intense
+    rt_ms1_ms2_difference <- config$ms1_ms2_pairing_parameters$rt_ms1_ms2_difference
+    rt_start_minutes <- config$filtering_parameters_Chromatography_related$rt_start_before_pairing
+    rt_end_minutes <- config$filtering_parameters_Chromatography_related$rt_end_before_pairing
+    rt_start_peak_minutes <- config$filtering_parameters_Chromatography_related$rt_start_peak_before_pairing
+    minimum_MS1_int_for_pairing <- config$filtering_parameters_MassSpectrometry_related$min_MS1_intensity
     
     # If we specify the mzXML file for the full scan data, then we want to do peak picking etc.
-    if (grepl("mzXML", input_file)) {
+    if (grepl("mzXML", MS1file)) {
         
-        # input file is an mzXML file
-        xset_full <- xcmsSet(files=input_file, method="centWave", ppm=2, snthresh=3, peakwidth=c(5,100),
-                             prefilter=c(3,1000), mzdiff=0.001, integrate=0, fitgauss=FALSE, 
-                             verbose.column=TRUE)
+        # input file for MS1 peaks is an mzXML file
+        xset_full <- xcmsSet(files=config$input_files$input_file_forMS1peaks, method=config$MS1_XCMS_peakpicking_settings$method, ppm=config$MS1_XCMS_peakpicking_settings$ppm, snthresh=config$MS1_XCMS_peakpicking_settings$snthres, peakwidth=c(config$MS1_XCMS_peakpicking_settings$peakwidth_from,config$MS1_XCMS_peakpicking_settings$peakwidth_to),
+                             prefilter=c(config$MS1_XCMS_peakpicking_settings$prefilter_from,config$MS1_XCMS_peakpicking_settings$prefilter_to), mzdiff=config$MS1_XCMS_peakpicking_settings$mzdiff, integrate=config$MS1_XCMS_peakpicking_settings$integrate, fitgauss=config$MS1_XCMS_peakpicking_settings$fitgauss, verbose.column=config$MS1_XCMS_peakpicking_settings$verbose.column)
         xset_full <- group(xset_full)
         
         # apply some initial filtering
         peak_info <- peaks(xset_full)
         peak_info <- as.data.frame(peak_info)
-        peak_info <- peak_info[which(peak_info$rt >= 3*60),]
-        peak_info <- peak_info[which(peak_info$rt <= 21*60),]
-        peak_info <- peak_info[which(peak_info$rtmin >= 3*60),]
-        peak_info <- peak_info[which(peak_info$maxo >= 250000),]
+        peak_info <- peak_info[which(peak_info$rt >= rt_start_minutes*60),]
+        peak_info <- peak_info[which(peak_info$rt <= rt_end_minutes*60),]
+        peak_info <- peak_info[which(peak_info$rtmin >= rt_start_peak_minutes*60),]
+        peak_info <- peak_info[which(peak_info$maxo >= minimum_MS1_int_for_pairing),]
         
         # take only the columns we need
         keeps <- c("mz", "rt", "maxo", "rtmin")
@@ -41,7 +47,7 @@ run_create_peak_method_3 <- function(input_file, fragment_mzML) {
         
     } else { # otherwise just load the CSV file directly, assuming that it has been pre-filtered
         
-        peak_info <- read.csv(input_file)
+        peak_info <- read.csv(MS1file)
         peak_info <- as.data.frame(peak_info)
         
     }
@@ -52,7 +58,7 @@ run_create_peak_method_3 <- function(input_file, fragment_mzML) {
     
     # open fragmentation file
     RmbDefaultSettings()
-    f <- openMSfile(fragment_mzML) 
+    f <- openMSfile(fragmentation_file) 
     h <- header(f)
     
     num_ms1_peaks <- nrow(peak_info)
@@ -65,7 +71,6 @@ run_create_peak_method_3 <- function(input_file, fragment_mzML) {
     mzrt <- cbind(np_mz, np_rt)
     c <- makePeaksCache(f,h)
     if (select_most_intense) {
-        
         msms <- apply(mzrt, 1, function(row) {
             spec <- findMsMsHR.mass.cached(f, row[[1]], 0.5, ppm(row[[1]], dppm, p=TRUE),
                                            rtLimits=row[[2]]+rt_window, maxCount=1, 
@@ -97,9 +102,9 @@ run_create_peak_method_3 <- function(input_file, fragment_mzML) {
             }
             
             mzLimits <- list(
-                mzMin=row[1]-ppm(row[1], 10, p=TRUE),
+                mzMin=row[1]-ppm(row[1], dppm, p=TRUE),
                 mzCenter=row[1],
-                mzMax=row[1]+ppm(row[1], 10, p=TRUE))
+                mzMax=row[1]+ppm(row[1], dppm, p=TRUE))
             spec$mz <- mzLimits
             
             print(paste(c("Finding MS2 peaks for mz=", row[1], " rt=", row[2]), collapse=""))

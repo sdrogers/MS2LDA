@@ -1,8 +1,12 @@
 library(gtools) # for natural sorting
 
-extract_neutral_loss_df <- function(ms1, ms2, prev_words_file, 
-                                    grouping_tol=15, threshold_counts=5, threshold_max_loss=200) {
-            
+extract_neutral_loss_df <- function(ms1, ms2) {
+    
+    prev_words_file <- config$input_files$previous_words_file
+    grouping_tol <- config$MS1MS2_matrixGeneration_parameters$grouping_tol_losses
+    threshold_counts <- config$MS1MS2_matrixGeneration_parameters$threshold_counts
+    threshold_max_loss <- config$MS1MS2_matrixGeneration_parameters$threshold_max_loss
+  
     #############################################
     ##### Neutral Loss Dataframe Generation #####
     #############################################

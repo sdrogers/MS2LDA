@@ -1,7 +1,10 @@
 library(gtools) # for natural sorting
 
-extract_ms2_fragment_df <- function(ms1, ms2, prev_words_file, grouping_tol=7) {
-        
+extract_ms2_fragment_df <- function(ms1, ms2) {
+  
+    prev_words_file <- config$input_files$previous_words_file
+    grouping_tol <- config$MS1MS2_matrixGeneration_parameters$grouping_tol_frags
+  
     ########################################
     ##### MS1/MS2 Dataframe Generation #####
     ########################################

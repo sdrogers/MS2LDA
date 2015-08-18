@@ -6,19 +6,19 @@ create_peaklist <- function(peaks) {
     ms1 <- peaks[which(peaks$msLevel==1),]
 
     # keep MS1 peaks greater than this intensity
-    ms1 <- ms1[which(ms1$intensity >= 520000),]
+    ms1 <- ms1[which(ms1$intensity >= config$filtering_parameters_MassSpectrometry_related$min_MS1_intensity_wanted),]
     
     # keep MS1 peaks with RT > 3 mins and < 21 mins
-    ms1 <- ms1[which(ms1$rt >= 3*60),]
-    ms1 <- ms1[which(ms1$rt <= 21*60),]
+    ms1 <- ms1[which(ms1$rt >= config$filtering_parameters_Chromatography_related$rt_start*60),]
+    ms1 <- ms1[which(ms1$rt <= config$filtering_parameters_Chromatography_related$rt_end*60),]
     
     ### MS2 ###
     
     # get ms2 peaks
     ms2 <- peaks[which(peaks$msLevel==2),]
     
-    # keep ms2 peaks with intensity > 5000
-    ms2 <- ms2[which(ms2$intensity>5000),]
+    # keep ms2 peaks with intensity above noise level
+    ms2 <- ms2[which(ms2$intensity>config$filtering_parameters_MassSpectrometry_related$min_MS2_intensity),]
     
     # keep ms2 peaks with parent in filtered ms1 list
     ms2 <- ms2[which(ms2$MSnParentPeakID %in% ms1$peakID),]

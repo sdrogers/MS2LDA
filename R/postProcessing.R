@@ -19,11 +19,13 @@ coalesce_max <- function(df) {
     })
 }
 
-post_process_neutral_loss <- function(neutral_loss_df, loss_values_df, ms2, 
-                                      min_mass_to_include=40, max_diff=0.02) {
-        
+post_process_neutral_loss <- function(neutral_loss_df, loss_values_df, ms2) {
+    
+  min_mass_to_include <- config$MS1MS2_matrixGeneration_parameters$min_mass_to_include
+  max_diff <- config$MS1MS2_matrixGeneration_parameters$max_diff
+  
     # select those rows below min_mass_to_include
-    selected <- which(loss_values_df[, "loss"] < 40)
+    selected <- which(loss_values_df[, "loss"] < min_mass_to_include )
     loss_values_df <- loss_values_df[selected, ]
     
     # greedily merge all the items within max_diff to each other
