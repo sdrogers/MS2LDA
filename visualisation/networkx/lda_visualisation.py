@@ -160,10 +160,11 @@ def get_json_from_docdf(docdf, to_highlight, threshold):
                 node_size = 60
                 node_score = 1
                 node_type = "circle"
+                special = False
                 in_degree = G.degree(node_id)
                 if in_degree >= threshold:
                     if n in to_highlight:
-                        special = True                    
+                        special = True             
                     G.add_node(node_id, name=n, group=node_group, in_degree=in_degree, size=in_degree*5, score=node_score, type=node_type, special=special)
                     print(str(node_id) + ", " + n + " degree=" + str(in_degree) + " added")        
                 else:

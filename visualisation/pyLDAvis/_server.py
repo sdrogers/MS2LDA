@@ -135,6 +135,7 @@ def generate_handler(html, files=None, topic_plotter=None):
             elif self.path.startswith('/graph.json'):
                 
                 print "Serving dynamic json file -- threshold = " + str(GlobalVariable.degree)
+                print "to_highlight = " + str(topic_plotter.to_highlight)
                 json_data = lda_visualisation.get_json_from_docdf(topic_plotter.docdf.transpose(), 
                                                                   topic_plotter.to_highlight,
                                                                   GlobalVariable.degree)
