@@ -176,12 +176,6 @@ class CollapseGibbsLda(object):
             
         self.samples = [] # store the samples
         
-    def store_sample(self):
-        cdk_copy = np.copy(self.cdk)
-        ckn_copy = np.copy(self.ckn)
-        samp = Sample(cdk_copy, ckn_copy)
-        self.samples.append(samp)
-
     def _get_posterior_probs(self, samp_cdk, samp_ckn):
 
         # update theta
@@ -219,8 +213,8 @@ class CollapseGibbsLda(object):
 
         # use the last sample only
         if self.n_burn == 0:
-            print "Using only the last sample"
-            last_samp = self.samples[-1]
+            print "S=" + str(len(self.samples)) + ", using only the last sample."
+            last_samp = self.samples[0]
             theta, phi, alpha_new = self._get_posterior_probs(last_samp.cdk, last_samp.ckn)            
             margs = []
             perps = []
@@ -229,7 +223,7 @@ class CollapseGibbsLda(object):
             perps.append(perp)
             return phi, theta, alpha_new, margs, perps
 
-        print "Using all samples"
+        print "S=" + str(len(self.samples)) + ", using all samples."
         thetas = []
         phis = []
         alphas = []

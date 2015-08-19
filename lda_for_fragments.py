@@ -124,7 +124,8 @@ class Ms2Lda(object):
             print " - K = " + str(obj.model.K)
             print " - alpha = " + str(obj.model.alpha[0])
             print " - beta = " + str(obj.model.beta[0])
-            print " - last_saved_timestamp = " + str(obj.last_saved_timestamp)        
+            print " - number of samples stored = " + str(len(obj.model.samples))
+            print " - last_saved_timestamp = " + str(obj.last_saved_timestamp)  
             return obj  
         
     @classmethod

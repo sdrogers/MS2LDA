@@ -103,18 +103,21 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
         all_lls.append(ll)      
         print(" Log likelihood = %.3f " % ll)
 
-        if s > n_burn:
+        # store all the samples after thinning
+        if n_burn > 0 and s > n_burn:
             thin += 1
             if thin%n_thin==0:                    
                 cdk_copy = np.copy(cdk)
                 ckn_copy = np.copy(ckn)
                 to_store = Sample(cdk_copy, ckn_copy)
                 samples.append(to_store)
-                                   
-            else:                
-                print
-        else:
-            print
+
+    # store the last sample only
+    if n_burn == 0:
+        cdk_copy = np.copy(cdk)
+        ckn_copy = np.copy(ckn)
+        to_store = Sample(cdk_copy, ckn_copy)
+        samples.append(to_store)                                      
             
     all_lls = np.array(all_lls)
     return all_lls, samples
