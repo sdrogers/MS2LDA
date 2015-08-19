@@ -19,7 +19,7 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
     for samp in range(n_samples):
     
         s = samp+1        
-        if s >= n_burn:
+        if s > n_burn:
             print("Sample " + str(s) + " "),
         else:
             print("Burn-in " + str(s) + " "),
@@ -88,25 +88,24 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                 ck[k] += 1
                 Z[(d, pos)] = k
 
+        ll = K * ( gammaln(N_beta) - np.sum(gammaln(beta)) )
+        for k in range(K):
+            for n in range(N):
+                ll += gammaln(ckn[k, n]+beta[n])
+            ll -= gammaln(ck[k] + N_beta)                        
+
+        ll += D * ( gammaln(K_alpha) - np.sum(gammaln(alpha)) )
+        for d in range(D):
+            for k in range(K):
+                ll += gammaln(cdk[d, k]+alpha[k])
+            ll -= gammaln(cd[d] + K_alpha)                
+        
+        all_lls.append(ll)      
+        print(" Log likelihood = %.3f " % ll)
+
         if s > n_burn:
             thin += 1
-            if thin%n_thin==0:    
-
-                ll = K * ( gammaln(N_beta) - np.sum(gammaln(beta)) )
-                for k in range(K):
-                    for n in range(N):
-                        ll += gammaln(ckn[k, n]+beta[n])
-                    ll -= gammaln(ck[k] + N_beta)                        
-
-                ll += D * ( gammaln(K_alpha) - np.sum(gammaln(alpha)) )
-                for d in range(D):
-                    for k in range(K):
-                        ll += gammaln(cdk[d, k]+alpha[k])
-                    ll -= gammaln(cd[d] + K_alpha)                
-                
-                all_lls.append(ll)      
-                print(" Log likelihood = %.3f " % ll)     
-                
+            if thin%n_thin==0:                    
                 cdk_copy = np.copy(cdk)
                 ckn_copy = np.copy(ckn)
                 to_store = Sample(cdk_copy, ckn_copy)

@@ -36,6 +36,7 @@ import pandas as pd
 import pylab as plt
 from scipy.special import psi
 from lda_utils import estimate_alpha_from_counts
+import visualisation.pyLDAvis as pyLDAvis
 
 Sample = namedtuple('Sample', 'cdk ckn')
 
@@ -114,8 +115,15 @@ class CollapseGibbsLda(object):
                     self.beta[n] = self.previous_model.selected_beta[n] 
                 
             else:                
-                raise ValueError("No previous topics have been selected")
                 
+                # otherwise all previous topics were fixed, for cross-validation
+                self.cv = True
+                self.K = K
+                self.previous_ckn = self.previous_model.ckn
+                self.previous_ck = self.previous_model.ck
+                self.previous_K = K
+                self.alpha = np.ones(self.K) * alpha
+                self.beta = np.ones(self.N) * beta                
         else:
 
             # for training stage
@@ -187,6 +195,25 @@ class CollapseGibbsLda(object):
         # update posterior alpha
         alpha_new = estimate_alpha_from_counts(self.D, self.K, self.alpha, samp_cdk)      
         return theta, phi, alpha_new
+    
+    def _get_perplexity(self, theta, phi):
+        # for all documents and all terms
+        marg = 0
+        n_words = 0
+        for d in range(self.D):
+            document = self.df.iloc[[d]]
+            nnz = document.values.nonzero()[1]
+            doc_word_counts = document.values.flatten()
+            nnz_counts = doc_word_counts[nnz]
+            n_words += np.sum(nnz_counts)
+            for n in nnz:
+                curr_word_count = doc_word_counts[n]
+                temp = 0
+                for k in range(self.K):
+                    temp += phi[k, n] * theta[d, k]
+                marg += curr_word_count * np.log(temp)
+        perp = np.exp(-(marg/n_words))
+        return marg, perp        
             
     def _update_parameters(self):
 
@@ -195,7 +222,12 @@ class CollapseGibbsLda(object):
             print "Using only the last sample"
             last_samp = self.samples[-1]
             theta, phi, alpha_new = self._get_posterior_probs(last_samp.cdk, last_samp.ckn)            
-            return phi, theta, alpha_new
+            margs = []
+            perps = []
+            marg, perp = self._get_perplexity(theta, phi)
+            margs.append(marg)
+            perps.append(perp)
+            return phi, theta, alpha_new, margs, perps
 
         print "Using all samples"
         thetas = []
@@ -210,23 +242,42 @@ class CollapseGibbsLda(object):
         
         # average over the results
         S = len(self.samples)
+        
+        print "Averaging over topic_words"
         avg_theta = np.zeros_like(thetas[0])
-        avg_phi = np.zeros_like(phis[0])
-        avg_posterior_alpha = np.zeros_like(alphas[0])
-
         for theta in thetas:
             avg_theta += theta
         avg_theta /= len(thetas)
-        
+        sys.stdout.flush()
+
+        print "Averaging over doc_topics"
+        avg_phi = np.zeros_like(phis[0])
         for phi in phis:
             avg_phi += phi
         avg_phi /= len(phis)
+        sys.stdout.flush()
+
+        print "Averaging over posterior alphas"
+        avg_posterior_alpha = 0
+        if len(alphas)>0:        
+            avg_posterior_alpha = np.zeros_like(alphas[0])
+            for alpha in alphas:
+                avg_posterior_alpha += alpha
+            avg_posterior_alpha /= len(alphas)
+        sys.stdout.flush()
+
+        print "Averaging over log evidence and perplexities"                
+        margs = []
+        perps = []
+        for s in range(S):
+            theta = thetas[s]
+            phi = phis[s]
+            marg, perp = self._get_perplexity(theta, phi)
+            margs.append(marg)
+            perps.append(perp)
+        sys.stdout.flush()
         
-        for alpha in alphas:
-            avg_posterior_alpha += alpha
-        avg_posterior_alpha /= len(alphas)
-        
-        return avg_phi, avg_theta, avg_posterior_alpha
+        return avg_phi, avg_theta, avg_posterior_alpha, margs, perps
                                                     
     def run(self, n_burn, n_samples, n_thin=1, use_native=True):
         
@@ -269,7 +320,7 @@ class CollapseGibbsLda(object):
                 self.ckn, self.ck, self.previous_ckn, self.previous_ck)
         
         # update posterior alpha from the last sample  
-        self.topic_word_, self.doc_topic_, self.posterior_alpha = self._update_parameters()   
+        self.topic_word_, self.doc_topic_, self.posterior_alpha, self.margs, self.perps = self._update_parameters()   
                         
     @classmethod
     def load(cls, filename):
@@ -310,14 +361,42 @@ class CollapseGibbsLda(object):
         with open(words_out, 'w') as f:
             for item in self.selected_vocab:
                 f.write("{}\n".format(item))                
-        print "Words written to " + words_out  
+        print "Words written to " + words_out    
         
-    def print_topic_words(self):
-        topic_word = self.topic_word_
-        n_top_words = 10
-        for i, topic_dist in enumerate(topic_word):
-            topic_words = np.array(self.vocab)[np.argsort(topic_dist)][:-n_top_words:-1]
-            print('Topic {}: {}'.format(i, ' '.join(topic_words)))         
+    def visualise(self, topic_plotter):
+        data = {}
+        data['topic_term_dists'] = self.topic_word_
+        data['doc_topic_dists'] = self.doc_topic_
+        data['doc_lengths'] = self.cd
+        data['vocab'] = self.vocab
+        data['term_frequency'] = np.sum(self.ckn, axis=0)    
+        data['topic_ranking'] = topic_plotter.topic_ranking
+        data['topic_coordinates'] = topic_plotter.topic_coordinates
+        data['plot_opts'] = {'xlab': 'h-index', 'ylab': 'log(degree)', 'sort_by' : topic_plotter.sort_by}
+        data['lambda_step'] = 5         
+        data['lambda_min'] = self._round_nicely(topic_plotter.sort_by_min)
+        data['lambda_max'] = self._round_nicely(topic_plotter.sort_by_max)
+        vis_data = pyLDAvis.prepare(**data)   
+        pyLDAvis.show(vis_data, topic_plotter=topic_plotter)   
+
+    # http://stackoverflow.com/questions/2272149/round-to-5-or-other-number-in-python        
+    def _round_nicely(self, x, base=5):
+        return int(base * round(float(x)/base))             
+        
+    def threshold_matrix(self, matrix, epsilon=0.0):
+        thresholded = matrix.copy()
+        n_row, n_col = thresholded.shape
+        for i in range(n_row):
+            row = thresholded[i, :]
+            if epsilon > 0:
+                small = row < epsilon
+                row[small] = 0
+            else:
+                smallest_val = np.min(row)
+                smallest_arr = np.ones_like(row) * smallest_val
+                close = np.isclose(row, smallest_arr)
+                row[close] = 0        
+        return thresholded
         
 def main():
 
@@ -346,7 +425,11 @@ def main():
     gibbs1.run(n_burn, n_samples, n_thin, use_native=True)
     print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
     print gibbs1.posterior_alpha    
-    gibbs1.print_topic_words()
+    topic_word = gibbs1.topic_word_
+    n_top_words = 20
+    for i, topic_dist in enumerate(topic_word):
+        topic_words = vocab[np.argsort(topic_dist)][:-n_top_words:-1]
+        print('Topic {}: {}'.format(i, ' '.join(topic_words)))
       
 #     # try saving model
 #     selected_topics = [0, 2, 4, 6, 8]

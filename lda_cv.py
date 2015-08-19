@@ -17,7 +17,7 @@ import numpy as np
 import pylab as plt
 from collections import namedtuple
 
-Cv_Results = namedtuple('Cv_Results', 'marg perp')
+Cv_Results = namedtuple('Cv_Results', 'marg perp held_out_marg held_out_perp')
 class CrossValidatorLda:
     
     def __init__(self, df, vocab, K, alpha, beta):
@@ -36,6 +36,8 @@ class CrossValidatorLda:
                 
         margs = []
         test_perplexity = []
+        held_out_margs = []
+        held_out_perps = []
         for i in range(len(folds)):
             
             training_df = None
@@ -57,16 +59,22 @@ class CrossValidatorLda:
             training_gibbs = CollapseGibbsLda(training_df, self.vocab, self.K, self.alpha, self.beta)
             training_gibbs.run(n_burn, n_samples, n_thin, use_native=True)
             
+            print "Run testing gibbs " + str(testing_df.shape)
+            testing_gibbs = CollapseGibbsLda(testing_df, self.vocab, self.K, self.alpha, self.beta, previous_model=training_gibbs)
+            testing_gibbs.run(n_burn, n_samples, n_thin, use_native=True)  
+            held_out_margs.append(testing_gibbs.margs[-1])
+            held_out_perps.append(testing_gibbs.perps[-1])                   
+            
             print "Run testing importance sampling " + str(testing_df.shape)
             topics = training_gibbs.topic_word_
 
-#             # use prior alpha
-#             topic_prior = np.ones((self.K, 1))
-#             topic_prior = topic_prior / np.sum(topic_prior)            
-#             topic_prior = topic_prior * self.K * self.alpha
+            # use prior alpha
+            topic_prior = np.ones((self.K, 1))
+            topic_prior = topic_prior / np.sum(topic_prior)            
+            topic_prior = topic_prior * self.K * self.alpha
             
-            # use posterior alpha
-            topic_prior = training_gibbs.posterior_alpha[:, None]
+#             # use posterior alpha
+#             topic_prior = training_gibbs.posterior_alpha[:, None]
 
             print 'topic_prior = ' + str(topic_prior)
             marg = 0         
@@ -94,12 +102,22 @@ class CrossValidatorLda:
 
         test_perplexity = np.array(test_perplexity)
         mean_perplexity = np.mean(test_perplexity)
-        self.mean_perplexities = np.asscalar(mean_perplexity)        
+        self.mean_perplexities = np.asscalar(mean_perplexity)  
+        
+        held_out_margs = np.array(held_out_margs)
+        held_out_marg = np.mean(held_out_margs)
+        self.held_out_margs = np.asscalar(held_out_marg)
+
+        held_out_perplexity = np.array(held_out_perps)
+        held_out_perplexity = np.mean(held_out_perplexity)
+        self.held_out_perplexities = np.asscalar(held_out_perplexity)                
         
         print
         print "Cross-validation done!"
         print "K=" + str(self.K) + ",mean_approximate_log_evidence=" + str(self.mean_margs) \
-            + ",mean_perplexity=" + str(self.mean_perplexities)  
+            + ",mean_perplexity=" + str(self.mean_perplexities) \
+            + ",held_out_marg=" + str(self.held_out_margs) \
+            + ",held_out_perp=" + str(self.held_out_perplexities)
 
 def run_cv(df, vocab, k, alpha, beta):    
 
@@ -107,7 +125,7 @@ def run_cv(df, vocab, k, alpha, beta):
     cv.cross_validate_is(n_folds=4, n_burn=250, n_samples=500, n_thin=5, 
                          is_num_samples=10000, is_iters=1000)
     
-    res = Cv_Results(cv.mean_margs, cv.mean_perplexities)
+    res = Cv_Results(cv.mean_margs, cv.mean_perplexities, cv.held_out_margs, cv.held_out_perplexities)
     return res
 
 def run_synthetic(parallel=True):
@@ -128,28 +146,38 @@ def run_synthetic(parallel=True):
         res = Parallel(n_jobs=num_cores)(delayed(run_cv)(df, vocab, k, alpha, beta) for k in ks)      
         mean_margs = []
         mean_perplexities = []
+        held_out_margs = []
+        held_out_perplexities = []
         for r in res:
             mean_margs.append(r.marg)
             mean_perplexities.append(r.perp)
+            held_out_margs.append(r.held_out_marg)
+            held_out_perplexities.append(r.held_out_perp)
     else:
         mean_margs = []
         mean_perplexities = []
+        held_out_margs = []
+        held_out_perplexities = []
         for k in ks:
-            mean_marg, mean_perplexity = run_cv(df, vocab, k, alpha, beta)
+            mean_marg, mean_perplexity, held_out_marg, held_out_perp = run_cv(df, vocab, k, alpha, beta)
             mean_margs.append(mean_marg)
             mean_perplexities.append(mean_perplexity)
+            held_out_margs.append(held_out_marg)
+            held_out_perplexities.append(held_out_perp)
         
     plt.figure()
 
     plt.subplot(1, 2, 1)
-    plt.plot(np.array(ks), np.array(mean_margs))
+    plt.plot(np.array(ks), np.array(mean_margs), 'r')
+    plt.plot(np.array(ks), np.array(held_out_margs), 'b')
     plt.grid()
     plt.xlabel('K')
     plt.ylabel('Log evidence')
     plt.title('CV results -- log evidence for varying K')
 
     plt.subplot(1, 2, 2)
-    plt.plot(np.array(ks), np.array(mean_perplexities))
+    plt.plot(np.array(ks), np.array(mean_perplexities), 'r')
+    plt.plot(np.array(ks), np.array(held_out_perplexities), 'b')
     plt.grid()
     plt.xlabel('K')
     plt.ylabel('Perplexity')
@@ -274,7 +302,7 @@ def main():
         run_std1pos()
     else:
         print "Data = Synthetic"
-        run_synthetic(parallel=False)        
+        run_synthetic(parallel=True)        
 
 if __name__ == "__main__":
     main()

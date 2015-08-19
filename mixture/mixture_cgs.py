@@ -7,7 +7,7 @@ from numpy import int32
 from scipy.special import gammaln
 
 from mixture_generate_data import MixtureDataGenerator
-import lda_utils as utils
+import justin.lda_utils as utils
 import numpy as np
 
 
@@ -119,103 +119,6 @@ class CollapseGibbsMixture(object):
                 
         return avg_phi, avg_theta
     
-    def sample(self, random_state, n_burn, n_samples, n_thin, 
-                D, N, K, document_indices, 
-                alpha, beta, 
-                Z, cdk, ckn, ck):
-    
-        samples = []
-        all_lls = []
-        thin = 0
-        N_beta = np.sum(beta)
-        K_alpha = np.sum(alpha)        
-        for samp in range(n_samples):
-        
-            s = samp+1        
-            if s >= n_burn:
-                print("Sample " + str(s) + " "),
-            else:
-                print("Burn-in " + str(s) + " "),
-                
-            for d in range(D):
-    
-                if d%10==0:                        
-                    sys.stdout.write('.')
-                    sys.stdout.flush()
-                
-                # remove document from cluster k
-                k = Z[d]
-                cdk[k] -= 1                
-                
-                # remove counts for all the words in the document from cluster k
-                word_locs = document_indices[d]
-                for pos, n in word_locs:
-                    ckn[k, n] -= 1
-                    ck[k] -= 1
-    
-                # compute likelihood of document in new cluster    
-                log_prior = np.log(cdk + alpha)                
-                log_likelihood = np.zeros_like(log_prior)
-                for k in range(self.K):
-                    for pos, n in word_locs:
-                        log_likelihood[k] += np.log(ckn[k, n] + beta[n]) - np.log(ck[k] + N_beta)
-    
-                # sample new k from the posterior distribution log_post
-                log_post = log_likelihood + log_prior
-                post = np.exp(log_post - log_post.max())
-                post = post / post.sum()
-                    
-                # k = random_state.multinomial(1, post).argmax()
-                cumsum = np.empty(K, dtype=np.float64)
-                random_number = random_state.rand()                                
-                total = 0
-                for i in range(len(post)):
-                    val = post[i]
-                    total += val
-                    cumsum[i] = total
-                k = 0
-                for k in range(len(cumsum)):
-                    c = cumsum[k]
-                    if random_number <= c:
-                        break
-             
-                # reassign document back into model
-                for pos, n in word_locs:
-                    ckn[k, n] += 1
-                    ck[k] += 1
-                cdk[k] += 1
-                Z[d] = k
-    
-            if s > n_burn:
-                thin += 1
-                if thin%n_thin==0:    
-    
-                    ll = K * ( gammaln(N_beta) - np.sum(gammaln(beta)) )
-                    for k in range(K):
-                        for n in range(N):
-                            ll += gammaln(ckn[k, n]+beta[n])
-                        ll -= gammaln(ck[k] + N_beta)                        
-
-                    ll += gammaln(K_alpha) - np.sum(gammaln(alpha))
-                    for k in range(K):
-                        ll += gammaln(cdk[k]+alpha[k])
-                    ll -= gammaln(np.sum(cdk) + K_alpha)                
-                        
-                    all_lls.append(ll)      
-                    print(" Log likelihood = %.3f " % ll)     
-                    
-                    cdk_copy = np.copy(cdk)
-                    ckn_copy = np.copy(ckn)
-                    to_store = Sample(cdk_copy, ckn_copy)
-                    samples.append(to_store)
-                                       
-                else:                
-                    print
-            else:
-                print
-                
-        all_lls = np.array(all_lls)
-        return all_lls, samples    
                                                     
     def run(self, n_burn, n_samples, n_thin=1, use_native=True):
         
@@ -225,7 +128,7 @@ class CollapseGibbsMixture(object):
             self.n_thin = 1
         
         """ 
-        Runs the Gibbs sampling for LDA 
+        Runs the Gibbs sampling for multinomial mixture 
         
         Arguments:
         - n_burn: no of initial burn-in samples
@@ -234,15 +137,36 @@ class CollapseGibbsMixture(object):
         - use_native: if True, will call the sampling function in lda_cgs_numba.py
         """
 
+        # select the sampler function to use
+        from mixture_cgs_numpy import sample_numpy
+        sampler_func = None
+        if not use_native:
+            print "Using Numpy for mixture sampling"
+            sampler_func = sample_numpy
+        else:
+            print "Using Numba for mixture sampling"
+            try:
+                from mixture_cgs_numba import sample_numba
+                sampler_func = sample_numba
+            except Exception:
+                print "Numba not found. Using Numpy for mixture sampling"
+                sampler_func = sample_numpy
+
         # this will modify the various count matrices (Z, cdk, ckn, cd, ck) inside
-        self.loglikelihoods_, self.samples = self.sample(
+        self.loglikelihoods_, self.samples = sampler_func(
                 self.random_state, n_burn, n_samples, n_thin,
                 self.D, self.N, self.K, self.document_indices,
                 self.alpha, self.beta,
                 self.Z, self.cdk, self.ckn, self.ck)
         
         # update posterior alpha from the last sample  
-        self.topic_word_, self.doc_topic_ = self._update_parameters()   
+        self.topic_word_, self.doc_topic_ = self._update_parameters()
+
+        # duplicate doc_topic_ D times for compatibility with LDA output
+        temp = np.zeros((self.D, self.K))
+        for d in range(self.D):
+            temp[d] = self.doc_topic_
+        self.doc_topic_ = temp
 
     def print_topic_words(self):
         topic_word = self.topic_word_
@@ -263,10 +187,10 @@ class CollapseGibbsMixture(object):
         
 def main():
 
-    multiplier = 1
-    n_cluster = 10 * multiplier
-    n_docs = 10 * multiplier
-    vocab_size = 100 * multiplier
+    multiplier = 2
+    n_cluster = 20 * multiplier
+    n_docs = 100 * multiplier
+    vocab_size = 200 * multiplier
     document_length = 50 * multiplier
 
     alpha = 0.1
