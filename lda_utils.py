@@ -5,6 +5,24 @@ from scipy.special import psi, polygamma
 import numpy as np
 import scipy.io as sio
 
+# http://stackoverflow.com/questions/2272149/round-to-5-or-other-number-in-python        
+def _round_nicely(x, base=5):
+    return int(base * round(float(x)/base))
+    
+def threshold_matrix(matrix, epsilon=0.0):
+    thresholded = matrix.copy()
+    n_row, n_col = thresholded.shape
+    for i in range(n_row):
+        row = thresholded[i, :]
+        if epsilon > 0:
+            small = row < epsilon
+            row[small] = 0
+        else:
+            smallest_val = np.min(row)
+            smallest_arr = np.ones_like(row) * smallest_val
+            close = np.isclose(row, smallest_arr)
+            row[close] = 0        
+    return thresholded
 
 def word_indices(document):
     """

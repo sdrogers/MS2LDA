@@ -9,7 +9,7 @@ import pylab as plt
 import pandas as pd
 
 
-class LdaDataGenerator:
+class LdaDataGenerator(object):
     
         def __init__(self, alpha, make_plot=False):
             self.alpha = alpha
@@ -27,7 +27,7 @@ class LdaDataGenerator:
      
             word_dists /= word_dists.sum(axis=1)[:, np.newaxis] # turn counts into probabilities     
             if self.make_plot:
-                self._plot_nicely(word_dists, 'Topics X Terms', 'Terms', 'Topics')
+                self._plot_nicely(word_dists, 'Topic Words', 'N', 'K')
             return word_dists              
         
         def generate_document(self, word_dists, n_topics, vocab_size, document_length):

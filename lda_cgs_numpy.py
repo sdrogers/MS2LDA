@@ -105,7 +105,7 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                     ll -= gammaln(cd[d] + K_alpha)                
                 
                 all_lls.append(ll)      
-                print(" Log joint likelihood = %.3f " % ll)     
+                print(" Log likelihood = %.3f " % ll)     
                 
                 cdk_copy = np.copy(cdk)
                 ckn_copy = np.copy(ckn)

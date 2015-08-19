@@ -76,7 +76,7 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
             thin += 1
             if thin%n_thin==0:    
                 all_lls.append(ll)      
-                print(" Log joint likelihood = %.3f " % ll)  
+                print(" Log likelihood = %.3f " % ll)  
                 cdk_copy = np.copy(cdk)
                 ckn_copy = np.copy(ckn)
                 to_store = Sample(cdk_copy, ckn_copy)
