@@ -187,9 +187,6 @@ extract_neutral_loss_df <- function(ms1, ms2) {
 #             }
 #         }
                         
-        if (length(match_idx) == 0) {
-            browser()
-        }
         stopifnot(length(match_idx) > 0) # we must always find something here ..
         
         # compute their average mean mz as the row label and find column of the parent peaks
