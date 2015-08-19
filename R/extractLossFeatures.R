@@ -62,7 +62,7 @@ extract_neutral_loss_df <- function(ms1, ms2) {
             max_ppm <- abs(mz*grouping_tol*1e-06)
             # match to the first unmatched peak
             temp <- abs(mz-losses)
-            match_idx <- which(temp < abs(max_ppm))
+            match_idx <- which(temp <= abs(max_ppm))
             
             # use the existing word as label for the rows
             mean_mz <- round(mz, digits=5)
@@ -160,7 +160,7 @@ extract_neutral_loss_df <- function(ms1, ms2) {
         max_ppm <- abs(mz*grouping_tol*1e-06)
         # match to the first unmatched peak
         temp <- abs(mz-losses)
-        match_idx <- which(temp < abs(max_ppm))
+        match_idx <- which(temp <= abs(max_ppm))
         
 #         # experimental code to try a more sophisticated grouping of the loss values
 #         # doesn't seem to improve things that much ..
@@ -187,6 +187,9 @@ extract_neutral_loss_df <- function(ms1, ms2) {
 #             }
 #         }
                         
+        if (length(match_idx) == 0) {
+            browser()
+        }
         stopifnot(length(match_idx) > 0) # we must always find something here ..
         
         # compute their average mean mz as the row label and find column of the parent peaks
