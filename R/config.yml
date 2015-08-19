@@ -1,8 +1,10 @@
-# Set the method you want to use for peak detection and MS1-MS2 linking
-# - 1 is using Tony's script
-# - 2 is using the modified Tony's script where we can specify the full scan data for MS1
-# - 3 is using RMassBank's script
-# TODO: need to describe a bit more what each option does ...?
+# Set the method you want to use for peak detection and MS1-MS2 pairing:
+# - 1 is using a modified xcmsSetFragments script that is suitable to use with high-resolution data (with the courtesy of Dr Tony Larson who provided it)
+#     The script extracts MS1 features from the fragmentation file and subsequently pairs MS2 spectra to them according to the method specified in the script
+# - 2 is similar to 1, but it is possible to define the MS1 features from a separate (full scan) file
+# - 3 is using scripts based on the RMassBank suite (with the courtesy of Dr Emma Schymanski who provided the scripts containing the pairing functions)
+#     The scripts can use an mzXML file or .csv file containing (at least) mz and rt information in separate columns, and additional information like intensity and 
+#     peak identifiers can be added [see example peaklist1.csv and peaklist2.csv, respectively]. The fragmentation file has to be in .mzML format.
 create_peak_method: 3
 
 # Parameters for filenames
@@ -83,7 +85,7 @@ filtering_parameters_Chromatography_related:
     # --------------------
     # Initial filtering (in minutes) to remove unwanted MS1 features eluting ...
     rt_start: 3                         # too early (top of peak)
-    rt_end: 21                          # too early (top of peak)
+    rt_end: 21                          # too late (top of peak)
 
     # --------------------------
     # For runCreatePeakMethod3.R
@@ -104,7 +106,7 @@ filtering_parameters_MassSpectrometry_related:
     # Default value below is for stepped-energy fragmentation on Thermo Q-Exactive.
     min_MS2_intensity: 5000
 
-    # Positive mode ionization file value in (counts/s). For negative use 26000. 
+    # Positive mode ionization file value in (counts/s). For negative ionization mode use 260000. 
     # Default value below is for stepped-energy fragmentation on Thermo Q-Exactive.
     min_MS1_intensity_wanted: 520000
 
@@ -119,10 +121,10 @@ filtering_parameters_MassSpectrometry_related:
     # Maximum number of fragments to find per spectrum [set high to include all]
     max.frags: 5000
 
-    # ???
+    # Signal-to-Noise threshold for peaks in MS2 spectrum
     sn: 3
 
-    # ???
+    # Minimal mass difference between two adjacent mass peaks in the MS2 spectrum
     mz_gap: 0.005
 
     # Intensity (counts/s) filter to remove low intensity fragments
@@ -141,22 +143,29 @@ ms1_ms2_pairing_parameters:
     # For runCreatePeakMethod{1,2}.R
     # ------------------------------
 
-    # Perform some correction if cdf file is provided ??
+    # Perform some correction if cdf file is provided - if no .cdf file is used, this is set to FALSE.
     cdf.corrected : FALSE
     
-    # ???
+    # msnSelect allows for different ways of selecting MS2 scans for each MS1 feature:
+    # precursor_int = most intense precursor ion (default; typical for Thermo data dependent acquisition)
+    # ms1_rt = closest precursor rt
+    # all = any ms2 peaks linked to ms1 precursor, with any duplicated ms2 peaks within 
+    # match.ppm (default = 300) grouped together
     msnSelect : precursor_int
     
-    # ???
+    # specFilter = filter criteria for removing ms2 noise peaks
+    # none = no filtering (default)
+    # specPeaks = xcms specPeaks function using sn = 3 and mz.gap = 0.2 as defaults
+    # cor = correlation based filtering with minimum r = 0.75
     specFilter : specPeaks
     
-    # ???
+    # Any MS2 peaks within this ppm value will be grouped together in one MS2 spectrum
     match.ppm : 7
     
-    # ???
+    # Correlation parameter used if specFilter is set to ''cor''
     min.r : 0.75
     
-    # ???
+    # minimum difference between precursor and any ms2 fragment
     min.diff : 10
 
     # --------------------------
