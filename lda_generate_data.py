@@ -58,7 +58,7 @@ class LdaDataGenerator(object):
             print "Generating input DF"
                         
             # word_dists is the topic x document_length matrix
-            word_dists = self.generate_word_dists(n_topics, vocab_size, document_length)            
+            word_dists = self.generate_word_dists(n_topics, vocab_size, document_length)                        
             
             # generate each document x terms vector
             docs = np.zeros((vocab_size, n_docs), dtype=int64)

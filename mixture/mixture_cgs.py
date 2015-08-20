@@ -14,8 +14,8 @@ import numpy as np
 Sample = namedtuple('Sample', 'cdk ckn')
 
 class CollapseGibbsMixture(object):
-    
-    def __init__(self, df, vocab, K, alpha, beta, random_state=None):
+
+    def __init__(self, df, vocab, K, alpha, beta, random_state=None, previous_model=None):
         
         print "CGS Multinomial Mixture initialising"
         self.df = df.replace(np.nan, 0)
@@ -26,8 +26,25 @@ class CollapseGibbsMixture(object):
         self.vocab = vocab
         assert(len(self.vocab)==self.N)
 
-        # for training stage
-        self.K = K            
+        self.cv = False
+        self.previous_model = previous_model
+        if self.previous_model is not None:
+        
+            # all previous topics were fixed, for cross-validation
+            self.cv = True
+            self.K = K
+            self.previous_ckn = self.previous_model.ckn
+            self.previous_ck = self.previous_model.ck
+            self.previous_K = K
+
+        else:
+
+            # for training stage
+            self.K = K            
+            self.previous_ckn = np.zeros((self.K, self.N), int32)
+            self.previous_ck = np.zeros(self.K, int32)
+            self.previous_K = 0 # no old topics
+
         self.alpha = np.ones(self.K) * alpha
         self.beta = np.ones(self.N) * beta            
 
@@ -157,7 +174,8 @@ class CollapseGibbsMixture(object):
                 self.random_state, n_burn, n_samples, n_thin,
                 self.D, self.N, self.K, self.document_indices,
                 self.alpha, self.beta,
-                self.Z, self.cdk, self.ckn, self.ck)
+                self.Z, self.cdk, self.previous_K,
+                self.ckn, self.ck, self.previous_ckn, self.previous_ck)
         
         # update posterior alpha from the last sample  
         self.topic_word_, self.doc_topic_ = self._update_parameters()
@@ -187,7 +205,7 @@ class CollapseGibbsMixture(object):
         
 def main():
 
-    multiplier = 2
+    multiplier = 1
     n_cluster = 20 * multiplier
     n_docs = 100 * multiplier
     vocab_size = 200 * multiplier
@@ -202,14 +220,14 @@ def main():
     random_state = RandomState(1234567890)
 
     gen = MixtureDataGenerator(alpha, make_plot=True)
-    df, vocab = gen.generate_input_df(n_cluster, vocab_size, document_length, n_docs, 
-                                      previous_vocab=None, vocab_prefix='gibbs1', 
-                                      df_outfile='input/test1.csv', vocab_outfile='input/test1.words')
-#     df, vocab = gen.generate_from_file('input/test1.csv', 'input/test1.words')
+#     df, vocab = gen.generate_input_df(n_cluster, vocab_size, document_length, n_docs, 
+#                                       previous_vocab=None, vocab_prefix='gibbs1', 
+#                                       df_outfile='input/test1.csv', vocab_outfile='input/test1.words')
+    df, vocab = gen.generate_from_file('input/test1.csv', 'input/test1.words')
 
     mixture = CollapseGibbsMixture(df, vocab, n_cluster, alpha, beta, random_state=random_state)
     start_time = time.time()
-    mixture.run(n_burn, n_samples, n_thin, use_native=True)
+    mixture.run(n_burn, n_samples, n_thin, use_native=False)
     print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
     mixture.print_topic_words()
     

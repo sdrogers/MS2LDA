@@ -48,8 +48,8 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                 else:
                     
                     # for testing on unseen data
-                    log_likelihood_previous = np.log(previous_ckn[:, n] + beta) - np.log(previous_ck + N_beta)
-                    log_likelihood_current = np.log(ckn[:, n] + beta) - np.log(ck + N_beta)    
+                    log_likelihood_previous = np.log(previous_ckn[:, n] + beta[n]) - np.log(previous_ck + N_beta)
+                    log_likelihood_current = np.log(ckn[:, n] + beta[n]) - np.log(ck + N_beta)    
 
                     # The combined likelihood: 
                     # front is from previous topic-word distribution

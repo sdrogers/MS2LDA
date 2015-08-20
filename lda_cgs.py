@@ -107,11 +107,14 @@ class CollapseGibbsLda(object):
                 self.K = self.K + self.previous_K
                 print "Total no. of topics = " + str(self.K)
                 
-                # initialise the Dirichlet hyperparameters too
+                # set the first previous-K elements in alpha to the previous value
                 self.alpha = np.ones(self.K) * alpha
+                for k in range(self.previous_K):
+                    self.alpha[k] = self.previous_model.selected_alpha[k]
+
+                # set previous beta for the words that have been fixed from before
                 self.beta = np.ones(self.N) * beta
                 for n in range(N_prev_words):
-                    # but make sure to use previous beta for the words that have been fixed from before
                     self.beta[n] = self.previous_model.selected_beta[n] 
                 
             else:                
@@ -341,6 +344,9 @@ class CollapseGibbsLda(object):
         non_zero_cols_pos = np.where(non_zero_cols)
         self.selected_vocab = self.vocab[non_zero_cols_pos] 
         
+        # save alpha hyperparameter for selected topics
+        self.selected_alpha = self.alpha[topic_indices]
+        
         # and the beta hyperparameter for those words too
         self.selected_beta = self.beta[non_zero_cols_pos]
 
@@ -425,39 +431,41 @@ def main():
         topic_words = vocab[np.argsort(topic_dist)][:-n_top_words:-1]
         print('Topic {}: {}'.format(i, ' '.join(topic_words)))
       
-#     # try saving model
-#     selected_topics = [0, 2, 4, 6, 8]
-#     gibbs1.save(selected_topics, 'input/gibbs1.p', 'input/gibbs1.selected.words')
-#      
-#     # try loading model
-#     gibbs1 = CollapseGibbsLda.load('input/gibbs1.p')
-#     if hasattr(gibbs1, 'selected_topics'):
-#         print "Kept topics = " + str(gibbs1.selected_topics)
-#    
-#     gen._plot_nicely(gibbs1.doc_topic_.T, 'Inferred Topics X Docs', 'docs', 'topics', outfile='test1_doc_topic.png')
-#     gen._plot_nicely(gibbs1.topic_word_, 'Inferred Topics X Terms', 'terms', 'topics', outfile='test1_topic_word.png')
-#     plt.plot(gibbs1.loglikelihoods_)
-#     plt.show()
-#     
-#     # now run gibbs again on another df with the few selected topics above
-#     gen = LdaDataGenerator(alpha, make_plot=True)
-# #     df2, vocab2 = gen.generate_input_df(n_topics, vocab_size, document_length, n_docs, 
-# #                                         previous_vocab=gibbs1.selected_vocab, vocab_prefix='gibbs2', 
-# #                                         df_outfile='input/test2.csv', vocab_outfile='input/test2.words')
-#     df2, vocab2 = gen.generate_from_file('input/test2.csv', 'input/test2.words')
-#     gibbs2 = CollapseGibbsLda(df2, vocab2, n_topics, alpha, beta, previous_model=gibbs1)
-#     gibbs2.run(n_burn, n_samples, n_thin, use_native=True)
-#       
-#     gen._plot_nicely(gibbs2.doc_topic_.T, 'Inferred Topics X Docs', 'docs', 'topics', outfile='test2_doc_topic.png')
-#     gen._plot_nicely(gibbs2.topic_word_, 'Inferred Topics X Terms', 'terms', 'topics', outfile='test2_topic_word.png')
-#     plt.plot(gibbs2.loglikelihoods_)
-#     plt.show()
-#        
-#     topic_word = gibbs2.topic_word_
-#     n_top_words = 20
-#     for i, topic_dist in enumerate(topic_word):
-#         topic_words = vocab2[np.argsort(topic_dist)][:-n_top_words:-1]
-#         print('Topic {}: {}'.format(i, ' '.join(topic_words)))
+    # try saving model
+    selected_topics = [0, 2, 4, 6, 8]
+    gibbs1.save(selected_topics, 'input/gibbs1.p', 'input/gibbs1.selected.words')
+      
+    # try loading model
+    gibbs1 = CollapseGibbsLda.load('input/gibbs1.p')
+    if hasattr(gibbs1, 'selected_topics'):
+        print "Kept topics = " + str(gibbs1.selected_topics)
+    
+    gen._plot_nicely(gibbs1.doc_topic_.T, 'Inferred Topics X Docs', 'docs', 'topics', outfile='test1_doc_topic.png')
+    gen._plot_nicely(gibbs1.topic_word_, 'Inferred Topics X Terms', 'terms', 'topics', outfile='test1_topic_word.png')
+    plt.plot(gibbs1.loglikelihoods_)
+    plt.show()
+     
+    # now run gibbs again on another df with the few selected topics above
+    n_topics = n_topics - 10
+    alpha = 0.4
+    gen = LdaDataGenerator(alpha, make_plot=True)
+#     df2, vocab2 = gen.generate_input_df(n_topics, vocab_size, document_length, n_docs, 
+#                                         previous_vocab=gibbs1.selected_vocab, vocab_prefix='gibbs2', 
+#                                         df_outfile='input/test2.csv', vocab_outfile='input/test2.words')
+    df2, vocab2 = gen.generate_from_file('input/test2.csv', 'input/test2.words')
+    gibbs2 = CollapseGibbsLda(df2, vocab2, n_topics, alpha, beta, previous_model=gibbs1)
+    gibbs2.run(n_burn, n_samples, n_thin, use_native=True)
+       
+    gen._plot_nicely(gibbs2.doc_topic_.T, 'Inferred Topics X Docs', 'docs', 'topics', outfile='test2_doc_topic.png')
+    gen._plot_nicely(gibbs2.topic_word_, 'Inferred Topics X Terms', 'terms', 'topics', outfile='test2_topic_word.png')
+    plt.plot(gibbs2.loglikelihoods_)
+    plt.show()
+        
+    topic_word = gibbs2.topic_word_
+    n_top_words = 20
+    for i, topic_dist in enumerate(topic_word):
+        topic_words = vocab2[np.argsort(topic_dist)][:-n_top_words:-1]
+        print('Topic {}: {}'.format(i, ' '.join(topic_words)))
 
 if __name__ == "__main__":
     main()

@@ -2,13 +2,15 @@ import sys
 
 from scipy.special import gammaln
 
+from numba import jit
 import numpy as np
 from mixture_cgs import Sample
 
 def sample_numpy(random_state, n_burn, n_samples, n_thin, 
             D, N, K, document_indices, 
             alpha, beta, 
-            Z, cdk, ckn, ck):
+            Z, cdk, previous_K,
+            ckn, ck, previous_ckn, previous_ck):
 
     samples = []
     all_lls = []
@@ -18,7 +20,7 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
     for samp in range(n_samples):
     
         s = samp+1        
-        if s >= n_burn:
+        if s > n_burn:
             print("Sample " + str(s) + " "),
         else:
             print("Burn-in " + str(s) + " "),
@@ -39,17 +41,22 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
                 ckn[k, n] -= 1
                 ck[k] -= 1
 
-            # compute likelihood of document in new cluster    
+            # compute prior
             log_prior = np.log(cdk + alpha)                
+
+            # compute likelihood of document in new cluster
             log_likelihood = np.zeros_like(log_prior)
             for k in range(K):
                 for pos, n in word_locs:
-                    log_likelihood[k] += np.log(ckn[k, n] + beta[n]) - np.log(ck[k] + N_beta)
-
+                    if k < previous_K:
+                        log_likelihood[k] += np.log(previous_ckn[k, n] + beta[n]) - np.log(previous_ck[k] + N_beta)
+                    else:
+                        log_likelihood[k] += np.log(ckn[k, n] + beta[n]) - np.log(ck[k] + N_beta)
+                
             # sample new k from the posterior distribution log_post
             log_post = log_likelihood + log_prior
             post = np.exp(log_post - log_post.max())
-            post = post / post.sum()
+            post = post / post.sum()            
                 
             # k = random_state.multinomial(1, post).argmax()
             cumsum = np.empty(K, dtype=np.float64)
@@ -86,18 +93,21 @@ def sample_numpy(random_state, n_burn, n_samples, n_thin,
         all_lls.append(ll)      
         print(" Log likelihood = %.3f " % ll)     
 
-        if s > n_burn:
+        # store all the samples after thinning
+        if n_burn > 0 and s > n_burn:
             thin += 1
             if thin%n_thin==0:                    
                 cdk_copy = np.copy(cdk)
                 ckn_copy = np.copy(ckn)
                 to_store = Sample(cdk_copy, ckn_copy)
                 samples.append(to_store)
-                                   
-            else:                
-                print
-        else:
-            print
+
+    # store the last sample only
+    if n_burn == 0:
+        cdk_copy = np.copy(cdk)
+        ckn_copy = np.copy(ckn)
+        to_store = Sample(cdk_copy, ckn_copy)
+        samples.append(to_store)
             
     all_lls = np.array(all_lls)
     return all_lls, samples    

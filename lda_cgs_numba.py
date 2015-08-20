@@ -126,9 +126,9 @@ def _nb_get_new_index(d, n, k, cdk, cd,
 
         # we risk underflowing by not working in log space here
         if i < previous_K:
-            likelihood = (temp_previous_ckn[i] + beta[i]) / (previous_ck[i] + N_beta)
+            likelihood = (temp_previous_ckn[i] + beta[n]) / (previous_ck[i] + N_beta)
         else:
-            likelihood = (temp_ckn[i] + beta[i]) / (ck[i] + N_beta)
+            likelihood = (temp_ckn[i] + beta[n]) / (ck[i] + N_beta)
         prior = (temp_cdk[i] + alpha[i]) / (cd[d] + K_alpha)
         post[i] = likelihood * prior
 
