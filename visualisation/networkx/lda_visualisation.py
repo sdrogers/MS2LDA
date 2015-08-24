@@ -109,8 +109,17 @@ def export_docdf_to_gephi(infile, nodes_out, edges_out):
     
 def get_json_from_docdf(docdf, to_highlight, threshold):
 
+
     if to_highlight is None:
-        to_highlight = []
+        to_highlight_labels = []
+        to_highlight_colours = {}
+    else:
+        to_highlight_labels = [x[0] for x in to_highlight]
+        to_highlight_colours = {}
+        for x in to_highlight:
+            label = x[0]
+            colour = x[1]
+            to_highlight_colours[label] = colour
 
     G = nx.Graph()
     node_names = set()
@@ -149,10 +158,15 @@ def get_json_from_docdf(docdf, to_highlight, threshold):
                 node_score = 0
                 node_type = "square"
                 special = False
-                if n in to_highlight:
+                if n in to_highlight_labels:
                     node_size = 30
                     special = True
-                G.add_node(node_id, name=n, group=node_group, in_degree=0, size=node_size, score=node_score, type=node_type, special=special)
+                    highlight_colour = to_highlight_colours[n]
+                    G.add_node(node_id, name=n, group=node_group, in_degree=0, size=node_size, score=node_score, 
+                               type=node_type, special=special, highlight_colour=highlight_colour)
+                else:
+                    G.add_node(node_id, name=n, group=node_group, in_degree=0, size=node_size, score=node_score, 
+                               type=node_type, special=special)
 
             # for topics, insert only those whose in-degree is above threshold
             elif n.startswith('topic'):
@@ -163,9 +177,14 @@ def get_json_from_docdf(docdf, to_highlight, threshold):
                 special = False
                 in_degree = G.degree(node_id)
                 if in_degree >= threshold:
-                    if n in to_highlight:
-                        special = True             
-                    G.add_node(node_id, name=n, group=node_group, in_degree=in_degree, size=in_degree*5, score=node_score, type=node_type, special=special)
+                    if n in to_highlight_labels:
+                        special = True
+                        highlight_colour = to_highlight_colours[n]                        
+                        G.add_node(node_id, name=n, group=node_group, in_degree=in_degree, size=in_degree*5, score=node_score, 
+                                   type=node_type, special=special, highlight_colour=highlight_colour)                        
+                    else:
+                        G.add_node(node_id, name=n, group=node_group, in_degree=in_degree, size=in_degree*5, score=node_score, 
+                                   type=node_type, special=special)
                     print(str(node_id) + ", " + n + " degree=" + str(in_degree) + " added")        
                 else:
                     G.remove_node(node_id)

@@ -142,7 +142,11 @@ text {
 	            }))
 	        .style(tocolor, function(d) {
             	if (d.special == true) {
-            		return special_node_color;
+            		if (d.hasOwnProperty('highlight_colour')) {
+            			return d.highlight_colour; // returns the user-defined highlight colour
+            		} else {
+                		return special_node_color; // returns the default colour for highlighted item
+            		}
             	} else {
     	            if (isNumber(d.score) && d.score >= 0) return color(d.score);
     	            else {
