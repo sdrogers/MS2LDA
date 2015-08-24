@@ -466,7 +466,8 @@ class Ms2Lda_Viz(object):
     
             x_data = []
             y_data = []
-            line_type = []
+            line_type = []            
+            xlim_upper = max_parent_mz
     
             # plot the fragment peaks in this topic that also occur in this parent peak
             if parent_id in parent_topic_fragments:        
@@ -477,6 +478,8 @@ class Ms2Lda_Viz(object):
                     peakid = item[0]
                     parentid = item[1]
                     mass = item[2]
+                    if mass > xlim_upper:
+                        xlim_upper = mass
                     intensity = item[3]
                     word = item[4]
                     freq = wordfreq[word]
@@ -498,6 +501,8 @@ class Ms2Lda_Viz(object):
                     peakid = item[0]
                     parentid = item[1]
                     mass = item[2]
+                    if mass > xlim_upper:
+                        xlim_upper = mass
                     intensity = item[3]
                     word = item[4]
                     freq = wordfreq[word]
@@ -517,8 +522,7 @@ class Ms2Lda_Viz(object):
             self._text_plotter(x_data, y_data, line_type, text_positions, ax, txt_width, txt_height, 
                                fragment_fontspec, loss_fontspec)
     
-        xlim_upper = max_parent_mz + 100
-        plt.xlim([0, xlim_upper])
+        plt.xlim([0, xlim_upper+100])
         plt.ylim([0, 1.5])
 
         plt.xlabel('m/z')
