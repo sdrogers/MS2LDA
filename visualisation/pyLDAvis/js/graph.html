@@ -76,8 +76,18 @@ text {
 	    .attr("transform", "translate(267.1187199163185,285.8524262385378)scale(0.28677675605654135)")
 	svg.style("cursor", "move");
 	
+	// global functions and variables to be called from parent window too
+	var set_focus = undefined; 
+	var set_highlight = undefined;	
+	var exit_highlight = undefined;
+	var graph_circle = undefined;
+	var graph_link = undefined;
+	var graph_nodes = undefined;
+
 	d3.json("/graph.json", function(error, graph) {
-	
+
+	    graph_nodes = graph.nodes; // to be used in parent window later
+		
 	    var linkedByIndex = {};
 	    graph.links.forEach(function(d) {
 	        linkedByIndex[d.source + "," + d.target] = true;
@@ -110,7 +120,8 @@ text {
 	            	return default_link_color;
 	            }
 	        });
-	
+	    graph_link = link;
+
 	    var node = g.selectAll(".node")
 	        .data(graph.nodes)
 	        .enter().append("g")
@@ -158,7 +169,8 @@ text {
 	        .style("stroke-width", nominal_stroke)
 	        .style(towhite, "white")
 	        .style("opacity", circle_opacity);
-	
+		graph_circle = circle;
+	    
 	    var text = g.selectAll(".text")
 	        .data(graph.nodes)
 	        .enter().append("text")
@@ -263,7 +275,7 @@ text {
 	        }
 	    });
 	
-	    function exit_highlight() {
+	    exit_highlight = function() {
 	        highlight_node = null;
 	        if (focus_node === null) {
 	            svg.style("cursor", "move");
@@ -278,7 +290,7 @@ text {
 	        }
 	    }
 	
-	    function set_focus(d) {
+	    set_focus = function(d) {
 	        if (highlight_trans < 1) {
 	            circle.style("opacity", function(o) {
 	                return isConnected(d, o) ? 1 : highlight_trans;
@@ -299,8 +311,8 @@ text {
 	            });
 	        }
 	    }
-	
-	    function set_highlight(d) {
+
+	    set_highlight = function(d) {
 	        svg.style("cursor", "pointer");
 	        if (focus_node !== null) d = focus_node;
 	        highlight_node = d;

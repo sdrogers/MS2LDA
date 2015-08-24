@@ -10,7 +10,8 @@ var vis_state = {
 	topic : 0,
 	term : "",
 	circles : undefined,
-	active_topics : []
+	active_topics : [],
+	graph_window : undefined // the last child window for showing graph
 };
 
 // placeholder for the topic_on and topic_off functions
@@ -464,10 +465,10 @@ var LDAvis = function(to_select, data_or_file_name) {
 				function() {
 					var address = '/graph.html?degree=' + vis_state.lambda
 							+ '&visID=' + visID
-					var new_window = window.open(address, '',
+					vis_state.graph_window = window.open(address, '',
 							'height=800, width=800');
 					if (window.focus) {
-						new_window.focus();
+						vis_state.graph_window.focus();
 					}
 				});
 
@@ -1582,6 +1583,29 @@ var LDAvis = function(to_select, data_or_file_name) {
 				d3.select("#ms1_plot").attr("xlink:href",
 						"/topic?circle_id=" + circle.id + "&action=load");
 			}
+			
+			// try to update the graph window too, if possible
+			var child_window = vis_state.graph_window;
+			if (child_window !== undefined) {
+				// find the current node being clicked
+				var child_nodes = child_window.graph_nodes;
+				var to_find = "topic_" + parseInt(topics-1);
+				var d = undefined;
+				for (var n = 0; n < child_nodes.length; n++) {
+				    var node = child_nodes[n];
+				    if (node.name.indexOf(to_find)>-1) {
+				    	d = node;
+				    	break;
+				    }
+				}				
+				if (d !== undefined) {
+		            child_window.focus_node = d;
+		            child_window.set_focus(d);
+		            if (child_window.highlight_node === null) {
+		            	child_window.set_highlight(d);
+		            }					
+				}
+			}
 
 		}
 
@@ -1668,6 +1692,21 @@ var LDAvis = function(to_select, data_or_file_name) {
 			d3.select("#ms1_plot").attr("xlink:href",
 					"/images/default_logo.png")
 
+			// try to update the graph window too, if possible
+			var child_window = vis_state.graph_window;
+			if (child_window !== undefined) {				
+		        if (child_window.focus_node !== null) {
+		            child_window.focus_node = null;
+		            if (child_window.highlight_trans < 1) {
+		                child_window.graph_circle.style("opacity", child_window.circle_opacity);
+		                child_window.graph_link.style("opacity", 1);
+		            }
+		        }
+		        if (child_window.highlight_node === null) {
+		        	child_window.exit_highlight();
+		        }
+			}
+										
 		}
 
 		// event definition for mousing over a term
