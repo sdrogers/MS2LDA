@@ -55,6 +55,7 @@ text {
 	var max_zoom = 7;
 	var svg = d3.select("body").append("svg");
 	var zoom = d3.behavior.zoom().scaleExtent([min_zoom, max_zoom])
+	var circle_opacity = 0.9
 	
 	var color = d3.scale.linear()
 	    .domain([min_score, (min_score + max_score) / 2, max_score])
@@ -151,7 +152,8 @@ text {
 	        })
 	        //.attr("r", function(d) { return size(d.size)||nominal_base_node_size; })
 	        .style("stroke-width", nominal_stroke)
-	        .style(towhite, "white");
+	        .style(towhite, "white")
+	        .style("opacity", circle_opacity);
 	
 	    var text = g.selectAll(".text")
 	        .data(graph.nodes)
@@ -247,7 +249,7 @@ text {
 	        if (focus_node !== null) {
 	            focus_node = null;
 	            if (highlight_trans < 1) {
-	                circle.style("opacity", 1);
+	                circle.style("opacity", circle_opacity);
 	                // text.style("opacity", 1);
 	                link.style("opacity", 1);
 	            }
