@@ -1,10 +1,10 @@
 import cPickle
+import gzip
 import os
 import re
 import sys
 import time
 import timeit
-import gzip
 
 from pandas.core.frame import DataFrame
 from scipy.sparse import coo_matrix
@@ -13,7 +13,9 @@ from lda_cgs import CollapseGibbsLda
 import numpy as np
 import pandas as pd
 import pylab as plt
+import visualisation.pyLDAvis as pyLDAvis
 from visualisation.pylab.lda_for_fragments_viz import Ms2Lda_Viz
+import lda_utils as utils
 
 
 class Ms2Lda(object):
@@ -250,6 +252,10 @@ class Ms2Lda(object):
         
     def do_thresholding(self, th_doc_topic=0.05, th_topic_word=0.0):
 
+        # save the thresholding values used for visualisation later
+        self.th_doc_topic = th_doc_topic
+        self.th_topic_word = th_topic_word
+        
         previous_model = self.model.previous_model
         selected_topics = None
         if previous_model is not None and hasattr(previous_model, 'selected_topics'):
@@ -258,8 +264,8 @@ class Ms2Lda(object):
         # get rid of small values in the matrices of the results
         # if epsilon > 0, then the specified value will be used for thresholding
         # otherwise, the smallest value for each row in the matrix is used instead
-        self.topic_word = self.model.threshold_matrix(self.model.topic_word_, epsilon=th_topic_word)
-        self.doc_topic = self.model.threshold_matrix(self.model.doc_topic_, epsilon=th_doc_topic)
+        self.topic_word = utils.threshold_matrix(self.model.topic_word_, epsilon=th_topic_word)
+        self.doc_topic = utils.threshold_matrix(self.model.doc_topic_, epsilon=th_doc_topic)
         
         self.topic_names = []
         counter = 0
@@ -381,7 +387,23 @@ class Ms2Lda(object):
             plotter.plot_lda_fragments(consistency=consistency, sort_by='h_index', 
                                        selected_topics=selected_topics, interactive=interactive,
                                        to_highlight=to_highlight)
-            self.model.visualise(plotter)
+            # self.model.visualise(plotter)
+            data = {}
+            data['topic_term_dists'] = self.model.topic_word_
+            data['doc_topic_dists'] = self.model.doc_topic_
+            data['doc_lengths'] = self.model.cd
+            data['vocab'] = self.model.vocab
+            data['term_frequency'] = np.sum(self.model.ckn, axis=0)    
+            data['topic_ranking'] = plotter.topic_ranking
+            data['topic_coordinates'] = plotter.topic_coordinates
+            data['plot_opts'] = {'xlab': 'h-index', 'ylab': 'log(degree)', 'sort_by' : plotter.sort_by}
+            data['lambda_step'] = 5         
+            data['lambda_min'] = utils.round_nicely(plotter.sort_by_min)
+            data['lambda_max'] = utils.round_nicely(plotter.sort_by_max)
+            data['th_topic_word'] = self.th_topic_word
+            data['th_doc_topic'] = self.th_doc_topic
+            vis_data = pyLDAvis.prepare(**data)   
+            pyLDAvis.show(vis_data, topic_plotter=plotter)
         else:
             plotter.plot_lda_fragments(consistency=consistency, sort_by=sort_by, 
                                        selected_topics=selected_topics, interactive=interactive)

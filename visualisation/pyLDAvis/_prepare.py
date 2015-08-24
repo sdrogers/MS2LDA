@@ -163,6 +163,7 @@ def _topic_info(topic_term_dists, topic_proportion, term_frequency, term_topic_f
                                     'Total': term_frequency[term_ix], \
                                     'logprob': log_ttd.loc[original_topic_id, term_ix].round(4), \
                                     'loglift': log_lift.loc[original_topic_id, term_ix].round(4), \
+                                    'prob': topic_term_dists.loc[original_topic_id, term_ix], \
                                     'Category': 'Topic%d' % new_topic_id})
 
     top_terms = _find_relevance_chunks(log_ttd, log_lift, R, lambda_seq)
@@ -204,7 +205,7 @@ def _term_topic_freq(topic_term_dists, topic_freq, term_frequency):
 
 
 def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequency, topic_ranking, topic_coordinates, plot_opts, \
-                lambda_step, lambda_min, lambda_max, \
+                lambda_step, lambda_min, lambda_max, th_topic_word, th_doc_topic, \
                 R=30, mds=js_PCoA, n_jobs=-1):
     """Transforms the topic model distributions and related corpus data into
     the data structures needed for the visualization.
@@ -297,11 +298,13 @@ def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequenc
                                   'rank': topic_ranking[:, 1], 
                                   'degree': topic_ranking[:, 2]}).sort('rank', ascending=False)
 
-    return PreparedData(topic_coordinates, topic_info, token_table, R, lambda_step, lambda_min, lambda_max, plot_opts, client_topic_order, topic_ranking)
+    return PreparedData(topic_coordinates, topic_info, token_table, R, lambda_step, lambda_min, lambda_max, plot_opts, \
+                        client_topic_order, topic_ranking, th_topic_word, th_doc_topic)
 
 class PreparedData(namedtuple('PreparedData', ['topic_coordinates', 'topic_info', 'token_table',\
                                                               'R', 'lambda_step', 'lambda_min', 'lambda_max', \
-                                                              'plot_opts', 'topic_order', 'topic_ranking'])):
+                                                              'plot_opts', 'topic_order', 'topic_ranking', \
+                                                              'th_topic_word', 'th_doc_topic'])):
     def to_dict(self):
         return {'mdsDat': self.topic_coordinates.to_dict(orient='list'),
                     'tinfo': self.topic_info.to_dict(orient='list'),
@@ -312,7 +315,9 @@ class PreparedData(namedtuple('PreparedData', ['topic_coordinates', 'topic_info'
                     'lambda.max': self.lambda_max,
                     'plot.opts': self.plot_opts,
                     'topic.order': self.topic_order,
-                    'topic.ranking': self.topic_ranking.to_dict(orient='list')}
+                    'topic.ranking': self.topic_ranking.to_dict(orient='list'),
+                    'th_topic_word': self.th_topic_word,
+                    'th_doc_topic': self.th_doc_topic}
 
     def to_json(self):
         return json.dumps(self.to_dict(), cls=NumPyEncoder)

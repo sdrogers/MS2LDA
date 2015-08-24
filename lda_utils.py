@@ -6,7 +6,7 @@ import numpy as np
 import scipy.io as sio
 
 # http://stackoverflow.com/questions/2272149/round-to-5-or-other-number-in-python        
-def _round_nicely(x, base=5):
+def round_nicely(x, base=5):
     return int(base * round(float(x)/base))
     
 def threshold_matrix(matrix, epsilon=0.0):
