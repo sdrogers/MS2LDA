@@ -247,7 +247,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 							document
 								.getElementById(docShow)
 								.setAttribute("style",
-										"position: absolute; top: 490px; left: 900px; width: 80px; visibility: visible");
+										"position: absolute; top: 490px; left: 780px; width: 200px; visibility: visible");										
 							document
 									.getElementById(docPrev)
 									.setAttribute("style",
@@ -365,7 +365,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 					document
 						.getElementById(docShow)
 						.setAttribute("style",
-								"position: absolute; top: 490px; left: 900px; width: 80px; visibility: visible");
+								"position: absolute; top: 490px; left: 780px; width: 200px; visibility: visible");								
 					document
 							.getElementById(docPrev)
 							.setAttribute("style",
@@ -453,7 +453,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 					var n = d.getTime();
 					var address = '/topic?action=show&ts=' + n;
 					var new_window = window.open(address, '',
-							'height=560, width=900');
+							'height=500, width=700');
 					if (window.focus) {
 						new_window.focus();
 					}
@@ -512,7 +512,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 							document
 								.getElementById(docShow)
 								.setAttribute("style",
-										"position: absolute; top: 490px; left: 900px; width: 80px; visibility: visible");
+									"position: absolute; top: 490px; left: 780px; width: 200px; visibility: visible");
 							document
 									.getElementById(docPrev)
 									.setAttribute("style",
@@ -762,7 +762,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 							document
 								.getElementById(docShow)
 								.setAttribute("style",
-										"position: absolute; top: 490px; left: 900px; width: 80px; visibility: visible");
+										"position: absolute; top: 490px; left: 780px; width: 200px; visibility: visible");										
 							document
 									.getElementById(docPrev)
 									.setAttribute("style",
@@ -1027,8 +1027,8 @@ var LDAvis = function(to_select, data_or_file_name) {
 			showMs1Btn.setAttribute("id", docShow);
 			showMs1Btn
 					.setAttribute("style",
-							"position: absolute; top: 490px; left: 900px; width: 80px; visibility: hidden");
-			showMs1Btn.innerHTML = "Show MS1";
+							"position: absolute; top: 490px; left: 780px; width: 200px; visibility: hidden");
+			showMs1Btn.innerHTML = "Show MS1 in new window";
 			// showMs1Btn.title = "Show MS1 plot in a new window."
 			topicDiv.appendChild(showMs1Btn);
 			
@@ -1926,7 +1926,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 			document
 				.getElementById(docShow)
 				.setAttribute("style",
-						"position: absolute; top: 490px; left: 900px; width: 80px; visibility: hidden");
+						"position: absolute; top: 490px; left: 780px; width: 200px; visibility: hidden");
 			document
 					.getElementById(docPrev)
 					.setAttribute("style",
