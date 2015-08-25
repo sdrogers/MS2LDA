@@ -87,12 +87,6 @@ class CollapseGibbsMixture(object):
             
         self.samples = [] # store the samples
         
-    def store_sample(self):
-        cdk_copy = np.copy(self.cdk)
-        ckn_copy = np.copy(self.ckn)
-        samp = Sample(cdk_copy, ckn_copy)
-        self.samples.append(samp)
-
     def _get_posterior_probs(self, samp_cdk, samp_ckn):
 
         # update theta
@@ -105,38 +99,83 @@ class CollapseGibbsMixture(object):
         
         return theta, phi
             
+    def _get_perplexity(self, theta, phi):
+        # for all documents and all terms
+        marg = 0
+        n_words = 0
+        for d in range(self.D):
+            document = self.df.iloc[[d]]
+            nnz = document.values.nonzero()[1]
+            doc_word_counts = document.values.flatten()
+            nnz_counts = doc_word_counts[nnz]
+            n_words += np.sum(nnz_counts)
+            doc_marg = 0
+            for k in range(self.K):
+                temp = 0
+                for n in nnz:
+                    curr_word_count = doc_word_counts[n]
+                    temp += curr_word_count * np.log(phi[k, n])
+                temp = np.exp(temp)
+                doc_marg += theta[k] * temp
+            marg += np.log(doc_marg)
+        perp = np.exp(-(marg/n_words))
+        return marg, perp        
+            
     def _update_parameters(self):
 
         # use the last sample only
         if self.n_burn == 0:
-            print "Using only the last sample"
-            last_samp = self.samples[-1]
+            print "S=" + str(len(self.samples)) + ", using only the last sample."
+            last_samp = self.samples[0]
             theta, phi = self._get_posterior_probs(last_samp.cdk, last_samp.ckn)            
-            return phi, theta
+            margs = []
+            perps = []
+            marg, perp = self._get_perplexity(theta, phi)
+            print marg, perp            
+            margs.append(marg)
+            perps.append(perp)
+            return phi, theta, margs, perps
 
-        print "Using all samples"
+        print "S=" + str(len(self.samples)) + ", using all samples."
         thetas = []
         phis = []
+        alphas = []
         for samp in self.samples:            
             theta, phi = self._get_posterior_probs(samp.cdk, samp.ckn)
             thetas.append(theta)
             phis.append(phi)
         
         # average over the results
+        S = len(self.samples)
+        
+        print "Averaging over topic_words"
         avg_theta = np.zeros_like(thetas[0])
-        avg_phi = np.zeros_like(phis[0])
-
         for theta in thetas:
             avg_theta += theta
         avg_theta /= len(thetas)
-        
+        sys.stdout.flush()
+
+        print "Averaging over doc_topics"
+        avg_phi = np.zeros_like(phis[0])
         for phi in phis:
             avg_phi += phi
         avg_phi /= len(phis)
-                
-        return avg_phi, avg_theta
-    
-                                                    
+        sys.stdout.flush()
+
+        print "Averaging over log evidence and perplexities"                
+        margs = []
+        perps = []
+        for s in range(S):
+            theta = thetas[s]
+            phi = phis[s]
+            marg, perp = self._get_perplexity(theta, phi)
+            print marg, perp
+            margs.append(marg)
+            perps.append(perp)
+        sys.stdout.flush()
+        
+        return avg_phi, avg_theta, margs, perps
+                                                        
     def run(self, n_burn, n_samples, n_thin=1, use_native=True):
         
         self.n_burn = n_burn
@@ -178,13 +217,7 @@ class CollapseGibbsMixture(object):
                 self.ckn, self.ck, self.previous_ckn, self.previous_ck)
         
         # update posterior alpha from the last sample  
-        self.topic_word_, self.doc_topic_ = self._update_parameters()
-
-        # duplicate doc_topic_ D times for compatibility with LDA output
-        temp = np.zeros((self.D, self.K))
-        for d in range(self.D):
-            temp[d] = self.doc_topic_
-        self.doc_topic_ = temp
+        self.topic_word_, self.doc_topic_, self.margs, self.perps = self._update_parameters()
 
     def print_topic_words(self):
         topic_word = self.topic_word_
@@ -214,7 +247,7 @@ def main():
     alpha = 0.1
     beta = 0.01    
     n_samples = 20
-    n_burn = 0
+    n_burn = 10
     n_thin = 1
 
     random_state = RandomState(1234567890)
@@ -227,7 +260,7 @@ def main():
 
     mixture = CollapseGibbsMixture(df, vocab, n_cluster, alpha, beta, random_state=random_state)
     start_time = time.time()
-    mixture.run(n_burn, n_samples, n_thin, use_native=False)
+    mixture.run(n_burn, n_samples, n_thin, use_native=True)
     print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
     mixture.print_topic_words()
     
