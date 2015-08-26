@@ -375,7 +375,7 @@ class Ms2Lda(object):
         plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdf)
         return plotter.rank_topics(sort_by=sort_by, selected_topics=selected_topics, top_N=top_N)
         
-    def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", 
+    def plot_lda_fragments(self, consistency=0.0, sort_by="h_index", 
                            selected_topics=None, interactive=False, to_highlight=None):
 
         if not hasattr(self, 'topic_word'):
@@ -408,23 +408,37 @@ class Ms2Lda(object):
             plotter.plot_lda_fragments(consistency=consistency, sort_by=sort_by, 
                                        selected_topics=selected_topics, interactive=interactive)
             
-    def print_topic_words(self):
+    def print_topic_words(self, selected_topics=None, with_probabilities=True, compact_output=False):
         
         if not hasattr(self, 'topic_word'):
             raise ValueError('Thresholding not done yet.')
         
         for i, topic_dist in enumerate(self.topic_word):    
-            ordering = np.argsort(topic_dist)
-            topic_words = np.array(self.vocab)[ordering][::-1]
-            dist = topic_dist[ordering][::-1]        
-            topic_name = 'Topic {}:'.format(i)
-            print topic_name,                    
-            for j in range(len(topic_words)):
-                if dist[j] > 0:
-                    print('{} ({}),'.format(topic_words[j], dist[j])),
+
+            show_print = False
+            if selected_topics is None:
+                show_print = True
+            if selected_topics is not None and i in selected_topics:
+                show_print = True
+                
+            if show_print:
+                ordering = np.argsort(topic_dist)
+                topic_words = np.array(self.vocab)[ordering][::-1]
+                dist = topic_dist[ordering][::-1]        
+                topic_name = 'Topic {}:'.format(i)
+                print topic_name,                    
+                for j in range(len(topic_words)):
+                    if dist[j] > 0:
+                        if with_probabilities:
+                            print('{} ({}),'.format(topic_words[j], dist[j])),
+                        else:
+                            print('{},'.format(topic_words[j])),                            
+                    else:
+                        break
+                if compact_output:
+                    print
                 else:
-                    break
-            print "\n"
+                    print "\n"
         
     def plot_posterior_alpha(self):
         posterior_alpha = self.model.posterior_alpha

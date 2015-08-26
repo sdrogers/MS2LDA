@@ -131,7 +131,6 @@ class CollapseGibbsMixture(object):
             margs = []
             perps = []
             marg, perp = self._get_perplexity(theta, phi)
-            print marg, perp            
             margs.append(marg)
             perps.append(perp)
             return phi, theta, margs, perps
@@ -169,7 +168,6 @@ class CollapseGibbsMixture(object):
             theta = thetas[s]
             phi = phis[s]
             marg, perp = self._get_perplexity(theta, phi)
-            print marg, perp
             margs.append(marg)
             perps.append(perp)
         sys.stdout.flush()
@@ -204,7 +202,8 @@ class CollapseGibbsMixture(object):
             try:
                 from mixture_cgs_numba import sample_numba
                 sampler_func = sample_numba
-            except Exception:
+            except Exception, e:
+                print "Error: %s" % e
                 print "Numba not found. Using Numpy for mixture sampling"
                 sampler_func = sample_numpy
 

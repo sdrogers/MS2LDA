@@ -72,6 +72,7 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
     all_lls = np.array(all_lls)            
     return all_lls, samples
 
+@jit(nopython=True)
 def _nb_get_new_index(d, k, cdk, word_idx,
                       N, K, previous_K, alpha, beta, 
                       N_beta, K_alpha,                      
@@ -127,7 +128,7 @@ def _nb_get_new_index(d, k, cdk, word_idx,
     
     return k
 
-@jit(float64(int32, int32, int32, float64[:], float64[:], float64, float64, int32[:], int32[:, :], int32[:]), nopython=True)
+@jit(nopython=True)
 def _nb_ll(D, N, K, alpha, beta, N_beta, K_alpha, cdk, ckn, ck):
     
     temp_sum = 0

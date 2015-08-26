@@ -19,9 +19,11 @@ import numpy as np
 import pylab as plt
 
 
-Cv_Results = namedtuple('Cv_Results', 'lda_fold_in_marg lda_fold_in_perp \
-                                        lda_is_marg lda_is_perp \
-                                        mixture_fold_in_marg mixture_fold_in_perp')
+Cv_Results = namedtuple('Cv_Results', 'training_lda_marg, training_lda_perp \
+                                        training_mixture_marg, training_mixture_perp, \
+                                        testing_lda_fold_in_marg testing_lda_fold_in_perp \
+                                        testing_lda_is_marg testing_lda_is_perp \
+                                        testing_mixture_fold_in_marg testing_mixture_fold_in_perp')
 class CrossValidatorLda:
     
     def __init__(self, df, vocab, K, alpha, beta):
@@ -36,19 +38,27 @@ class CrossValidatorLda:
 
         folds = self._make_folds(n_folds)
 
-        lda_fold_in_margs = []
-        lda_fold_in_perps = []
-        lda_is_margs = []
-        lda_is_perps = []
-        mixture_fold_in_margs = []
-        mixture_fold_in_perps = []
+        # training results
+        training_lda_margs = []
+        training_lda_perps = []
+        training_mixture_margs = []
+        training_mixture_perps = []
+
+        # testing results
+        testing_lda_fold_in_margs = []
+        testing_lda_fold_in_perps = []
+        testing_lda_is_margs = []
+        testing_lda_is_perps = []
+        testing_mixture_fold_in_margs = []
+        testing_mixture_fold_in_perps = []
         
         for i in range(len(folds)):
 
             # vary the training-testing folds each time            
             training_df = None
             testing_df = None
-            testing_idx = i
+            training_idx = None
+            testing_idx = None
             for j in range(len(folds)):
                 if j == i:
                     print "K=" + str(self.K) + " Testing fold=" + str(j)
@@ -58,18 +68,23 @@ class CrossValidatorLda:
                     print "K=" + str(self.K) + " Training fold=" + str(j)
                     if training_df is None:
                         training_df = folds[j]
+                        training_idx = []
                     else:
                         training_df = training_df.append(folds[j])
+                        training_idx.append(j)
 
             # run training LDA on the training fold
-            training_gibbs = self._train_lda(training_df, n_burn, n_samples, n_thin)
+            training_gibbs, training_marg, training_perp = self._train_lda(training_df, training_idx, 
+                                                                           n_burn, n_samples, n_thin)
+            training_lda_margs.append(training_marg)
+            training_lda_perps.append(training_perp)            
 
             # get testing performance using the fold-in method (holding the topic-word distribution fixed)
             testing_marg, testing_perp = self._test_lda_fold_in(testing_df, testing_idx, 
                                                                 n_burn, n_samples, n_thin, 
                                                                 training_gibbs)
-            lda_fold_in_margs.append(testing_marg)
-            lda_fold_in_perps.append(testing_perp)
+            testing_lda_fold_in_margs.append(testing_marg)
+            testing_lda_fold_in_perps.append(testing_perp)
             
             # get testing performance using pseudo-count importance sampling in
             # Wallach, Hanna M., et al. "Evaluation methods for topic models." 
@@ -77,50 +92,54 @@ class CrossValidatorLda:
             testing_marg, testing_perp = self._test_lda_importance_sampling(testing_df, testing_idx, 
                                                                             is_num_samples, is_iters, training_gibbs, 
                                                                             use_posterior_alpha=True)
-            lda_is_margs.append(testing_marg)
-            lda_is_perps.append(testing_perp)
+            testing_lda_is_margs.append(testing_marg)
+            testing_lda_is_perps.append(testing_perp)
 
             if method == "with_mixture":
 
                 # run training multinomial mixture on the training fold
-                training_gibbs = self._train_mixture(training_df, n_burn, n_samples, n_thin)
+                training_gibbs, training_marg, training_perp = self._train_mixture(training_df, training_idx, 
+                                                                                   n_burn, n_samples, n_thin)
+                training_mixture_margs.append(training_marg)
+                training_mixture_perps.append(training_perp)
     
                 # get testing performance using the fold-in method
                 testing_marg, testing_perp = self._test_mixture_fold_in(testing_df, testing_idx, 
                                                                         n_burn, n_samples, n_thin, 
                                                                         training_gibbs)
-                mixture_fold_in_margs.append(testing_marg)
-                mixture_fold_in_perps.append(testing_perp)
+                testing_mixture_fold_in_margs.append(testing_marg)
+                testing_mixture_fold_in_perps.append(testing_perp)
 
-        # outside the for loop of the folds
+        # average training results across all folds
+        training_lda_marg, training_lda_perp  = self._get_all_folds_performance(training_lda_margs, training_lda_perps)
+        training_mixture_marg, training_mixture_perp  = self._get_all_folds_performance(training_mixture_margs, training_mixture_perps)
 
-        lda_fold_in_margs = np.array(lda_fold_in_margs)
-        lda_fold_in_perps = np.array(lda_fold_in_perps)
-        avg_lda_fold_in_marg = np.asscalar(np.mean(lda_fold_in_margs))
-        avg_lda_fold_in_perp = np.asscalar(np.mean(lda_fold_in_perps))
-
-        lda_is_margs = np.array(lda_is_margs)
-        lda_is_perps = np.array(lda_is_perps)
-        avg_lda_is_marg = np.asscalar(np.mean(lda_is_margs))
-        avg_lda_is_perp = np.asscalar(np.mean(lda_is_perps))
-
-        mixture_fold_in_margs = np.array(mixture_fold_in_margs)
-        mixture_fold_in_perps = np.array(mixture_fold_in_perps)
-        avg_mixture_fold_in_marg = np.asscalar(np.mean(mixture_fold_in_margs))
-        avg_mixture_fold_in_perp = np.asscalar(np.mean(mixture_fold_in_perps))
+        # average testing results across all folds
+        testing_lda_fold_in_marg, testing_lda_fold_in_perp  = self._get_all_folds_performance(testing_lda_fold_in_margs, 
+                                                                                              testing_lda_fold_in_perps)
+        testing_lda_is_marg, testing_lda_is_perp  = self._get_all_folds_performance(testing_lda_is_margs, 
+                                                                                    testing_lda_is_perps)
+        testing_mixture_fold_in_marg, testing_mixture_fold_in_perp  = self._get_all_folds_performance(testing_mixture_fold_in_margs, 
+                                                                                                      testing_mixture_fold_in_perps)
         
         print
         print "K=" + str(self.K) \
-            + ",lda_fold_in_log_evidence=" + str(avg_lda_fold_in_marg) \
-            + ",lda_fold_in_perplexity=" + str(avg_lda_fold_in_perp) \
-            + ",lda_importance_sampling_evidence=" + str(avg_lda_is_marg) \
-            + ",lda_importance_sampling_perplexity=" + str(avg_lda_is_perp) \
-            + ",mixture_fold_in_log_evidence=" + str(avg_mixture_fold_in_marg) \
-            + ",mixture_fold_in_perplexity=" + str(avg_mixture_fold_in_perp)
+            + ",training_lda_log_evidence=" + str(training_lda_marg) \
+            + ",training_lda_perplexity=" + str(training_lda_perp) \
+            + ",training_mixture_log_evidence=" + str(training_mixture_marg) \
+            + ",training_mixture_perplexity=" + str(training_mixture_perp) \
+            + ",testing_lda_fold_in_log_evidence=" + str(testing_lda_fold_in_marg) \
+            + ",testing_lda_fold_in_perplexity=" + str(testing_lda_fold_in_perp) \
+            + ",testing_lda_importance_sampling_evidence=" + str(testing_lda_is_marg) \
+            + ",testing_lda_importance_sampling_perplexity=" + str(testing_lda_is_perp) \
+            + ",testing_mixture_fold_in_log_evidence=" + str(testing_mixture_fold_in_marg) \
+            + ",testing_mixture_fold_in_perplexity=" + str(testing_mixture_fold_in_perp)
 
-        res = Cv_Results(avg_lda_fold_in_marg, avg_lda_fold_in_perp, 
-                         avg_lda_is_marg, avg_lda_is_perp, 
-                         avg_mixture_fold_in_marg, avg_mixture_fold_in_perp)
+        res = Cv_Results(training_lda_marg, training_lda_perp,
+                         training_mixture_marg, training_mixture_perp,
+                         testing_lda_fold_in_marg, testing_lda_fold_in_perp, 
+                         testing_lda_is_marg, testing_lda_is_perp, 
+                         testing_mixture_fold_in_marg, testing_mixture_fold_in_perp)
         return res
 
     def _make_folds(self, n_folds):
@@ -129,32 +148,24 @@ class CrossValidatorLda:
         folds = np.array_split(shuffled_df, n_folds)
         return folds
     
-    def _train_lda(self, training_df, n_burn, n_samples, n_thin):
+    def _train_lda(self, training_df, fold_idx, n_burn, n_samples, n_thin):
 
         print "Run training gibbs " + str(training_df.shape)
         training_gibbs = CollapseGibbsLda(training_df, self.vocab, self.K, self.alpha, self.beta)
         training_gibbs.run(n_burn, n_samples, n_thin, use_native=True)
-        return training_gibbs
+        marg, perp = self._average_samples("lda fold-in training", fold_idx, training_gibbs)
+        return training_gibbs, marg, perp
 
-    def _test_lda_fold_in(self, testing_df, testing_idx, n_burn, n_samples, n_thin, training_gibbs):
+    def _test_lda_fold_in(self, testing_df, fold_idx, n_burn, n_samples, n_thin, training_gibbs):
 
         print "Run testing gibbs " + str(testing_df.shape)
         testing_gibbs = CollapseGibbsLda(testing_df, self.vocab, self.K, self.alpha, self.beta, 
                                          previous_model=training_gibbs)
         testing_gibbs.run(n_burn, n_samples, n_thin, use_native=True)  
-        
-        # average over the evidences and perplexities in the samples
-        sample_margs = np.array(testing_gibbs.margs)
-        sample_perps = np.array(testing_gibbs.perps)
-        avg_marg = np.mean(sample_margs)
-        avg_perp = np.mean(sample_perps)
+        marg, perp = self._average_samples("lda fold-in testing", fold_idx, testing_gibbs)
+        return marg, perp
 
-        print "Log evidence " + str(testing_idx) + " = " + str(avg_marg)
-        print "Test perplexity " + str(testing_idx) + " = " + str(avg_perp)
-        print
-        return avg_marg, avg_perp
-
-    def _test_lda_importance_sampling(self, testing_df, testing_idx, 
+    def _test_lda_importance_sampling(self, testing_df, fold_idx, 
                                       is_num_samples, is_iters, 
                                       training_gibbs, use_posterior_alpha=True):
 
@@ -184,34 +195,47 @@ class CrossValidatorLda:
             n_words += len(words)
 
         perp = np.exp(-(marg/n_words))
-        print "Log evidence " + str(testing_idx) + " = " + str(marg)
-        print "Test perplexity " + str(testing_idx) + " = " + str(perp)
+
+        print "lda is testing log evidence fold " + str(fold_idx) + " = " + str(marg)
+        print "lda is testing perplexity fold " + str(fold_idx) + " = " + str(perp)
         print
         return marg, perp
 
-    def _train_mixture(self, training_df, n_burn, n_samples, n_thin):
+    def _train_mixture(self, training_df, fold_idx, n_burn, n_samples, n_thin):
 
         print "Run training gibbs " + str(training_df.shape)
         training_gibbs = mixture_cgs.CollapseGibbsMixture(training_df, self.vocab, self.K, self.alpha, self.beta)
         training_gibbs.run(n_burn, n_samples, n_thin, use_native=True)
-        return training_gibbs
+        marg, perp = self._average_samples("mixture fold-in training", fold_idx, training_gibbs)
+        return training_gibbs, marg, perp
 
-    def _test_mixture_fold_in(self, testing_df, testing_idx, n_burn, n_samples, n_thin, training_gibbs):
+    def _test_mixture_fold_in(self, testing_df, fold_idx, n_burn, n_samples, n_thin, training_gibbs):
 
         print "Run testing gibbs " + str(testing_df.shape)
         testing_gibbs = mixture_cgs.CollapseGibbsMixture(testing_df, self.vocab, self.K, self.alpha, self.beta, 
                                          previous_model=training_gibbs)
         testing_gibbs.run(n_burn, n_samples, n_thin, use_native=True)  
-        
+        marg, perp = self._average_samples("mixture fold-in testing", fold_idx, testing_gibbs)
+        return marg, perp
+    
+    def _average_samples(self, prefix, fold_idx, gibbs):
+
         # average over the evidences and perplexities in the samples
-        sample_margs = np.array(testing_gibbs.margs)
-        sample_perps = np.array(testing_gibbs.perps)
+        sample_margs = np.array(gibbs.margs)
+        sample_perps = np.array(gibbs.perps)
         avg_marg = np.mean(sample_margs)
         avg_perp = np.mean(sample_perps)
 
-        print "Log evidence " + str(testing_idx) + " = " + str(avg_marg)
-        print "Test perplexity " + str(testing_idx) + " = " + str(avg_perp)
+        print prefix + " log evidence fold " + str(fold_idx) + " = " + str(avg_marg)
+        print prefix + " perplexity fold " + str(fold_idx) + " = " + str(avg_perp)
         print
+        return avg_marg, avg_perp
+    
+    def _get_all_folds_performance(self, margs, perps):
+        margs = np.array(margs)
+        perps = np.array(perps)
+        avg_marg = np.asscalar(np.mean(margs))
+        avg_perp = np.asscalar(np.mean(perps))
         return avg_marg, avg_perp
 
 def main():    
@@ -296,57 +320,106 @@ def run_synthetic(parallel=True):
     df, vocab = gen.generate_input_df(K, vocab_size, document_length, n_docs)
     
     ks = range(10, 101, 10)
-    lda_fold_in_margs = []
-    lda_fold_in_perps = []
-    lda_is_margs = []
-    lda_is_perps = []
-    mixture_fold_in_margs = []
-    mixture_fold_in_perps = []
+    training_lda_margs = []
+    training_lda_perps = []
+    training_mixture_margs = []
+    training_mixture_perps = []
+    testing_lda_fold_in_margs = []
+    testing_lda_fold_in_perps = []
+    testing_lda_is_margs = []
+    testing_lda_is_perps = []
+    testing_mixture_fold_in_margs = []
+    testing_mixture_fold_in_perps = []
     if parallel:
         num_cores = multiprocessing.cpu_count()
         res = Parallel(n_jobs=num_cores)(delayed(run_cv)(df, vocab, k, alpha, beta) for k in ks)      
         for r in res:
-            lda_fold_in_margs.append(r.lda_fold_in_marg)
-            lda_fold_in_perps.append(r.lda_fold_in_perp)
-            lda_is_margs.append(r.lda_is_marg)
-            lda_is_perps.append(r.lda_is_perp)
-            mixture_fold_in_margs.append(r.mixture_fold_in_marg)
-            mixture_fold_in_perps.append(r.mixture_fold_in_perp)
+            training_lda_margs.append(r.training_lda_marg)
+            training_lda_perps.append(r.training_lda_perp)
+            training_mixture_margs.append(r.training_mixture_marg)
+            training_mixture_perps.append(r.training_mixture_perp)
+            testing_lda_fold_in_margs.append(r.testing_lda_fold_in_marg)
+            testing_lda_fold_in_perps.append(r.testing_lda_fold_in_perp)
+            testing_lda_is_margs.append(r.testing_lda_is_marg)
+            testing_lda_is_perps.append(r.testing_lda_is_perp)
+            testing_mixture_fold_in_margs.append(r.testing_mixture_fold_in_marg)
+            testing_mixture_fold_in_perps.append(r.testing_mixture_fold_in_perp)
     else:
         for k in ks:
             r = run_cv(df, vocab, k, alpha, beta)
-            lda_fold_in_margs.append(r.lda_fold_in_marg)
-            lda_fold_in_perps.append(r.lda_fold_in_perp)
-            lda_is_margs.append(r.lda_is_marg)
-            lda_is_perps.append(r.lda_is_perp)
-            mixture_fold_in_margs.append(r.mixture_fold_in_marg)
-            mixture_fold_in_perps.append(r.mixture_fold_in_perp)
+            training_lda_margs.append(r.training_lda_marg)
+            training_lda_perps.append(r.training_lda_perp)
+            training_mixture_margs.append(r.training_mixture_marg)
+            training_mixture_perps.append(r.training_mixture_perp)
+            testing_lda_fold_in_margs.append(r.testing_lda_fold_in_marg)
+            testing_lda_fold_in_perps.append(r.testing_lda_fold_in_perp)
+            testing_lda_is_margs.append(r.testing_lda_is_marg)
+            testing_lda_is_perps.append(r.testing_lda_is_perp)
+            testing_mixture_fold_in_margs.append(r.testing_mixture_fold_in_marg)
+            testing_mixture_fold_in_perps.append(r.testing_mixture_fold_in_perp)
+            
+    _make_training_plot(ks, training_lda_margs, training_mixture_margs, training_lda_perps, training_mixture_perps)
+    _make_testing_plot(ks, testing_lda_fold_in_margs, testing_lda_is_margs, testing_mixture_fold_in_margs,
+                       testing_lda_fold_in_perps, testing_lda_is_perps, testing_mixture_fold_in_perps)
         
+def _make_training_plot(ks, lda_margs, mixture_margs, lda_perps, mixture_perps):
+
     plt.figure()
 
     plt.subplot(1, 2, 1)
-    plt.plot(np.array(ks), np.array(lda_fold_in_margs), 'r')
-    plt.plot(np.array(ks), np.array(lda_is_margs), 'g')
-    plt.plot(np.array(ks), np.array(mixture_fold_in_margs), 'b')
+    plt.plot(np.array(ks), np.array(lda_margs), 'r')
+    plt.plot(np.array(ks), np.array(mixture_margs), 'b')
     plt.grid()
     plt.xlabel('K')
     plt.ylabel('Log evidence')
-    plt.title('CV results -- log evidence for varying K')
+    plt.title('Log evidence')
 
     plt.subplot(1, 2, 2)
-    plt.plot(np.array(ks), np.array(lda_fold_in_perps), 'r')
-    plt.plot(np.array(ks), np.array(lda_is_perps), 'g')
-    plt.plot(np.array(ks), np.array(mixture_fold_in_perps), 'b')
+    plt.plot(np.array(ks), np.array(lda_perps), 'r')
+    plt.plot(np.array(ks), np.array(mixture_perps), 'b')
     plt.grid()
     plt.xlabel('K')
     plt.ylabel('Perplexity')
-    plt.title('CV results -- perplexity for varying K')
+    plt.title('Perplexity')
+
+    red_patch = mpatches.Patch(color='red', label='LDA')
+    blue_patch = mpatches.Patch(color='blue', label='Mixture')
+    plt.suptitle("Training Performance")
+    plt.legend(handles=[red_patch, blue_patch])                
+    plt.tight_layout()
+    plt.show()    
+    
+def _make_testing_plot(ks, 
+               fold_in_margs, is_margs, mixture_margs,
+               fold_in_perps, is_perps, mixture_perps):
+
+    plt.figure()
+
+    plt.subplot(1, 2, 1)
+    plt.plot(np.array(ks), np.array(fold_in_margs), 'r')
+    plt.plot(np.array(ks), np.array(is_margs), 'g')
+    plt.plot(np.array(ks), np.array(mixture_margs), 'b')
+    plt.grid()
+    plt.xlabel('K')
+    plt.ylabel('Log evidence')
+    plt.title('Log evidence')
+
+    plt.subplot(1, 2, 2)
+    plt.plot(np.array(ks), np.array(fold_in_perps), 'r')
+    plt.plot(np.array(ks), np.array(is_perps), 'g')
+    plt.plot(np.array(ks), np.array(mixture_perps), 'b')
+    plt.grid()
+    plt.xlabel('K')
+    plt.ylabel('Perplexity')
+    plt.title('Perplexity')
 
     red_patch = mpatches.Patch(color='red', label='LDA Fold-in')
     green_patch = mpatches.Patch(color='green', label='LDA IS')
-    blue_patch = mpatches.Patch(color='blue', label='LDA IS')
+    blue_patch = mpatches.Patch(color='blue', label='Mixture Fold-in')
+    plt.suptitle("Testing Performance")
     plt.legend(handles=[red_patch, green_patch, blue_patch])                
-    plt.show()
+    plt.tight_layout()
+    plt.show()    
 
 def run_cv(df, vocab, k, alpha, beta):    
 

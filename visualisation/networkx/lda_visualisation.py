@@ -109,7 +109,6 @@ def export_docdf_to_gephi(infile, nodes_out, edges_out):
     
 def get_json_from_docdf(docdf, to_highlight, threshold):
 
-
     if to_highlight is None:
         to_highlight_labels = []
         to_highlight_colours = {}
@@ -204,7 +203,43 @@ def get_json_from_docdf(docdf, to_highlight, threshold):
     print("Total edges = " + str(G.number_of_edges()))
 
     json_out = json_graph.node_link_data(G) # node-link format to serialize
-    return json_out
+    return json_out, G
+
+def get_json_from_topicdf(topicdf):
+
+    G = nx.Graph()
+    node_names = set()
+    for row_index in topicdf.index:
+        node_names.add(row_index)
+    for col_index in topicdf.columns:
+        node_names.add(col_index)
+
+    nodes = {}
+    node_id = 0
+    for n in node_names:
+        nodes[n] = node_id
+        node_id += 1
+        
+    for row_index, row_value in topicdf.iterrows():    
+        for col_index, col_value in row_value.iteritems():
+            if col_value > 0:
+                term = row_index
+                topic = col_index
+                termid = nodes[term]
+                topicid = nodes[topic]
+                weight = col_value
+                if weight > 0:
+                    G.add_edge(termid, topicid, weight=weight)
+
+    for n in node_names:
+        node_id = nodes[n]
+        G.add_node(node_id, name=n)
+
+    print("Total nodes = " + str(G.number_of_nodes()))
+    print("Total edges = " + str(G.number_of_edges()))
+
+    json_out = json_graph.node_link_data(G) # node-link format to serialize
+    return json_out, G
 
 def export_docdf_to_networkx(infile):
     """ Exports docdf to networkx """
