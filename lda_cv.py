@@ -12,7 +12,7 @@ from lda_cgs import CollapseGibbsLda
 from lda_for_fragments import Ms2Lda
 from lda_generate_data import LdaDataGenerator
 from lda_is import ldae_is_variants
-from justin.mixture import mixture_cgs
+from mixture import mixture_cgs
 import lda_utils as utils
 import matplotlib.patches as mpatches
 import numpy as np
@@ -68,7 +68,7 @@ class CrossValidatorLda:
                     print "K=" + str(self.K) + " Training fold=" + str(j)
                     if training_df is None:
                         training_df = folds[j]
-                        training_idx = []
+                        training_idx = [j]
                     else:
                         training_df = training_df.append(folds[j])
                         training_idx.append(j)
@@ -78,14 +78,14 @@ class CrossValidatorLda:
                                                                            n_burn, n_samples, n_thin)
             training_lda_margs.append(training_marg)
             training_lda_perps.append(training_perp)            
-
+ 
             # get testing performance using the fold-in method (holding the topic-word distribution fixed)
             testing_marg, testing_perp = self._test_lda_fold_in(testing_df, testing_idx, 
                                                                 n_burn, n_samples, n_thin, 
                                                                 training_gibbs)
             testing_lda_fold_in_margs.append(testing_marg)
             testing_lda_fold_in_perps.append(testing_perp)
-            
+             
             # get testing performance using pseudo-count importance sampling in
             # Wallach, Hanna M., et al. "Evaluation methods for topic models." 
             # Proceedings of the 26th Annual International Conference on Machine Learning. ACM, 2009.
@@ -280,7 +280,7 @@ def main():
     else:
     
         print "Data = Synthetic"
-        run_synthetic(parallel=True)        
+        run_synthetic(parallel=False)        
 
 def run_msms_data(fragment, neutral_loss, mzdiff, 
                   ms1, ms2):
@@ -305,7 +305,7 @@ def run_msms_data(fragment, neutral_loss, mzdiff,
     vocab = ms2lda.vocab
     cv = CrossValidatorLda(df, vocab, K, alpha, beta)
     cv.cross_validate(n_folds, n_burn, n_samples, n_thin, 
-                         is_num_samples, is_iters)         
+                         is_num_samples, is_iters, method="with_mixture")         
 
 def run_synthetic(parallel=True):
 
