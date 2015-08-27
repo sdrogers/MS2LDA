@@ -1593,7 +1593,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 				var d = undefined;
 				for (var n = 0; n < child_nodes.length; n++) {
 				    var node = child_nodes[n];
-				    if (node.name.indexOf(to_find)>-1) {
+				    if (node.name === to_find) {
 				    	d = node;
 				    	break;
 				    }
