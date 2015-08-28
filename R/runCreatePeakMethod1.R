@@ -1,9 +1,5 @@
 ### This is the initial peak detection workflow we have from before --- using Tony's script ###
-
-library(xcms)
-library(Hmisc)
-
-run_create_peak_method_1 <- function() {
+run_create_peak_method_1 <- function(config) {
   
   input_file <- config$input_files$fragmentation_file_m1
   print(input_file)

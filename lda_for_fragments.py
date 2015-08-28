@@ -6,17 +6,17 @@ import sys
 import time
 import timeit
 
-from pandas.core.frame import DataFrame
-from scipy.sparse import coo_matrix
-
-from lda_cgs import CollapseGibbsLda
 import numpy as np
 import pandas as pd
 import pylab as plt
-import visualisation.pyLDAvis as pyLDAvis
-from visualisation.pylab.lda_for_fragments_viz import Ms2Lda_Viz
-import lda_utils as utils
+from scipy.sparse import coo_matrix
+import yaml
+from rpy2.robjects import r
 
+from lda_cgs import CollapseGibbsLda
+from visualisation.pylab.lda_for_fragments_viz import Ms2Lda_Viz
+import visualisation.pyLDAvis as pyLDAvis
+import lda_utils as utils
 
 class Ms2Lda(object):
     
@@ -29,9 +29,56 @@ class Ms2Lda(object):
         self.input_filenames = input_filenames
         
     @classmethod
+    def run_feature_extraction(cls, script_folder, config_filename):
+       
+        print "script_folder = " + script_folder
+        print "configuration filename = " + config_filename
+       
+        try:
+                    
+            # call the workflow for feature extraction using rpy2
+            print "Running feature extraction in R"
+            commands = []
+            commands.append("setwd('" + script_folder + "')")
+            commands.append("source('startFeatureExtraction.R')")
+            commands.append("start_feature_extraction('" + config_filename + "')")
+            r['options'](warn=-1)
+            for c in commands:
+                r(c)
+
+            # load yaml config file
+            print "Loading input files"
+            with open(config_filename, 'r') as input_file:
+     
+                # get file prefix
+                config = yaml.load(input_file)
+                prefix = config['input_files']['prefix']
+     
+                # construct path to each input file
+                fragment_filename = os.path.join(script_folder, prefix + '_fragments.csv')
+                neutral_loss_filename = os.path.join(script_folder, prefix + '_losses.csv')
+                mzdiff_filename = None
+                ms1_filename = os.path.join(script_folder, prefix + '_ms1.csv')
+                ms2_filename = os.path.join(script_folder, prefix + '_ms2.csv')
+
+                print
+                print "Feature extraction done"
+                print "fragment_filename = " + fragment_filename
+                print "neutral_loss_filename = " + neutral_loss_filename
+                print "mzdiff_filename = " + str(mzdiff_filename)
+                print "ms1_filename = " + ms1_filename
+                print "ms2_filename = " + ms2_filename
+                return Ms2Lda.lcms_data_from_R(fragment_filename, neutral_loss_filename, mzdiff_filename,
+                                 ms1_filename, ms2_filename)
+
+        except Exception as e:
+            print "Exception caught: " + str(e)
+
+    @classmethod
     def lcms_data_from_R(cls, fragment_filename, neutral_loss_filename, mzdiff_filename, 
                  ms1_filename, ms2_filename, vocab_type=1):
 
+        print "Loading input files"
         input_filenames = []
         fragment_data = None
         neutral_loss_data = None
@@ -81,7 +128,7 @@ class Ms2Lda(object):
         sd = sd.floor()  
         npdata = np.array(sd.todense(), dtype='int32')
         print "Data shape " + str(npdata.shape)
-        df = DataFrame(npdata)
+        df = pd.DataFrame(npdata)
         df.columns = data.columns
         df.index = data.index
 

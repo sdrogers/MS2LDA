@@ -1,4 +1,4 @@
-create_peaklist <- function(peaks) {
+create_peaklist <- function(peaks, config) {
     
     ### MS1 ###
     
