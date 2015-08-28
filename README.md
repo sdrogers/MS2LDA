@@ -40,6 +40,7 @@ The two most important R packages to install are XCMS and RMassBank, available f
 Additionally, some smaller packages to install:
 
 > install.packages('gtools') # for natural sorting
+
 > install.packages('yaml') # to load config file
 
 3. Setting up Python.
@@ -72,8 +73,9 @@ B. Linux/Mac Installation Guide
 It's pretty much the same as Windows. In R, you need to install [xcms](http://bioconductor.org/packages/release/bioc/html/xcms.html), [RMassBank](http://www.bioconductor.org/packages/release/bioc/html/RMassBank.html) and also:
 
 > install.packages('gtools') # for natural sorting
+
 > install.packages('yaml') # to load config file
 
-while on the Python side, you need to install [rpy2](http://rpy.sourceforge.net/). MS2LDA also relies on [Numba](http://numba.pydata.org/) to speed up Gibbs sampling. If you are using the anaconda distribution, this is available by default. Otherwise, you can try to [install it manually](http://numba.pydata.org/) or otherwise if Numba is not present, MS2LDA will fallback to using the slower sampling code.
+while on the Python side, you need to install [rpy2](http://rpy.sourceforge.net/). MS2LDA also relies on [Numba](http://numba.pydata.org/) to speed up Gibbs sampling. If you are using the [Anaconda](https://store.continuum.io/cshop/anaconda/) distribution (which we recommend), then this is available by default. Otherwise, you can try to [install Numba manually](http://numba.pydata.org/). If Numba is not present, MS2LDA will fallback to using the slower sampling code.
 
 Then cd to the "justin" folder and launch ipython notebook from there.
