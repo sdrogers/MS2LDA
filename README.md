@@ -78,4 +78,4 @@ It's pretty much the same as Windows. In R, you need to install [xcms](http://bi
 
 while on the Python side, you need to install [rpy2](http://rpy.sourceforge.net/). MS2LDA also relies on [Numba](http://numba.pydata.org/) to speed up Gibbs sampling. If you are using the [Anaconda](https://store.continuum.io/cshop/anaconda/) distribution (which we recommend), then this is available by default. Otherwise, you can try to [install Numba manually](http://numba.pydata.org/). If Numba is not present, MS2LDA will fallback to using the slower sampling code.
 
-Then cd to the "justin" folder and launch ipython notebook from there.
+Then cd to the "justin" folder and launch ipython notebook from there. In particular, see **example_notebook.ipynb** for an example of a nicely documented notebook on how to run MS2LDA.
