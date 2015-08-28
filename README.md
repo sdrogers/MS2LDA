@@ -63,7 +63,7 @@ Additionally, some smaller packages to install:
 4. Running the project
 -------------------
 
-1. Finally we have reached the stage where we can run stuff!! Under the same start-up menu folder, you can also **launch the "IPython (2.7) Notebook"**. This will open the notebook client in the web browser. You can then navigate to the **Notebooks** folder in the cloned repository location from step (3) in the previous section above. The default is in "Documents\GitHub\metabolomics_tools\justin\notebooks". Click on one of the notebooks to load it. See **example_notebook.ipynb** for an example of a nicely documented notebook. 
+1. Finally we have reached the stage where we can run stuff!! Under the same start-up menu folder, you can also **launch the "IPython (2.7) Notebook"**. This will open the notebook client in the web browser. You can then navigate to the **Notebooks** folder in the cloned repository location from step (3) in the previous section above. The default is in "Documents\GitHub\metabolomics_tools\justin\notebooks". Click on one of the notebooks to load it. See [example_notebook.ipynb](https://github.com/sdrogers/metabolomics_tools/blob/master/justin/notebooks/example_notebook.ipynb) for an example of a nicely documented notebook. 
 
 2. Once the notebook has been loaded, you can run each cell in the notebook sequentially by first selecting a cell, then pressing Shift-Enter to run that cell and moving on to the next one. Alternatively, from the notebook menu, click **Cell** followed by **Run All** to re-run everything if they're ready.
 
@@ -78,4 +78,4 @@ It's pretty much the same as Windows. In R, you need to install [xcms](http://bi
 
 while on the Python side, you need to install [rpy2](http://rpy.sourceforge.net/). MS2LDA also relies on [Numba](http://numba.pydata.org/) to speed up Gibbs sampling. If you are using the [Anaconda](https://store.continuum.io/cshop/anaconda/) distribution (which we recommend), then this is available by default. Otherwise, you can try to [install Numba manually](http://numba.pydata.org/). If Numba is not present, MS2LDA will fallback to using the slower sampling code.
 
-Then from IPython Notebook, launch **example_notebook.ipynb** inside the "notebook" folder for an example of a nicely documented notebook on how to run MS2LDA.
+Then from IPython Notebook, launch [example_notebook.ipynb](https://github.com/sdrogers/metabolomics_tools/blob/master/justin/notebooks/example_notebook.ipynb) inside the "notebook" folder for an example on how to run MS2LDA.
