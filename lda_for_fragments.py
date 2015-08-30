@@ -11,7 +11,6 @@ import pandas as pd
 import pylab as plt
 from scipy.sparse import coo_matrix
 import yaml
-from rpy2.robjects import r
 
 from lda_cgs import CollapseGibbsLda
 from visualisation.pylab.lda_for_fragments_viz import Ms2Lda_Viz
@@ -30,7 +29,9 @@ class Ms2Lda(object):
         
     @classmethod
     def run_feature_extraction(cls, script_folder, config_filename):
-       
+
+        from rpy2.robjects import r
+        
         print "script_folder = " + script_folder
         print "configuration filename = " + config_filename
        
