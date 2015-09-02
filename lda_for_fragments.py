@@ -15,6 +15,7 @@ import yaml
 from lda_cgs import CollapseGibbsLda
 from visualisation.pylab.lda_for_fragments_viz import Ms2Lda_Viz
 import visualisation.pyLDAvis as pyLDAvis
+import visualisation.sirius.sirius_wrapper as sir
 import lda_utils as utils
 
 class Ms2Lda(object):
@@ -360,7 +361,7 @@ class Ms2Lda(object):
         sorted_mass_rt = sorted(mass_rt,key=lambda m:m[0])
         ind = [mass_rt.index(i) for i in sorted_mass_rt]
         self.docdf = self.docdf[ind]
-        # self.docdf.to_csv(outfile)
+        # self.docdf.to_csv(outfile)se
 
 #         # threshold docdf to get rid of small values and also scale it
 #         for i, row in self.docdf.iterrows(): # iterate through the rows
@@ -493,7 +494,12 @@ class Ms2Lda(object):
         posterior_alpha = posterior_alpha / np.sum(posterior_alpha)
         ind = range(len(posterior_alpha))
         plt.bar(ind, posterior_alpha, 2)
-
+        
+    def annotate_with_sirius(self, sirius_exec, sirius_platform, verbose=False):
+        annot_ms1, annot_ms2 = sir.annotate_sirius(self.ms1, self.ms2, sirius_exec, sirius_platform=sirius_platform, verbose=verbose)
+        self.ms1 = annot_ms1
+        self.ms2 = annot_ms2
+        
     def plot_log_likelihood(self):
         plt.plot(self.model.loglikelihoods_)        
             
