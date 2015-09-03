@@ -479,7 +479,14 @@ class Ms2Lda_Viz(object):
             x = parent_mass
             y = parent_intensity
             parent_id = parent_ids[pos]
+
+            has_annotation = False
             if parent_annot is not None:
+                if isinstance(parent_annot, float) and math.isnan(parent_annot): # when nan, parent_annot is of type float
+                    has_annotation = False
+                else:
+                    has_annotation = True
+            if has_annotation:
                 label = "%.4f\n(%s)" % (parent_mass, parent_annot)
             else:
                 label = "%.4f" % (parent_mass)                
