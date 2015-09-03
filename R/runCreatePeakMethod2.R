@@ -2,9 +2,9 @@
 ### but modified to allow us to specify which MS1 full scan data to use ###
 run_create_peak_method_2 <- function(config) {
  
-  full_scan_file <- config$input_files$full_scan_file
-  fragmentation_file <- config$input_files$fragmentation_file_m2
-  
+    full_scan_file <- config$input_files$full_scan_file
+    fragmentation_file <- config$input_files$fragmentation_file_m2
+    
     print("Running create_peak_method #2")
     
     ## do peak detection on full scan file

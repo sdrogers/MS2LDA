@@ -1,9 +1,9 @@
 ### This is the initial peak detection workflow we have from before --- using Tony's script ###
 run_create_peak_method_1 <- function(config) {
   
-  input_file <- config$input_files$fragmentation_file_m1
-  print(input_file)
-
+    input_file <- config$input_files$fragmentation_file_m1
+    print(input_file)
+    
     print("Running create_peak_method #1")
     
     # do peak detection using CentWave
@@ -16,8 +16,7 @@ run_create_peak_method_1 <- function(config) {
     frags <- xcmsSetFragments(xset, cdf.corrected = config$ms1_ms2_pairing_parameters$cdf.corrected, min.rel.int=config$filtering_parameters_MassSpectrometry_related$min.rel.int, max.frags = config$filtering_parameters_MassSpectrometry_related$mass.frags, 
                               msnSelect=c(config$ms1_ms2_pairing_parameters$msnSelect), specFilter=c(config$ms1_ms2_pairing_parameters$specFilter), match.ppm=config$ms1_ms2_pairing_parameters$match.ppm, 
                               sn=config$filtering_parameters_MassSpectrometry_related$sn, mzgap=config$filtering_parameters_MassSpectrometry_related$mz_gap, min.r=config$ms1_ms2_pairing_parameters$min.r, min.diff=config$ms1_ms2_pairing_parameters$min.diff)
-    peaks <- as.data.frame(frags@peaks)
-    
+    peaks <- as.data.frame(frags@peaks)    
     return(peaks)
     
 }
