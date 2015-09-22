@@ -6,7 +6,10 @@ import tempfile
 import shutil
 import pprint
 
-def annotate_sirius(ms1, ms2, sirius_exec, sirius_platform='orbitrap', verbose=False):
+def annotate_sirius(ms1, ms2, sirius_exec, sirius_platform='orbitrap', mode="pos", verbose=False):
+
+    if mode != "pos" and mode != "neg":
+        raise ValueError("mode is either 'pos' or 'neg'")
 
     ms1 = ms1.copy()
     ms2 = ms2.copy()
@@ -19,7 +22,7 @@ def annotate_sirius(ms1, ms2, sirius_exec, sirius_platform='orbitrap', verbose=F
         # make mgf data    
         parent_peak_id = int(ms1_row.peakID)
         children = ms2[ms2.MSnParentPeakID==parent_peak_id]
-        mgf = make_mgf(ms1_row, children)
+        mgf = make_mgf(ms1_row, children, mode)
         if verbose:
             print mgf
     
@@ -96,7 +99,7 @@ def annotate_sirius(ms1, ms2, sirius_exec, sirius_platform='orbitrap', verbose=F
     print "Total annotations MS1=%s/%s, MS2=%s/%s" % (total_ms1, nrow_ms1, total_ms2, nrow_ms2)
     return ms1, ms2
             
-def make_mgf(ms1_row, children):
+def make_mgf(ms1_row, children, mode):
 
     parent_peak_id = int(ms1_row.peakID)
     parent_mass = ms1_row.mz
@@ -113,14 +116,20 @@ def make_mgf(ms1_row, children):
     mgf = "BEGIN IONS\n"
     mgf += "PEPMASS=" + str(parent_mass) + "\n"
     mgf += "MSLEVEL=1\n"
-    mgf += "CHARGE=1+\n"
+    if mode == "pos":
+        mgf += "CHARGE=1+\n"
+    elif mode == "neg":
+        mgf += "CHARGE=1-\n"        
     mgf += str(parent_mass) + " " + str(parent_intensity) + "\n"
     mgf += "END IONS\n"
     mgf += "\n"
     mgf += "BEGIN IONS\n"
     mgf += "PEPMASS=" + str(parent_mass) + "\n"
     mgf += "MSLEVEL=2\n"
-    mgf += "CHARGE=1+\n"
+    if mode == "pos":
+        mgf += "CHARGE=1+\n"
+    elif mode == "neg":
+        mgf += "CHARGE=1-\n"        
     for n in range(n_frags):
         mgf += str(fragment_mzs[n]) + " " + str(fragment_intensities[n]) + "\n"
     mgf += "END IONS"
