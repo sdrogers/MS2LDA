@@ -29,9 +29,8 @@ def annotate_sirius(ms1, ms2, sirius_platform='orbitrap', mode="pos", verbose=Fa
     
         # write temp mgf file
         temp_dir = tempfile.mkdtemp()
-        temp_filename = "temp.mgf"
+        temp_filename = tempfile.mkstemp(suffix=".mgf", text=True)[1]
         current_script_dir = os.path.dirname(os.path.realpath(__file__))
-        temp_path = os.path.join(current_script_dir, temp_filename)
         with open(temp_filename, "w") as text_file:
             text_file.write(mgf)
 
@@ -65,7 +64,7 @@ def annotate_sirius(ms1, ms2, sirius_platform='orbitrap', mode="pos", verbose=Fa
             full_exec_dir = os.path.join(current_script_dir, sirius_dir)
             full_exec_path = os.path.join(full_exec_dir, sirius_exec)
             os.chdir(full_exec_dir)
-            args = [full_exec_path, '-p', sirius_platform, '-s', 'omit', '-O', 'json', '-o', temp_dir, temp_path]                
+            args = [full_exec_path, '-p', sirius_platform, '-s', 'omit', '-O', 'json', '-o', temp_dir, temp_filename]                
             if verbose:
                 subprocess.check_call(args)
             else:
@@ -86,7 +85,6 @@ def annotate_sirius(ms1, ms2, sirius_platform='orbitrap', mode="pos", verbose=Fa
         finally:
             # delete all the temp files regardless
             shutil.rmtree(temp_dir)
-            os.remove(temp_path)
             # restore current directory
             os.chdir(starting_dir)
             
