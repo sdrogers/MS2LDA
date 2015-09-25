@@ -29,7 +29,9 @@ def annotate_sirius(ms1, ms2, sirius_platform='orbitrap', mode="pos", verbose=Fa
     
         # write temp mgf file
         temp_dir = tempfile.mkdtemp()
-        temp_filename = tempfile.mktemp()
+        temp_filename = "temp.mgf"
+        current_script_dir = os.path.dirname(os.path.realpath(__file__))
+        temp_path = os.path.join(current_script_dir, temp_filename)
         with open(temp_filename, "w") as text_file:
             text_file.write(mgf)
 
@@ -56,15 +58,14 @@ def annotate_sirius(ms1, ms2, sirius_platform='orbitrap', mode="pos", verbose=Fa
                     valid_platform = True
                     sirius_dir = 'win64'
                     sirius_exec = 'sirius.exe'                    
-
+    
             if not valid_platform:
                 raise ValueError(system + " " + arch + " is not supported")
-
-            current_script_dir = os.path.dirname(os.path.realpath(__file__))
+    
             full_exec_dir = os.path.join(current_script_dir, sirius_dir)
             full_exec_path = os.path.join(full_exec_dir, sirius_exec)
             os.chdir(full_exec_dir)
-            args = [full_exec_path, '-p', sirius_platform, '-s', 'omit', '-O', 'json', '-o', temp_dir, temp_filename]                
+            args = [full_exec_path, '-p', sirius_platform, '-s', 'omit', '-O', 'json', '-o', temp_dir, temp_path]                
             if verbose:
                 subprocess.check_call(args)
             else:
@@ -78,14 +79,14 @@ def annotate_sirius(ms1, ms2, sirius_platform='orbitrap', mode="pos", verbose=Fa
             first_filename = os.path.join(temp_dir, files[0])
             json_data = open(first_filename).read()
             data = json.loads(json_data)    
-        
+            
         except subprocess.CalledProcessError, e:
             print "Sirius produced error: " + str(e)
             break # stop the loop
         finally:
             # delete all the temp files regardless
             shutil.rmtree(temp_dir)
-            os.remove(temp_filename)
+            os.remove(temp_path)
             # restore current directory
             os.chdir(starting_dir)
             
@@ -175,8 +176,7 @@ def main():
     ms2_filename = '../../input/final/Beer_3_full1_5_2E5_pos_ms2.csv'
     ms1 = pd.read_csv(ms1_filename, index_col=0)
     ms2 = pd.read_csv(ms2_filename, index_col=0)
-    sirius_exec = '/home/joewandy/linux64/sirius'
-    annot_ms1, annot_ms2 = annotate_sirius(ms1, ms2, sirius_exec)
+    annot_ms1, annot_ms2 = annotate_sirius(ms1, ms2, 'orbitrap', verbose=False)
 
     ms1_filename = '../../input/final/Beer_3_full1_5_2E5_pos_ms1_annotated.csv'
     ms2_filename = '../../input/final/Beer_3_full1_5_2E5_pos_ms2_annotated.csv'
