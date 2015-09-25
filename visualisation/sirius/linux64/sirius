@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# test for a java installation in the path
+if [ -z "`which java`" ]
+then
+    echo "No Java installation found, please install Java >= 1.7 and make sure it is in your PATH."
+    exit 1
+fi
+
+me=`which $0`
+
+me=`ls -l $me | awk '{print $NF}'`
+dir=`dirname $me`
+export LD_LIBRARY_PATH=$dir:$GUROBI_HOME:$LD_LIBRARY_PATH
+java -Xmx2048m -jar $dir/sirius.jar $@

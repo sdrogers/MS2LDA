@@ -5,8 +5,9 @@ import json
 import tempfile
 import shutil
 import pprint
+import platform
 
-def annotate_sirius(ms1, ms2, sirius_exec, sirius_platform='orbitrap', mode="pos", verbose=False):
+def annotate_sirius(ms1, ms2, sirius_platform='orbitrap', mode="pos", verbose=False):
 
     if mode != "pos" and mode != "neg":
         raise ValueError("mode is either 'pos' or 'neg'")
@@ -28,13 +29,42 @@ def annotate_sirius(ms1, ms2, sirius_exec, sirius_platform='orbitrap', mode="pos
     
         # write temp mgf file
         temp_dir = tempfile.mkdtemp()
-        with open("temp.mgf", "w") as text_file:
+        temp_filename = tempfile.mktemp()
+        with open(temp_filename, "w") as text_file:
             text_file.write(mgf)
 
         # run sirius on the temp mgf file
+        starting_dir = os.getcwd()
         try:
-    
-            args = [sirius_exec, '-p', sirius_platform, '-s', 'omit', '-O', 'json', '-o', temp_dir, 'temp.mgf']                
+
+            # detect OS and pick the right executable for SIRIUS
+            system = platform.system()
+            arch = platform.architecture()[0]
+            
+            valid_platform = False
+            if system == 'Linux':
+                if arch == '64bit':
+                    valid_platform = True
+                    sirius_dir = 'linux64'
+                    sirius_exec = 'sirius'                    
+            elif system == 'Windows':
+                if arch == '32bit':
+                    valid_platform = True
+                    sirius_dir = 'win32'
+                    sirius_exec = 'sirius.exe'                    
+                elif arch == '64bit':
+                    valid_platform = True
+                    sirius_dir = 'win64'
+                    sirius_exec = 'sirius.exe'                    
+
+            if not valid_platform:
+                raise ValueError(system + " " + arch + " is not supported")
+
+            current_script_dir = os.path.dirname(os.path.realpath(__file__))
+            full_exec_dir = os.path.join(current_script_dir, sirius_dir)
+            full_exec_path = os.path.join(full_exec_dir, sirius_exec)
+            os.chdir(full_exec_dir)
+            args = [full_exec_path, '-p', sirius_platform, '-s', 'omit', '-O', 'json', '-o', temp_dir, temp_filename]                
             if verbose:
                 subprocess.check_call(args)
             else:
@@ -55,6 +85,9 @@ def annotate_sirius(ms1, ms2, sirius_exec, sirius_platform='orbitrap', mode="pos
         finally:
             # delete all the temp files regardless
             shutil.rmtree(temp_dir)
+            os.remove(temp_filename)
+            # restore current directory
+            os.chdir(starting_dir)
             
         # put the results back into the ms1 and ms2 df
         overall_score = data['annotations']['score']['total']
@@ -142,7 +175,8 @@ def main():
     ms2_filename = '../../input/final/Beer_3_full1_5_2E5_pos_ms2.csv'
     ms1 = pd.read_csv(ms1_filename, index_col=0)
     ms2 = pd.read_csv(ms2_filename, index_col=0)
-    annot_ms1, annot_ms2 = annotate_sirius(ms1, ms2)
+    sirius_exec = '/home/joewandy/linux64/sirius'
+    annot_ms1, annot_ms2 = annotate_sirius(ms1, ms2, sirius_exec)
 
     ms1_filename = '../../input/final/Beer_3_full1_5_2E5_pos_ms1_annotated.csv'
     ms2_filename = '../../input/final/Beer_3_full1_5_2E5_pos_ms2_annotated.csv'

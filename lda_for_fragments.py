@@ -495,8 +495,8 @@ class Ms2Lda(object):
         ind = range(len(posterior_alpha))
         plt.bar(ind, posterior_alpha, 2)
         
-    def annotate_with_sirius(self, sirius_exec, sirius_platform, mode="pos", verbose=False):
-        annot_ms1, annot_ms2 = sir.annotate_sirius(self.ms1, self.ms2, sirius_exec, sirius_platform=sirius_platform, 
+    def annotate_with_sirius(self, sirius_platform, mode="pos", verbose=False):
+        annot_ms1, annot_ms2 = sir.annotate_sirius(self.ms1, self.ms2, sirius_platform=sirius_platform, 
                                                    mode=mode, verbose=verbose)
         self.ms1 = annot_ms1
         self.ms2 = annot_ms2
