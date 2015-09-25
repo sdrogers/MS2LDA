@@ -177,6 +177,8 @@ class Ms2Lda(object):
             print " - beta = " + str(obj.model.beta[0])
             print " - number of samples stored = " + str(len(obj.model.samples))
             print " - last_saved_timestamp = " + str(obj.last_saved_timestamp)  
+            if hasattr(obj, 'message'):
+                print " - message = " + str(obj.message)  
             return obj  
         
     @classmethod
@@ -409,9 +411,10 @@ class Ms2Lda(object):
         print "Writing topic docs to " + outfile
         self.docdf.transpose().to_csv(outfile)
         
-    def save_project(self, project_out):
+    def save_project(self, project_out, message=None):
         start = timeit.default_timer()        
         self.last_saved_timestamp = str(time.strftime("%c"))
+        self.message = message
         with gzip.GzipFile(project_out, 'wb') as f:
             cPickle.dump(self, f, protocol=cPickle.HIGHEST_PROTOCOL)
             stop = timeit.default_timer()

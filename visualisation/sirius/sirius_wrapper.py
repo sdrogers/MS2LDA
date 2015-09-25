@@ -29,7 +29,7 @@ def annotate_sirius(ms1, ms2, sirius_platform='orbitrap', mode="pos", verbose=Fa
     
         # write temp mgf file
         temp_dir = tempfile.mkdtemp()
-        temp_filename = tempfile.mkstemp(suffix=".mgf", text=True)[1]
+        fd, temp_filename = tempfile.mkstemp(suffix=".mgf", text=True)
         current_script_dir = os.path.dirname(os.path.realpath(__file__))
         with open(temp_filename, "w") as text_file:
             text_file.write(mgf)
@@ -83,7 +83,10 @@ def annotate_sirius(ms1, ms2, sirius_platform='orbitrap', mode="pos", verbose=Fa
             print "Sirius produced error: " + str(e)
             break # stop the loop
         finally:
-            # delete all the temp files regardless
+            # close temp input file and remove it
+            os.close(fd)
+            os.remove(temp_filename)
+            # delete all the temp output files produced by sirius
             shutil.rmtree(temp_dir)
             # restore current directory
             os.chdir(starting_dir)
