@@ -8,10 +8,10 @@ def load_results(filename):
     print "Loading " + filename
     print df
     ks = df.ix[:, 1]
-    lda_margs = df.ix[:, 15]
-    lda_perplexities = df.ix[:, 17]
-    mixture_margs = df.ix[:, 19]
-    mixture_perplexities = df.ix[:, 21]
+    lda_margs = df.ix[:, 11]
+    lda_perplexities = df.ix[:, 13]
+    mixture_margs = df.ix[:, 15]
+    mixture_perplexities = df.ix[:, 17]
     return ks, lda_margs, lda_perplexities, mixture_margs, mixture_perplexities
 
 ks1, lda_margs1, lda_perplexities1, mixture_margs1, mixture_perplexities1 = load_results('beer3pos/results.csv')
