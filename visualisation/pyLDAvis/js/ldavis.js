@@ -871,6 +871,8 @@ var LDAvis = function(to_select, data_or_file_name) {
 				.style("dominant-baseline", "middle").text(
 						"2. Term w in topic t is ranked based on p(w|t)");
 
+		// ##### corpus-wide frequencies ######		
+		
 		// Bind 'default' data to 'default' bar chart
 		var basebars = chart.selectAll(to_select + " .bar-totals").data(
 				barDefault2).enter();
@@ -892,6 +894,36 @@ var LDAvis = function(to_select, data_or_file_name) {
 			return (termID + d.Term);
 		}).style("text-anchor", "end") // right align text - use 'middle' for
 										// center alignment
+
+		// ##### placeholder for corpus-specific frequencies
+		// doesn't matter what they show because these are initially hidden 
+		// and only shown when a topic is selected ######		
+		
+		// Bind 'default' data to 'default' bar chart
+		var basebars = chart.selectAll(to_select + " .bar-totals2").data(
+				barDefault2).enter();
+
+		// Draw the gray background bars defining the overall frequency of each
+		// word
+		basebars.append("rect").attr("class", "bar-totals2").attr("x", 0).attr(
+				"y", function(d) {
+					return y(d.Term);
+				}).attr("height", y.rangeBand()).attr("width", function(d) {
+			return x(d.Total);
+		}).style("fill", color1).attr("opacity", 0); // initially hidden
+
+		// Add word labels to the side of each bar
+		basebars.append("text").style("font-size", "10px").attr("x", -5).attr(
+				"class", "terms2").attr("y", function(d) {
+			return y(d.Term) + 8;
+		}).attr("cursor", "pointer").attr("id", function(d) {
+			return (termID + d.Term);
+		}).style("text-anchor", "end") // right align text - use 'middle' for
+										// center alignment
+		.attr("display", "none") // initially hidden
+		
+		// ##### other stuff ######				
+		
 		.text(function(d) {
 			return d.Term;
 		}).on("mouseover", function() {
@@ -927,7 +959,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 				.tickSubdivide(true).ticks(6);
 
 		chart.attr("class", "xaxis").call(xAxis);
-
+		
 		// dynamically create the topic and lambda input forms at the top of the
 		// page:
 		function init_forms(topicID, lambdaID, visID, K, topic_ranking) {
@@ -1486,6 +1518,9 @@ var LDAvis = function(to_select, data_or_file_name) {
 
 			// truncate to the top R tokens:
 			var dat3 = dat2.slice(0, R);
+			
+			// #########################################################################
+			// Topic-specific frequencies			
 
 			// scale the bars to the top R terms:
 			var y = d3.scale.ordinal()
@@ -1571,8 +1606,103 @@ var LDAvis = function(to_select, data_or_file_name) {
 			// redraw x-axis
 			d3.selectAll(to_select + " .xaxis")
 			// .attr("class", "xaxis")
-			.call(xAxis);
+			.call(xAxis);			
+			
+			// #########################################################################
+			// Corpus-wide frequencies
+			
+			// scale the bars to the top R terms:
+			var y = d3.scale.ordinal()
+				.domain(dat3.map(function(d) {
+					return d.Term;
+				}))
+				.rangeRoundBands([ 0+200, barheight+200 ], 0.15);
+			var x = d3.scale.linear()
+				.domain([ 1, d3.max(dat3, function(d) {
+					return d.Total;
+				}) ])
+				.range([ 0, barwidth ]).nice();
 
+			// remove the red bars if there are any:
+			d3.selectAll(to_select + " .overlay2").remove();
+
+			// Change Total Frequency bars
+			d3.selectAll(to_select + " .bar-totals2")
+				.data(dat3).attr("x", 0)
+				.attr("y", function(d) {
+					return y(d.Term);
+				})
+				.attr("height", y.rangeBand()).attr("width", function(d) {
+					return x(d.Total);
+				})
+				.style("fill", color1)
+				.attr("opacity", function(d) {
+					if (d.prob > data['th_topic_word']) {
+						return 0.4;
+					} else {
+						return 0;
+					}
+				});
+
+			// Change word labels
+			d3.selectAll(to_select + " .terms2")
+				.data(dat3)
+				.attr("x", -5)
+				.attr("y", function(d) {
+					return y(d.Term) + 8;
+				})
+				.attr("id", function(d) {
+					return (termID + d.Term);
+				})
+				.style("text-anchor", "end") // right align text - use 'middle' for center alignment
+				.text(function(d) {
+					return d.Term;
+				})
+				.attr("display", function(d) {
+					if (d.prob > data['th_topic_word']) {
+						return "inline";
+					} else {
+						return "none";
+					}					
+				});
+
+			// Create red bars (drawn over the gray ones) to signify the
+			// frequency under the selected topic
+			d3.select("#" + barFreqsID)
+				.selectAll(to_select + " .overlay2")
+				.data(dat3).enter().append("rect")
+				.attr("class", "overlay2")
+				.attr("x", 0).attr("y", function(d) {
+					return y(d.Term);
+				})
+				.attr("height", y.rangeBand())
+				.attr("width", function(d) {
+					return x(d.Freq);
+				})
+				.style("fill", color2)
+				.attr("opacity", function(d) {
+					if (d.prob > data['th_topic_word']) {
+						return 0.8;
+					} else {
+						return 0;
+					}					
+				});
+
+			// adapted from http://bl.ocks.org/mbostock/1166403
+			var xAxis = d3.svg.axis().scale(x).orient("top").tickSize(
+					-barheight).tickSubdivide(true).ticks(6);
+
+			// redraw x-axis
+			var offset = 200
+			d3.selectAll(to_select + " .xaxis")
+			.append("g")
+			.attr("transform", "translate(0, " + offset + ")")
+			.attr("class", "xaxis2")
+			.call(xAxis);			
+			
+			// #########################################################################
+			// MS1 plot
+			
 			// draw the first MS1 plot for this topic
 			if (is_clicked) {
 				// if we've clicked on the circle
@@ -1634,6 +1764,8 @@ var LDAvis = function(to_select, data_or_file_name) {
 			// .attr("y", -30)
 			// .text(1);
 
+			// ########## topic-specific info ###########			
+			
 			// remove the red bars
 			d3.selectAll(to_select + " .overlay").remove();
 
@@ -1688,6 +1820,15 @@ var LDAvis = function(to_select, data_or_file_name) {
 			d3.selectAll(to_select + " .xaxis").attr("class", "xaxis").call(
 					xAxis);
 
+			// ########## remove corpus wide info ###########
+
+			d3.selectAll(to_select + " .overlay2").remove();
+			d3.selectAll(to_select + " .bar-totals2").attr("opacity", 0)
+			d3.selectAll(to_select + " .terms2").attr("display", "none")
+			d3.selectAll(to_select + " .xaxis2").remove();
+
+			// ########## other plots ###########			
+			
 			// reset ms1 plot to the default image
 			d3.select("#ms1_plot").attr("xlink:href",
 					"/images/default_logo.png")
