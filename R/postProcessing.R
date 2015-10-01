@@ -19,7 +19,7 @@ coalesce_max <- function(df) {
     })
 }
 
-post_process_neutral_loss <- function(neutral_loss_df, loss_values_df, ms2) {
+post_process_neutral_loss <- function(neutral_loss_df, loss_values_df, ms2, config) {
     
   min_mass_to_include <- config$MS1MS2_matrixGeneration_parameters$min_mass_to_include
   max_diff <- config$MS1MS2_matrixGeneration_parameters$max_diff

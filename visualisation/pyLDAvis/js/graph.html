@@ -20,19 +20,7 @@ text {
 
 	var w = window.innerWidth;
 	var h = window.innerHeight;
-	var keyc = true,
-	    keys = true,
-	    keyt = true,
-	    keyr = true,
-	    keyx = true,
-	    keyd = true,
-	    keyl = true,
-	    keym = true,
-	    keyh = true,
-	    key1 = true,
-	    key2 = true,
-	    key3 = true,
-	    key0 = true
+	var keyh = true;
 	var focus_node = null,
 	    highlight_node = null;
 	var text_center = true;
@@ -83,6 +71,7 @@ text {
 	var graph_circle = undefined;
 	var graph_link = undefined;
 	var graph_nodes = undefined;
+	var graph_linked_by_index = undefined;
 
 	d3.json("/graph.json", function(error, graph) {
 
@@ -92,12 +81,13 @@ text {
 	    graph.links.forEach(function(d) {
 	        linkedByIndex[d.source + "," + d.target] = true;
 	    });
+	    graph_linked_by_index = linkedByIndex;
 	
 	    function isConnected(a, b) {
 	        return linkedByIndex[a.index + "," + b.index] || linkedByIndex[b.index + "," + a.index] || a.index == b.index;
 	    }
 	
-	    function hasConnections(a) {
+ 	    function hasConnections(a) {
 	        for (var property in linkedByIndex) {
 	            s = property.split(",");
 	            if ((s[0] == a.index || s[1] == a.index) && linkedByIndex[property])
@@ -105,8 +95,8 @@ text {
 	        }
 	        return false;
 	    }
-	
-	    force.nodes(graph.nodes).links(graph.links).start();
+
+ 	    force.nodes(graph.nodes).links(graph.links).start();
 	
 	    var link = g.selectAll(".link")
 	        .data(graph.links)
@@ -220,40 +210,43 @@ text {
 	            if (node_type.toLowerCase() === 'topic') {
 	            
 		            // select the topic in the main window
-		            vis_state = window.opener.vis_state	            
-		            n = parseInt(tokens[1])
-		            circles = vis_state['circles']
-		            selected_circle = circles[0][n]
-		            circle_id = selected_circle.id
-
-		            parent_document = window.opener.document
+		            if (window.opener !== null) {
 		            
-					// find the old topic
-		            address_bar_val = window.location.search
-		            function get(name){
-		               if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
-		                  return decodeURIComponent(name[1]);
-		            }
-					visID = get('visID')
-	    			topicID = visID + "-topic";
-				    docPrev = visID + "-prev";
-				    docNext = visID + "-next";
-					
-				    // set as off if it's different from the current one
-					old_topic = topicID + vis_state.topic
-		            if (vis_state.topic > 0 && old_topic != circle_id) {
-		            	var topic_off = window.opener.topic_off
-		                topic_off(parent_document.getElementById(old_topic));
-		            }
+			            vis_state = window.opener.vis_state	            
+			            n = parseInt(tokens[1])
+			            circles = vis_state['circles']
+			            selected_circle = circles[0][n]
+			            circle_id = selected_circle.id
 
-				    // set the currently selected topic and also enable the button to browse the MS1
-		            parent_document.getElementById(topicID).value = vis_state.topic = n+1; 	// +1 because we index circles from 1,..
-					parent_document.getElementById(topicID+"_shown").value = n;  				// but we show circle labels from 0,..
-	                parent_document.getElementById(docPrev).setAttribute("style", "position: absolute; top: 490px; left: 985px; width: 80px; visibility: visible");
-	                parent_document.getElementById(docNext).setAttribute("style", "position: absolute; top: 490px; left: 1070px; width: 80px; visibility: visible");
-					topic_on = window.opener.topic_on
-					topic_on(selected_circle, true);	            	
-	            	
+			            parent_document = window.opener.document
+			            
+						// find the old topic
+			            address_bar_val = window.location.search
+			            function get(name){
+			               if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
+			                  return decodeURIComponent(name[1]);
+			            }
+						visID = get('visID')
+		    			topicID = visID + "-topic";
+					    docPrev = visID + "-prev";
+					    docNext = visID + "-next";
+						
+					    // set as off if it's different from the current one
+						old_topic = topicID + vis_state.topic
+			            if (vis_state.topic > 0 && old_topic != circle_id) {
+			            	var topic_off = window.opener.topic_off
+			                topic_off(parent_document.getElementById(old_topic));
+			            }
+
+					    // set the currently selected topic and also enable the button to browse the MS1
+			            parent_document.getElementById(topicID).value = vis_state.topic = n+1; 	// +1 because we index circles from 1,..
+						parent_document.getElementById(topicID+"_shown").value = n;  				// but we show circle labels from 0,..
+		                parent_document.getElementById(docPrev).setAttribute("style", "position: absolute; top: 490px; left: 985px; width: 80px; visibility: visible");
+		                parent_document.getElementById(docNext).setAttribute("style", "position: absolute; top: 490px; left: 1070px; width: 80px; visibility: visible");
+						topic_on = window.opener.topic_on
+						topic_on(selected_circle, true);	            			            	
+		            	
+		            }	            	
 	            }
 	            	            
 	        })
@@ -426,59 +419,24 @@ text {
 	            force.stop();
 	        } else if (d3.event.keyCode >= 48 && d3.event.keyCode <= 90 && !d3.event.ctrlKey && !d3.event.altKey && !d3.event.metaKey) {
 	            switch (String.fromCharCode(d3.event.keyCode)) {
-	                case "C":
-	                    keyc = !keyc;
-	                    break;
-	                case "S":
-	                    keys = !keys;
-	                    break;
-	                case "T":
-	                    keyt = !keyt;
-	                    break;
-	                case "R":
-	                    keyr = !keyr;
-	                    break;
-	                case "X":
-	                    keyx = !keyx;
-	                    break;
-	                case "D":
-	                    keyd = !keyd;
-	                    break;
-	                case "L":
-	                    keyl = !keyl;
-	                    break;
-	                case "M":
-	                    keym = !keym;
-	                    break;
 	                case "H":
 	                    keyh = !keyh;
 	                    break;
-	                case "1":
-	                    key1 = !key1;
-	                    break;
-	                case "2":
-	                    key2 = !key2;
-	                    break;
-	                case "3":
-	                    key3 = !key3;
-	                    break;
-	                case "0":
-	                    key0 = !key0;
-	                    break;
 	            }
 	            link.style("display", function(d) {
-	                var flag = vis_by_type(d.source.type) && vis_by_type(d.target.type) && vis_by_node_score(d.source.score) && vis_by_node_score(d.target.score) && vis_by_link_score(d.score);
+	                var flag = vis_by_type(d.source.special) || vis_by_type(d.target.special);
 	                linkedByIndex[d.source.index + "," + d.target.index] = flag;
 	                return flag ? "inline" : "none";
 	            });
 	            node.style("display", function(d) {
-	                return (key0 || hasConnections(d)) && vis_by_type(d.type) && vis_by_node_score(d.score) ? "inline" : "none";
+	                return vis_by_type_and_connection(d) ? "inline" : "none";
+	            	// return (key0 || hasConnections(d)) && vis_by_type(d.special) ? "inline" : "none";
 	            });
 	            text.style("display", function(d) {
-	                return (key0 || hasConnections(d)) && vis_by_type(d.type) && vis_by_node_score(d.score) ? "inline" : "none";
+	                return vis_by_type_and_connection(d) ? "inline" : "none";
 	            });
 	            if (highlight_node !== null) {
-	                if ((key0 || hasConnections(highlight_node)) && vis_by_type(highlight_node.type) && vis_by_node_score(highlight_node.score)) {
+	                if ((hasConnections(highlight_node)) && vis_by_type(highlight_node.special)) {
 	                    if (focus_node !== null) set_focus(focus_node);
 	                    set_highlight(highlight_node);
 	                } else {
@@ -489,45 +447,43 @@ text {
 	    }
 	});
 	
-	function vis_by_type(type) {
-	    switch (type) {
-	        case "circle":
-	            return keyc;
-	        case "square":
-	            return keys;
-	        case "triangle-up":
-	            return keyt;
-	        case "diamond":
-	            return keyr;
-	        case "cross":
-	            return keyx;
-	        case "triangle-down":
-	            return keyd;
-	        default:
-	            return true;
-	    }
+	function vis_by_type(special) {
+		if (keyh) {
+			return true;
+		} else {
+			return special;
+		}
 	}
-	
-	function vis_by_node_score(score) {
-	    if (isNumber(score)) {
-	        if (score >= 0.666) return keyh;
-	        else if (score >= 0.333) return keym;
-	        else if (score >= 0) return keyl;
-	    }
-	    return true;
-	}
-	
-	function vis_by_link_score(score) {
-	    if (isNumber(score)) {
-	        if (score >= 0.666) return key3;
-	        else if (score >= 0.333) return key2;
-	        else if (score >= 0) return key1;
-	    }
-	    return true;
+
+	function vis_by_type_and_connection(d) {
+		if (keyh) {
+			return true;
+		} else {
+			if (d.special) {
+				return true;
+			} else {
+				// check if we're connected to any special node
+		        for (var property in graph_linked_by_index) {
+		            s = property.split(",");
+		            var other_node = undefined;
+		            // connection on the left side
+		            if ((s[0] == d.index) && graph_linked_by_index[property]) {
+		                other_node = graph_nodes[s[1]];		            	
+		            }
+		            if ((s[1] == d.index) && graph_linked_by_index[property]) {
+		                other_node = graph_nodes[s[0]];		            	
+		            }
+		            if (other_node !== undefined && other_node.special) {
+		            	return true;
+		            }		            
+		        }
+		        return false;
+			}
+		}
 	}
 	
 	function isNumber(n) {
 	    return !isNaN(parseFloat(n)) && isFinite(n);
 	}
-
+	
 </script>

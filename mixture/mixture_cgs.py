@@ -1,15 +1,14 @@
 from collections import namedtuple
-from numpy.random import RandomState
 import sys
 import time
 
-from numpy import int32
-from scipy.special import gammaln
-
-from mixture_generate_data import MixtureDataGenerator
-import justin.lda_utils as utils
 import numpy as np
+from numpy import int32
+from numpy.random import RandomState
+from scipy.misc import logsumexp
 
+import justin.lda_utils as utils
+from mixture_generate_data import MixtureDataGenerator
 
 Sample = namedtuple('Sample', 'cdk ckn')
 
@@ -109,15 +108,14 @@ class CollapseGibbsMixture(object):
             doc_word_counts = document.values.flatten()
             nnz_counts = doc_word_counts[nnz]
             n_words += np.sum(nnz_counts)
-            doc_marg = 0
+            doc_marg = np.zeros(self.K)
             for k in range(self.K):
                 temp = 0
                 for n in nnz:
                     curr_word_count = doc_word_counts[n]
                     temp += curr_word_count * np.log(phi[k, n])
-                temp = np.exp(temp)
-                doc_marg += theta[k] * temp
-            marg += np.log(doc_marg)
+                doc_marg[k] = np.log(theta[k]) + temp
+            marg += logsumexp(doc_marg)
         perp = np.exp(-(marg/n_words))
         return marg, perp        
             
@@ -131,7 +129,6 @@ class CollapseGibbsMixture(object):
             margs = []
             perps = []
             marg, perp = self._get_perplexity(theta, phi)
-            print marg, perp            
             margs.append(marg)
             perps.append(perp)
             return phi, theta, margs, perps
@@ -169,7 +166,6 @@ class CollapseGibbsMixture(object):
             theta = thetas[s]
             phi = phis[s]
             marg, perp = self._get_perplexity(theta, phi)
-            print marg, perp
             margs.append(marg)
             perps.append(perp)
         sys.stdout.flush()
@@ -204,7 +200,8 @@ class CollapseGibbsMixture(object):
             try:
                 from mixture_cgs_numba import sample_numba
                 sampler_func = sample_numba
-            except Exception:
+            except Exception, e:
+                print "Error: %s" % e
                 print "Numba not found. Using Numpy for mixture sampling"
                 sampler_func = sample_numpy
 
@@ -261,6 +258,10 @@ def main():
     mixture = CollapseGibbsMixture(df, vocab, n_cluster, alpha, beta, random_state=random_state)
     start_time = time.time()
     mixture.run(n_burn, n_samples, n_thin, use_native=True)
+    print "margs"
+    print mixture.margs
+    print "perps"
+    print mixture.perps
     print("--- TOTAL TIME %d seconds ---" % (time.time() - start_time))
     mixture.print_topic_words()
     

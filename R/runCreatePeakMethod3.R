@@ -1,14 +1,8 @@
-### This is the peak detection workflow based on the RMassBank's script from Emma ###
-print("Running create_peak_method #3")
-
-library(xcms)
-library(Hmisc)
-library(RMassBank)
-library(mzR)
 source('cachedEic.R')
 source('cachedMsms.R')
 
-run_create_peak_method_3 <- function() {
+### This is the peak detection workflow based on the RMassBank's script from Emma ###
+run_create_peak_method_3 <- function(config) {
 
     MS1file <- config$input_files$input_file_forMS1peaks
     fragmentation_file <- config$input_files$fragmentation_file_mzML

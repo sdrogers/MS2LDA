@@ -1,6 +1,4 @@
-library(gtools) # for natural sorting
-
-extract_mzdiff_df <- function(ms1, ms2) {
+extract_mzdiff_df <- function(ms1, ms2, config) {
     
     ##############################################
     ##### Mz Difference Dataframe Generation #####

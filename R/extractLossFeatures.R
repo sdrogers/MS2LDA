@@ -1,6 +1,4 @@
-library(gtools) # for natural sorting
-
-extract_neutral_loss_df <- function(ms1, ms2) {
+extract_neutral_loss_df <- function(ms1, ms2, config) {
     
     prev_words_file <- config$input_files$previous_words_file
     grouping_tol <- config$MS1MS2_matrixGeneration_parameters$grouping_tol_losses
