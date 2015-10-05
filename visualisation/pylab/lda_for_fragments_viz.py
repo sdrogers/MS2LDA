@@ -63,6 +63,7 @@ class Ms2Lda_Viz(object):
         self.topic_ms1_count = {}
         self.topic_ms1_ordering = {}
         self.topic_coordinates = {}
+        self.topic_wordfreqs = {}
         for (i, c) in sorted_topic_counts:
             
             # skip non-selected topics
@@ -208,6 +209,7 @@ class Ms2Lda_Viz(object):
                 counter += 1
 
             wordfreq = {}
+            self.topic_wordfreqs[i] = wordfreq
                     
             if not interactive:
                 print

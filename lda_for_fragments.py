@@ -454,6 +454,8 @@ class Ms2Lda(object):
             data['lambda_max'] = utils.round_nicely(plotter.sort_by_max)
             data['th_topic_word'] = self.th_topic_word
             data['th_doc_topic'] = self.th_doc_topic
+            data['topic_wordfreq'] = plotter.topic_wordfreqs
+            data['topic_ms1_count'] = plotter.topic_ms1_count
             vis_data = pyLDAvis.prepare(**data)   
             pyLDAvis.show(vis_data, topic_plotter=plotter)
         else:

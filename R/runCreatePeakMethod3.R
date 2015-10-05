@@ -120,6 +120,7 @@ run_create_peak_method_3 <- function(config) {
     sample_idx <- 1
     group_peak_msn <- 0
     collision_energy <- 0
+    total_ms1_accepted <- 0
     for(i in 1:num_ms1_peaks) { 
         
         print(paste(c("i=", i, "/", num_ms1_peaks), collapse=""))
@@ -188,9 +189,12 @@ run_create_peak_method_3 <- function(config) {
                              ms2_samples, ms2_group, ms2_energy)
         colnames(ms2_df) <- peaks_colnames
         peaks <- rbind(peaks, ms2_df)
+         
+        total_ms1_accepted <- total_ms1_accepted+1
         
     }
-    
+ 
+    print(paste(c("total_ms1_accepted=", total_ms1_accepted, "/", num_ms1_peaks), collapse=""))
     peaks <- peaks[-1, ] # delete first row of all NAs
     return(peaks)
     

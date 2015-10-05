@@ -128,7 +128,9 @@ def _find_relevance_chunks(log_ttd, log_lift, R, lambda_seq):
     return pd.concat([_find_relevance(log_ttd, log_lift, R, l) for l in lambda_seq])
 
 
-def _topic_info(topic_term_dists, topic_proportion, term_frequency, term_topic_freq, vocab, lambda_step, R, n_jobs):
+def _topic_info(topic_term_dists, topic_proportion, term_frequency, term_topic_freq, 
+                topic_wordfreq, topic_ms1_count,
+                vocab, lambda_step, R, n_jobs):
     # marginal distribution over terms (width of blue bars)
     term_proportion = term_frequency / term_frequency.sum()
 
@@ -158,12 +160,27 @@ def _topic_info(topic_term_dists, topic_proportion, term_frequency, term_topic_f
     def topic_top_term_df(tup):
         new_topic_id, (original_topic_id, topic_terms) = tup
         term_ix = topic_terms.unique()
-        return pd.DataFrame({'Term': vocab[term_ix], \
-                                    'Freq': term_topic_freq.loc[original_topic_id, term_ix], \
+
+        label = vocab[term_ix]
+        freq = term_topic_freq.loc[original_topic_id, term_ix]
+                
+        topic_label_count = topic_wordfreq[original_topic_id]
+        label_count = freq.copy()
+        for freq_idx, freq_val in freq.iteritems():
+            word = label[freq_idx]
+            if word in topic_label_count:
+                label_count[freq_idx] = topic_label_count[word]
+            else:
+                label_count[freq_idx] = 0                
+        
+        return pd.DataFrame({'Term': label, \
+                                    'Freq': freq, \
                                     'Total': term_frequency[term_ix], \
                                     'logprob': log_ttd.loc[original_topic_id, term_ix].round(4), \
                                     'loglift': log_lift.loc[original_topic_id, term_ix].round(4), \
                                     'prob': topic_term_dists.loc[original_topic_id, term_ix], \
+                                    'label_count': label_count, \
+                                    'ms1_count': topic_ms1_count[original_topic_id], \
                                     'Category': 'Topic%d' % new_topic_id})
 
     top_terms = _find_relevance_chunks(log_ttd, log_lift, R, lambda_seq)
@@ -205,7 +222,7 @@ def _term_topic_freq(topic_term_dists, topic_freq, term_frequency):
 
 
 def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequency, topic_ranking, topic_coordinates, plot_opts, \
-                lambda_step, lambda_min, lambda_max, th_topic_word, th_doc_topic, \
+                lambda_step, lambda_min, lambda_max, th_topic_word, th_doc_topic, topic_wordfreq, topic_ms1_count, \
                 R=30, mds=js_PCoA, n_jobs=-1):
     """Transforms the topic model distributions and related corpus data into
     the data structures needed for the visualization.
@@ -284,7 +301,9 @@ def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequenc
 
     # token counts for each term-topic combination (widths of red bars)
     term_topic_freq     = _term_topic_freq(topic_term_dists, topic_freq, term_frequency)
-    topic_info            = _topic_info(topic_term_dists, topic_proportion, term_frequency, term_topic_freq, vocab, lambda_step, R, n_jobs)
+    topic_info            = _topic_info(topic_term_dists, topic_proportion, term_frequency, term_topic_freq, 
+                                        topic_wordfreq, topic_ms1_count, 
+                                        vocab, lambda_step, R, n_jobs)
     token_table          = _token_table(topic_info, term_topic_freq, vocab, term_frequency)
     topic_coordinates = _topic_coordinates(mds, topic_term_dists, topic_proportion, topic_coordinates)
 
