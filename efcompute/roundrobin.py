@@ -29,7 +29,7 @@ def make_formula_string(formula):
 if __name__=='__main__':
 
     atoms = ['C','H','N','O','P','S']
-    test_molecules = [[0,2,0,1,0,0],[1,0,0,2,0,0],[0,0,0,2,0,0],[8,10,4,2,0,0]]
+    test_molecules = [[0,2,0,1,0,0],[1,0,0,2,0,0],[0,0,0,2,0,0],[8,10,4,2,0,0],[1,1,1,1,1,1]]
     precursor_mass_list = []
     for test_molecule in test_molecules:
         precursor_mass_list.append(get_formula_mass(atoms,test_molecule))
@@ -44,3 +44,34 @@ if __name__=='__main__':
         for f in formulas_out[p]:
             s,m = make_formula_string(f)
             print "\t{} ({})".format(s,m)
+
+    from golden_rules import golden_rules
+
+    g = golden_rules()
+    filtered_out = {}
+    reasons = {}
+    for p in precursor_mass_list:
+        filtered_out[p],reasons[p] = g.filter_list(formulas_out[p])
+
+    print
+    print
+    print "FILTERED"
+    print
+    print
+    for p in precursor_mass_list:
+        print "Mass: {}".format(p)
+        for f in filtered_out[p]:
+            s,m = make_formula_string(f)
+            print "\t{} ({})".format(s,m)
+
+    print
+    print
+    print "REASONS"
+    print
+    print
+
+    for p in precursor_mass_list:
+        print "Mass: {}".format(p)
+        for f in reasons[p]:
+            print "\t{} {}".format(f,reasons[p][f])
+
