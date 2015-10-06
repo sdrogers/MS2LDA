@@ -1,6 +1,7 @@
 import sys
 import fractions
 from math import ceil,floor
+from ef_assigner import ef_assigner
 # Set infinity
 infinite = sys.maxint
 
@@ -22,10 +23,7 @@ def find_n(n, p, d):
 
 
 def round_robin(a):
-    # file_handler = open(filename, 'w')
-    # file_handler.write("Precision: " + str(b) + '\n')
-
-    # initialize the variables
+    
     k = len(a)
     a1 = a[0]
     n = [infinite for r in range(0, a1)]
@@ -34,7 +32,7 @@ def round_robin(a):
 
     rr = []
     rr.append(list(n))
-    # file_handler.write(str(n) + '\n')
+    
 
     for i in range(1, k):
         d = fractions.gcd(a1, a[i])
@@ -46,30 +44,14 @@ def round_robin(a):
                     r = new_n % a1
                     new_n = min(new_n, n[r])
                     n[r] = new_n
-        # print n
+        
         rr.append(list(n))
-        # file_handler.write(str(n) + '\n')
 
     return rr
     
-    # file_handler.close()
 
 
-# def parse_rt(filein):
-#     with open(filein, 'r') as f:
-#         data_in = f.read()
-#     f.close()
-#     rows = data_in.splitlines()
-#     # set the same blowup factor
-#     b = int(rows[0].split()[1])
-
-#     parsed_rows = []
-#     for row in rows[1:]:
-#         row = row.split('[')[1].split(']')[0].split(',')
-#         parsed_rows.append([int(item) for item in row])
-#     return b, parsed_rows
-
-def find_all_simon(mass,i,c,a,rt):
+def find_all(mass,i,c,a,rt):
     if i == 0:
         c[0] = mass/a[0]
         formulas.append(list(c))
@@ -83,36 +65,9 @@ def find_all_simon(mass,i,c,a,rt):
             r = m % a[0]
             lbound = rt[i-1][r]
             while m >= lbound:
-                find_all_simon(m,i-1,c,a,rt)
+                find_all(m,i-1,c,a,rt)
                 m = m - lcm
                 c[i] = c[i] + l
-
-# def find_all(mass_in, mass, i, c, a, rt):
-#     if i == -1:
-#         # c[0] = mass / a[0]
-#         # formula = {elem: c[i] for i, elem, in enumerate(sorted_CHNOPS())}
-#         # formula_mass = get_formula_mass(formula)
-        
-#         su = sum([e*c[i] for i,e in enumerate(a)])
-#         if su == mass_in:
-#             formula = {e : c[i] for i,e in enumerate(a)}
-#             formulas.append(formula)
-
-#         # if abs(formula_mass - mass_in) < 1:
-#         #     formulas.append(formula)
-
-#     else:
-#         lcm = a[0] * a[i] / fractions.gcd(a[0],a[i])
-#         l = lcm / a[i]
-#         for j in range(0, l):
-#             c[i] = j
-#             m = mass - j * a[i]
-#             r = m % a[0]
-#             lbound = rt[i-1][r]
-#             while m >= lbound:
-#                 find_all(mass_in, m, i-1, c, a, rt)
-#                 m = m - lcm
-#                 c[i] = c[i] + l
 
 
 def get_dictionary(atoms,scale_factor):
@@ -170,7 +125,7 @@ def find_formulas(precursor_mass_list,ppm,atoms = ['C','H','N','O','P','S'],scal
         int_upper_bound = int(floor(scale_factor*upper_bound + delta*upper_bound))
 
         for int_mass in range(int_lower_bound,int_upper_bound+1):
-            find_all_simon(int_mass,k-1,c,a,rr)
+            find_all(int_mass,k-1,c,a,rr)
 
         print "\t found {}".format(len(formulas))
 
@@ -188,8 +143,10 @@ if __name__=='__main__':
         precursor_mass_list.append(get_formula_mass(atoms,test_molecule))
     
 
-    formulas_out = find_formulas(precursor_mass_list,1)
-    
+    # formulas_out = find_formulas(precursor_mass_list,1)
+    ef = ef_assigner()
+    formulas_out = ef.find_formulas(precursor_mass_list,1)
+
     for p in precursor_mass_list:
         print "Mass: {}".format(p)
         for f in formulas_out[p]:
