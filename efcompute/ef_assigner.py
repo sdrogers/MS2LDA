@@ -68,7 +68,13 @@ class ef_assigner(object):
 
 		    print "\t found {}".format(len(formulas))
 
-		    formulas_out[precursor_mass] = list(formulas)
+		    formulas_out[precursor_mass] = []
+		    for f in formulas:
+		    	formula = {}
+		    	for i,a in enumerate(self.atoms):
+		    		formula[a] = f[i]
+		    	formulas_out[precursor_mass].append(formula)
+		    
 
 		return formulas_out
 
@@ -115,3 +121,5 @@ class ef_assigner(object):
 	        rr.append(list(n))
 
 	    return rr
+
+
