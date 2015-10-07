@@ -11,12 +11,15 @@ atom_masses = {'C':12.00000000000,
                 'P':30.97376151200,
                 'S':31.97207069000}
 
+proton_mass = 1.00727645199076
+
 class ef_assigner(object):
-	def __init__(self,atoms = ['C','H','N','O','S','P'],scale_factor=1000):
+	def __init__(self,atoms = ['C','H','N','O','S','P'],scale_factor=1000,remove_proton = False):
 		self.atoms = atoms
 		self.scale_factor = scale_factor
 		self.a = self.get_dictionary()
 		self.rr = self.round_robin()
+		self.remove_proton = remove_proton
 
 		# Compute correction factor for upper bound
 		self.delta = 0
@@ -56,9 +59,13 @@ class ef_assigner(object):
 		    print "Searching for {}".format(precursor_mass)
 		    formulas = []
 
+		    if self.remove_proton:
+		    	precursor_mass -= proton_mass
+		    	
 		    ppm_error = ppm*precursor_mass/1e6
 		    lower_bound = precursor_mass - ppm_error
 		    upper_bound = precursor_mass + ppm_error
+
 
 		    int_lower_bound = int(ceil(lower_bound*self.scale_factor))
 		    int_upper_bound = int(floor(self.scale_factor*upper_bound + self.delta*upper_bound))

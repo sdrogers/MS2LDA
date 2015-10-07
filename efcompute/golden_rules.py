@@ -82,7 +82,7 @@ class golden_rules(object):
 	    for element, number in formula.iteritems():
 	        valence_sum += atom_valences[element] * number
 	        atoms += number
-	    if not (valence_sum % 2 == 0 and valence_sum >= 2 * atoms - 1):
+	    if not (valence_sum % 2 == 0 and valence_sum >= 2 * (atoms - 1)):
 	        return False
 	    return True
 
@@ -95,11 +95,11 @@ class golden_rules(object):
 
 	def rule4(self,formula):
 	    """
-	    rule 4 concerns the hidrogen to carbon ratios
+	    rule 4 concerns the hydrogen to carbon ratios
 	    :param formula: a formula
 	    :return: True if the formula passed this test
 	    """
-	    if formula['C'] > 0:
+	    if formula['C'] > 0 and formula['H'] > 0:
 	        h_c_ratio = (1.0*formula['H']) / (1.0*formula['C'])
 	        if not (6 > h_c_ratio > 0.1):
 	            return False
@@ -191,10 +191,13 @@ class golden_rules(object):
 
 	def filter_list(self,formula_list):
 		filtered_formulas = []
-		reasons = {}
+		passed = []
+		failed = {}
 		for formula in formula_list:
 			result,breakdown = self.filter_formula(formula)
 			if result:
 				filtered_formulas.append(formula)
-			reasons[self.make_formula_string(formula)] = breakdown
-		return filtered_formulas,reasons
+				passed.append(self.make_formula_string(formula))
+			else:
+				failed[self.make_formula_string(formula)] = breakdown
+		return filtered_formulas,passed,failed

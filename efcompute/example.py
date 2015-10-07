@@ -28,31 +28,45 @@ def make_formula_string(formula):
 
 if __name__=='__main__':
 
+
+    # Make some molecules and and compute their masses
     atoms = ['C','H','N','O','P','S']
     test_molecules = [[0,2,0,1,0,0],[1,0,0,2,0,0],[0,0,0,2,0,0],[8,10,4,2,0,0],[1,1,1,1,1,1]]
     precursor_mass_list = []
     for test_molecule in test_molecules:
         precursor_mass_list.append(get_formula_mass(atoms,test_molecule))
     
-
-    # formulas_out = find_formulas(precursor_mass_list,1)
+    # Create the ef_assigner object
     ef = ef_assigner()
+
+
+    # Find the formulas for the list of masses
     formulas_out = ef.find_formulas(precursor_mass_list,1)
 
+
+    # Print the output
     for p in precursor_mass_list:
         print "Mass: {}".format(p)
         for f in formulas_out[p]:
             s,m = make_formula_string(f)
             print "\t{} ({})".format(s,m)
 
+
+    # Import the seven golden rules code (Needs more testing)
     from golden_rules import golden_rules
 
+    # Create a golden rules object
     g = golden_rules()
     filtered_out = {}
-    reasons = {}
-    for p in precursor_mass_list:
-        filtered_out[p],reasons[p] = g.filter_list(formulas_out[p])
+    passed = {}
+    failed = {}
 
+    # Loop through the masses, and filter the hits
+    for p in precursor_mass_list:
+        filtered_out[p],passed[p],failed[p] = g.filter_list(formulas_out[p])
+
+
+    # Print the filtered list
     print
     print
     print "FILTERED"
@@ -64,14 +78,14 @@ if __name__=='__main__':
             s,m = make_formula_string(f)
             print "\t{} ({})".format(s,m)
 
-    print
-    print
-    print "REASONS"
-    print
-    print
 
+    # print the formulas that fail the test
+    print
+    print
+    print "FAILED"
+    print
+    print
     for p in precursor_mass_list:
         print "Mass: {}".format(p)
-        for f in reasons[p]:
-            print "\t{} {}".format(f,reasons[p][f])
-
+        for f in failed[p]:
+            print "\t{} {}".format(f,failed[p][f])
