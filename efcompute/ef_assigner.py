@@ -27,6 +27,7 @@ class ef_assigner(object):
 		    delta_i = (ceil(scale_factor*atom_masses[i]) - scale_factor*atom_masses[i])/atom_masses[i]
 		    if delta_i > self.delta:
 				self.delta = delta_i
+		print self.delta
 
 	def find_all(self,mass,i,c):
 	    if i == 0:
@@ -47,7 +48,7 @@ class ef_assigner(object):
 	                c[i] = c[i] + l
 
 
-	def find_formulas(self,precursor_mass_list,ppm):
+	def find_formulas(self,precursor_mass_list,ppm = 5):
 		global formulas
 		print "Finding formulas at {}ppm".format(ppm)
 		formulas_out = {}
@@ -68,7 +69,7 @@ class ef_assigner(object):
 
 
 		    int_lower_bound = int(ceil(lower_bound*self.scale_factor))
-		    int_upper_bound = int(floor(self.scale_factor*upper_bound + self.delta*upper_bound))
+		    int_upper_bound = int(floor(upper_bound*self.scale_factor + self.delta*upper_bound))
 
 		    for int_mass in range(int_lower_bound,int_upper_bound+1):
 		        self.find_all(int_mass,k-1,c)

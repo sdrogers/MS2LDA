@@ -1,6 +1,7 @@
 
 from ef_assigner import ef_assigner
 
+
 atom_masses = {'C':12.00000000000,
                 'H':1.00782503214,
                 'N':14.00307400524,
@@ -37,11 +38,11 @@ if __name__=='__main__':
         precursor_mass_list.append(get_formula_mass(atoms,test_molecule))
     
     # Create the ef_assigner object
-    ef = ef_assigner()
+    ef = ef_assigner(scale_factor=1000)
 
 
     # Find the formulas for the list of masses
-    formulas_out = ef.find_formulas(precursor_mass_list,1)
+    formulas_out = ef.find_formulas(precursor_mass_list,ppm=1)
 
 
     # Print the output
@@ -49,43 +50,45 @@ if __name__=='__main__':
         print "Mass: {}".format(p)
         for f in formulas_out[p]:
             s,m = make_formula_string(f)
-            print "\t{} ({})".format(s,m)
+            ppm_error = 1e6*(m - p)/m
+            print "\t{} ({}) ({})".format(s,m,ppm_error)
 
 
-    # Import the seven golden rules code (Needs more testing)
-    from golden_rules import golden_rules
+    # # Import the seven golden rules code (Needs more testing)
+    # from golden_rules import golden_rules
 
-    # Create a golden rules object
-    g = golden_rules()
-    filtered_out = {}
-    passed = {}
-    failed = {}
+    # # Create a golden rules object
+    # g = golden_rules()
+    # filtered_out = {}
+    # passed = {}
+    # failed = {}
 
-    # Loop through the masses, and filter the hits
-    for p in precursor_mass_list:
-        filtered_out[p],passed[p],failed[p] = g.filter_list(formulas_out[p])
+    # # Loop through the masses, and filter the hits
+    # for p in precursor_mass_list:
+    #     filtered_out[p],passed[p],failed[p] = g.filter_list(formulas_out[p])
 
 
     # Print the filtered list
-    print
-    print
-    print "FILTERED"
-    print
-    print
-    for p in precursor_mass_list:
-        print "Mass: {}".format(p)
-        for f in filtered_out[p]:
-            s,m = make_formula_string(f)
-            print "\t{} ({})".format(s,m)
+    # print
+    # print
+    # print "FILTERED"
+    # print
+    # print
+    # for p in precursor_mass_list:
+    #     print "Mass: {}".format(p)
+    #     for f in filtered_out[p]:
+    #         s,m = make_formula_string(f)
+    #         ppm_error = 1e6*abs(m - p)/p
+    #         print "\t{} ({}) (error = {})".format(s,m,ppm_error)
 
 
-    # print the formulas that fail the test
-    print
-    print
-    print "FAILED"
-    print
-    print
-    for p in precursor_mass_list:
-        print "Mass: {}".format(p)
-        for f in failed[p]:
-            print "\t{} {}".format(f,failed[p][f])
+    # # print the formulas that fail the test
+    # print
+    # print
+    # print "FAILED"
+    # print
+    # print
+    # for p in precursor_mass_list:
+    #     print "Mass: {}".format(p)
+    #     for f in failed[p]:
+    #         print "\t{} {}".format(f,failed[p][f])
