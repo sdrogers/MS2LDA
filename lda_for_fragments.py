@@ -508,6 +508,8 @@ class Ms2Lda(object):
         self.ms1 = annot_ms1
         self.ms2 = annot_ms2
         
+    # def annotate_with_name(self, peaklist_file, ppm_max=5):  
+        
     def plot_log_likelihood(self):
         plt.plot(self.model.loglikelihoods_)        
             

@@ -3,7 +3,7 @@
 # Thermo-Exactive, following pHilic chromatography.
 # Ensure correct input files (including path if applicable) is filled out for the appropriate 
 # peak picking method (1, 2, or 3).
-config_filename <- "/home/joewandy/isabel/config.yml"
+config_filename <- "/home/joewandy/git/metabolomics_tools/justin/isabel/config.yml"
 
 # Calls the primary script for the feature extraction workflow.
 # This will perform peak detection on the mzXML fragmentation and/or full scan data (depending
