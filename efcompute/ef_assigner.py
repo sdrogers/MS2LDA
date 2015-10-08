@@ -14,13 +14,13 @@ atom_masses = {'C':12.00000000000,
 proton_mass = 1.00727645199076
 
 class ef_assigner(object):
-	def __init__(self,atoms = ['C','H','N','O','S','P'],scale_factor=1000,remove_proton = False):
+	def __init__(self,atoms = ['C','H','N','O','P','S'],scale_factor=1000,remove_proton = False,enforce_ppm = True):
 		self.atoms = atoms
 		self.scale_factor = scale_factor
 		self.a = self.get_dictionary()
 		self.rr = self.round_robin()
 		self.remove_proton = remove_proton
-
+		self.enforce_ppm = enforce_ppm
 		# Compute correction factor for upper bound
 		self.delta = 0
 		for i in atoms:
@@ -29,10 +29,20 @@ class ef_assigner(object):
 				self.delta = delta_i
 		print self.delta
 
-	def find_all(self,mass,i,c):
+	def find_all(self,mass,i,c,ppm,precursor_mass):
 	    if i == 0:
 	        c[0] = mass/self.a[0]
-	        formulas.append(list(c))
+	        # The following corrects for the fact that at low scale factors we
+	        # will find things at much more than the specificed ppm
+	        if self.enforce_ppm:
+	        	molecule_mass = 0.0
+	        	for i,atom in enumerate(self.atoms):
+	        		molecule_mass += atom_masses[atom]*c[i]
+        		if abs(molecule_mass - precursor_mass)/precursor_mass <= 1e-6*ppm:
+        			formulas.append(list(c))
+        		return
+	        else:
+		        formulas.append(list(c))
 	        return
 	    else:
 	        lcm = self.a[0]*self.a[i] / fractions.gcd(self.a[0],self.a[i])
@@ -43,7 +53,7 @@ class ef_assigner(object):
 	            r = m % self.a[0]
 	            lbound = self.rr[i-1][r]
 	            while m >= lbound:
-	                self.find_all(m,i-1,c)
+	                self.find_all(m,i-1,c,ppm,precursor_mass)
 	                m = m - lcm
 	                c[i] = c[i] + l
 
@@ -72,7 +82,7 @@ class ef_assigner(object):
 		    int_upper_bound = int(floor(upper_bound*self.scale_factor + self.delta*upper_bound))
 
 		    for int_mass in range(int_lower_bound,int_upper_bound+1):
-		        self.find_all(int_mass,k-1,c)
+		        self.find_all(int_mass,k-1,c,ppm,precursor_mass)
 
 		    print "\t found {}".format(len(formulas))
 
