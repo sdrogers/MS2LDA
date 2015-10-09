@@ -46,13 +46,25 @@ Additionally, some smaller packages to install:
 3. Setting up Python.
 ---------------------
 
-1. Implementation of the LDA inference for substructure detection in MS2 peaks project is primarily done in the Python scientific environment, so we need to set-up the Python interpreter and its necessary packages. These are primarily the [NumPy](http://www.numpy.org/) and [SciPy](http://www.scipy.org/) packages, alongside with other usual stuff like IPython for interactive console, Matplotlib for plotting, Pandas for data frames etc. If you already have a Python environment (with Numpy/Scipy) installed on your machine, feel free to continue using that. Otherwise, we recommend that you use the Anaconda Python distribution from Continuum Analytics that provides [a one-click installer for all the packages required](https://store.continuum.io/cshop/anaconda/). **Open the link and click download** and select the Windows version to download it. The following steps of this installation guide will be written with the assumption that you are doing a clean installation 
+1. Implementation of the LDA inference for substructure detection in MS2 peaks project is primarily done in the Python scientific environment, so we need to set-up the Python interpreter and its necessary packages. These are primarily the [NumPy](http://www.numpy.org/) and [SciPy](http://www.scipy.org/) packages, alongside with other usual stuff like IPython for interactive console, Matplotlib for plotting, Pandas for data frames etc. If you already have a Python environment (with Numpy/Scipy) installed on your machine, feel free to continue using that after ensuring that the following libraries have been installed:
 
-2. **Launch the installer for Anaconda Python** and proceed with the installation process. Accept all the default options and wait for installation to finish. 
+> pip install numpy
 
-3. Upon completion, **launch "IPython (2.7)" from the the newly-created "Anaconda" folder in the Start menu** to verify that installation is successful. You should see something like "Python 2.7 ... " on the first line. Type "exit()" to quit.
+> pip install scipy
 
-4. Now we need to install some of the additional packages used in the project (on top of the usual NumPy/SciPy packages). **Launch "Anaconda Command Prompt" from the "Anaconda" start menu folder.** In the command-prompt window that appears, type the following commands to install the package that lets Python call R and also update all Anaconda-managed packages in the distribution to the latest:
+> pip install matplotlib
+
+> pip install 'ipython<2'
+
+> pip install rpy2 (optional, if you want to run the R part of the pipeline within the Python notebook)
+
+2. If you haven't got Python installed, we recommend that you use the Anaconda Python distribution from Continuum Analytics that provides [a one-click installer for all the packages required](https://store.continuum.io/cshop/anaconda/) (a benefit of this is the LDA code will run much faster since we can utilise the [Numba](http://numba.pydata.org/) library included in the distribution, which can be difficult to install manually). **Open the link and click download** and select the Windows version to download it. The following steps of this installation guide will be written with the assumption that you are doing a clean installation. Anaconda also comes with its own R environment bundled in, but in the LDA workflow, you should use the R configured in section (2) above.
+
+3. **Launch the installer for Anaconda Python** and proceed with the installation process. Accept all the default options and wait for installation to finish. 
+
+4. Upon completion, **launch "IPython (2.7)" from the the newly-created "Anaconda" folder in the Start menu** to verify that installation is successful. You should see something like "Python 2.7 ... " on the first line. Type "exit()" to quit.
+
+5. Now we need to install some of the additional packages used in the project (on top of the usual NumPy/SciPy packages). **Launch "Anaconda Command Prompt" from the "Anaconda" start menu folder.** In the command-prompt window that appears, type the following commands to install the package that lets Python call R and also update all Anaconda-managed packages in the distribution to the latest:
 
 > pip install rpy2
 
