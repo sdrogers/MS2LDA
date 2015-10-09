@@ -113,7 +113,7 @@ class ef_assigner(object):
 		    		f['H'] -= 1
 
 		    # If there is more than one hit return the top hit as a top_hit_string
-		    if formulas_out[precursor_mass] == None:
+		    if len(formulas_out[precursor_mass]) == 0:
 		    	top_hit_string.append(None)
 		    	continue
 		    else:
