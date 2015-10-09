@@ -35,7 +35,7 @@ if __name__=='__main__':
     test_molecules = [[0,2,0,1,0,0],[1,0,0,2,0,0],[0,0,0,2,0,0],[8,10,4,2,0,0],[1,1,1,1,1,1]]
     precursor_mass_list = []
     for test_molecule in test_molecules:
-        precursor_mass_list.append(get_formula_mass(atoms,test_molecule)+1.00727645199076)
+        precursor_mass_list.append(str(get_formula_mass(atoms,test_molecule)+1.00727645199076))
     
     # Create the ef_assigner object
     ef = ef_assigner(scale_factor=1000)
@@ -51,7 +51,7 @@ if __name__=='__main__':
         print "Mass: {}".format(p)
         for f in formulas_out[p]:
             s,m = make_formula_string(f)
-            ppm_error = 1e6*(m - p)/m
+            ppm_error = 1e6*(m - float(p))/m
             print "\t{} ({}) ({})".format(s,m,ppm_error)
 
 
