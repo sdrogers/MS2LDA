@@ -59,7 +59,8 @@ def export_docdf_to_cytoscape(infile, sif_out, noa_out):
 def _get_docname(row_index):
     tokens = row_index.split('_')
     docname = "doc_"+ str(tokens[0]) + "_" + str(tokens[1])
-    return docname
+    peakid = str(tokens[2])
+    return docname, peakid
 
 def _get_topicname(col_index):
     topic = "topic_" + str(col_index)
@@ -73,7 +74,7 @@ def export_docdf_to_gephi(infile, nodes_out, edges_out):
 
     node_names = set()
     for row_index in docdf.index:
-        docname = _get_docname(row_index)
+        docname, peakid = _get_docname(row_index)
         node_names.add(docname)
     for col_index in docdf.columns:
         topic = _get_topicname(col_index)
@@ -122,9 +123,11 @@ def get_json_from_docdf(docdf, to_highlight, threshold):
 
     G = nx.Graph()
     node_names = set()
+    peakid_map = {}
     for row_index in docdf.index:
-        docname = _get_docname(row_index)
+        docname, peakid = _get_docname(row_index)
         node_names.add(docname)
+        peakid_map[docname] = peakid
     for col_index in docdf.columns:
         topic = _get_topicname(col_index)
         node_names.add(topic)
@@ -138,7 +141,7 @@ def get_json_from_docdf(docdf, to_highlight, threshold):
     for row_index, row_value in docdf.iterrows():    
         for col_index, col_value in row_value.iteritems():
             if col_value > 0:
-                docname = _get_docname(row_index)
+                docname, peakid = _get_docname(row_index)
                 topic = _get_topicname(col_index)
                 docid = nodes[docname]
                 topicid = nodes[topic]
@@ -157,10 +160,11 @@ def get_json_from_docdf(docdf, to_highlight, threshold):
                 node_score = 0
                 node_type = "square"
                 special = False
-                if n in to_highlight_labels:
+                n_pid = 'doc_' + peakid_map[n]
+                if n_pid in to_highlight_labels:
                     node_size = 30
                     special = True
-                    highlight_colour = to_highlight_colours[n]
+                    highlight_colour = to_highlight_colours[n_pid]
                     G.add_node(node_id, name=n, group=node_group, in_degree=0, size=node_size, score=node_score, 
                                type=node_type, special=special, highlight_colour=highlight_colour)
                 else:
