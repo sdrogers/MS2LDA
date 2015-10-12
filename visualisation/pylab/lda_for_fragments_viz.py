@@ -594,10 +594,11 @@ class Ms2Lda_Viz(object):
         plt.xlabel('m/z')
         plt.ylabel('relative intensity')                    
         ms1_peak_counts = str(len(parent_masses))
+        pid_value = ("%d" % parent_id)
         mz_value = ("%.4f" % parent_mass)
         rt_value = ("%.3f" % parent_rt)
         title = 'Topic ' + str(i) + ' peak ' + str(n+1) + '/' + ms1_peak_counts
-        title += ' (m/z=' + mz_value + ' RT=' + rt_value + ")"
+        title += ' (pid=' + pid_value + ' m/z=' + mz_value + ' RT=' + rt_value + ")"
         plt.title(title)
         
         blue_patch = mpatches.Patch(color='blue', label='Parent peak')
