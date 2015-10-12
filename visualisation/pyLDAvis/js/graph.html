@@ -275,7 +275,14 @@ text {
 	            if (highlight_color != "white") {
 	                circle.style(towhite, "white");
 	                text.style("font-weight", "normal");
-		            text.style("opacity", 0);
+			        text.style("font-size", function (d) { 
+			        	if (d.name.indexOf("topic")>-1) {
+				        	return max_text_size*2 + "px"	        		
+			        	} else {
+				        	return nominal_text_size + "px"	        		
+			        	}
+			        })
+		        	text.style("opacity", 0);
 	                link.style("stroke", function(o) {
 	                    return (isNumber(o.score) && o.score >= 0) ? color(o.score) : default_link_color
 	                });
@@ -293,7 +300,7 @@ text {
 	            		if (o.name.indexOf("topic")>-1) {
 		            		return 1;	            			
 	            		} else {
-		            		return 0.5;	            			
+		            		return 0.75;	            			
 	            		}
 	            	} else {
 	            		return highlight_trans;
@@ -316,12 +323,25 @@ text {
 	            text.style("font-weight", function(o) {
 	                return isConnected(d, o) ? "bold" : "normal";
 	            });
+	        	if (d.name.indexOf("topic")==-1) { // only for document nodes
+		            text.style("font-size", function(o) {
+		            	if (d.name === o.name) {
+				        	return nominal_text_size*4 + "px"	        		
+		            	} else {
+				        	if (o.name.indexOf("topic")>-1) {
+				        		return max_text_size*2 + "px"
+				        	} else {
+					        	return nominal_text_size + "px"	        		
+				        	}	            		
+		            	}
+		            });
+	        	}
 	            text.style("opacity", function(o) {
 	            	if (isConnected(d, o)) {
 	            		if (o.name.indexOf("topic")>-1) {
 		            		return 1;	            			
 	            		} else {
-		            		return 0.5;	            			
+		            		return 0.75;	            			
 	            		}
 	            	} else {
 	            		return highlight_trans;
