@@ -458,7 +458,8 @@ class Ms2Lda_Viz(object):
         ax = fig.add_subplot(111)
         
         #set the bbox for the text. Increase txt_width for wider text.
-        txt_width = 40*(plt.xlim()[1] - plt.xlim()[0])
+        txt_width = 20*(plt.xlim()[1] - plt.xlim()[0])        
+        txt_width_annot = 40*(plt.xlim()[1] - plt.xlim()[0])
         txt_height = 0.2*(plt.ylim()[1] - plt.ylim()[0])
 
         ## handle empty topic
@@ -509,6 +510,7 @@ class Ms2Lda_Viz(object):
             y_data = []
             line_type = []    
             labels = []        
+            has_annots = []
             xlim_upper = max_parent_mz
     
             # plot the fragment peaks in this topic that also occur in this parent peak
@@ -545,6 +547,7 @@ class Ms2Lda_Viz(object):
                         y_data.append(y)
                         line_type.append('fragment')
                         labels.append(label)
+                        has_annots.append(has_annotation)
                 
             # plot the neutral losses in this topic that also occur in this parent peak
             if parent_id in parent_topic_losses:        
@@ -580,12 +583,15 @@ class Ms2Lda_Viz(object):
                         y_data.append(y)
                         line_type.append('loss')
                         labels.append(label)
+                        has_annots.append(has_annotation)
                 
             # Get the corrected text positions, then write the text.
             x_data = np.array(x_data)
             y_data = np.array(y_data)
-            text_positions = self._get_text_positions(x_data, y_data, txt_width, txt_height)
-            self._text_plotter(x_data, y_data, line_type, labels, text_positions, ax, txt_width, txt_height, 
+            text_positions = self._get_text_positions(x_data, y_data, has_annots, txt_width, txt_width_annot, txt_height)
+            self._text_plotter(x_data, y_data, line_type, labels, has_annots, 
+                               text_positions, ax, 
+                               txt_width, txt_width_annot, txt_height, 
                                fragment_fontspec, loss_fontspec)
     
         plt.xlim([0, xlim_upper+100])
@@ -610,12 +616,17 @@ class Ms2Lda_Viz(object):
         return fig
                     
     # from http://stackoverflow.com/questions/8850142/matplotlib-overlapping-annotations
-    def _get_text_positions(self, x_data, y_data, txt_width, txt_height):
+    def _get_text_positions(self, x_data, y_data, has_annots, txt_width, txt_width_annot, txt_height):
         a = zip(y_data, x_data)
         text_positions = y_data.copy()
         for index, (y, x) in enumerate(a):
+            has_annot = has_annots[index]
+            if has_annot:
+                txtw = txt_width_annot
+            else:
+                txtw = txt_width
             local_text_positions = [i for i in a if i[0] > (y - txt_height) 
-                                and (abs(i[1] - x) < txt_width * 2) and i != (y,x)]
+                                and (abs(i[1] - x) < txtw * 2) and i != (y,x)]
             if local_text_positions:
                 sorted_ltp = sorted(local_text_positions)
                 if abs(sorted_ltp[0][0] - y) < txt_height: #True == collision
@@ -631,16 +642,22 @@ class Ms2Lda_Viz(object):
         return text_positions
     
     # from http://stackoverflow.com/questions/8850142/matplotlib-overlapping-annotations
-    def _text_plotter(self, x_data, y_data, line_type, labels, text_positions, axis, txt_width, txt_height, 
+    def _text_plotter(self, x_data, y_data, line_type, labels, has_annots, 
+                      text_positions, axis, 
+                      txt_width, txt_width_annot, txt_height, 
                       fragment_fontspec, loss_fontspec):
-        for x,y,t,l,lab in zip(x_data, y_data, text_positions, line_type, labels):
+        for x,y,t,l,lab,has_annot in zip(x_data, y_data, text_positions, line_type, labels, has_annots):
+            if has_annot:
+                txtw = txt_width_annot
+            else:
+                txtw = txt_width
             if l == 'fragment':
-                axis.text(x-txt_width, 1.01*t, lab, rotation=0, **fragment_fontspec)
+                axis.text(x-txtw, 1.01*t, lab, rotation=0, **fragment_fontspec)
             elif l == 'loss':
-                axis.text(x-txt_width, 1.01*t, lab, rotation=0, **loss_fontspec)                
+                axis.text(x-txtw, 1.01*t, lab, rotation=0, **loss_fontspec)                
             if y != t:
-                axis.arrow(x, t,0,y-t, color='black', alpha=0.2, width=txt_width*0.01, 
-                           head_width=txt_width/4, head_length=txt_height*0.25, 
+                axis.arrow(x, t,0,y-t, color='black', alpha=0.2, width=txtw*0.01, 
+                           head_width=txtw/4, head_length=txt_height*0.25, 
                            zorder=0,length_includes_head=True)
     
     # compute the h-index of topics TODO: this only works for fragment and loss words!
