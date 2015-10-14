@@ -17,6 +17,7 @@ from visualisation.pylab.lda_for_fragments_viz import Ms2Lda_Viz
 import visualisation.pyLDAvis as pyLDAvis
 import visualisation.sirius.sirius_wrapper as sir
 import lda_utils as utils
+from efcompute.ef_assigner import ef_assigner
 
 class Ms2Lda(object):
     
@@ -502,11 +503,54 @@ class Ms2Lda(object):
         
     def annotate_with_sirius(self, sirius_platform="orbitrap", mode="pos", ppm_max=5, min_score=0.01, max_ms1=700, 
                              verbose=False):
+        mode = mode.lower()
         annot_ms1, annot_ms2 = sir.annotate_sirius(self.ms1, self.ms2, sirius_platform=sirius_platform, 
                                                    mode=mode, ppm_max=ppm_max, min_score=min_score, 
                                                    max_ms1=max_ms1, verbose=verbose)
         self.ms1 = annot_ms1
         self.ms2 = annot_ms2
+
+    def annotate_with_ef_assigner(self, mode="pos", ppm_max=5, scale_factor=1000, max_ms1=700,
+                             verbose=False):
+        
+        mode = mode.lower()
+        if mode != "pos" and mode != "neg":
+            raise ValueError("mode is either 'pos' or 'neg'")
+        else:
+            print "Running EF annotation (with 7 golden rules filtering) with parameters:"
+            print "- mode = " + mode
+            print "- ppm_max = " + str(ppm_max)
+            print "- max_ms1 = " + str(max_ms1)
+            print        
+
+        # run EF annotation on MS1 dataframe        
+        print "Annotating MS1 dataframe"
+        mass_list = self.ms1.mz.values.tolist()
+        ef = ef_assigner(scale_factor=1000)
+        formulas_out, top_hit_string, precursor_mass_list = ef.find_formulas(mass_list, ppm=ppm_max, polarisation=mode.upper(), max_mass_to_check=max_ms1)
+        
+        # replace all None with NaN
+        for i in range(len(top_hit_string)):
+            if top_hit_string[i] is None:
+                top_hit_string[i] = np.NaN        
+
+        # set the results back into the dataframe        
+        self.ms1['annotation'] = top_hit_string
+        
+        # run EF annotation on MS2 dataframe        
+        print "Annotating MS2 dataframe"
+        mass_list = self.ms1.mz.values.tolist()
+        ef = ef_assigner(scale_factor=1000)
+        formulas_out, top_hit_string, precursor_mass_list = ef.find_formulas(mass_list, ppm=ppm_max, polarisation=mode.upper())
+        
+        # replace all None with NaN
+        for i in range(len(top_hit_string)):
+            if top_hit_string[i] is None:
+                top_hit_string[i] = np.NaN        
+
+        # set the results back into the dataframe        
+        self.ms1['annotation'] = top_hit_string
+
         
     # def annotate_with_name(self, peaklist_file, ppm_max=5):  
         
