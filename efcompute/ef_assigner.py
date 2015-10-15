@@ -20,7 +20,7 @@ class ef_assigner(object):
             delta_i = (ceil(scale_factor*ATOM_MASSES[i]) - scale_factor*ATOM_MASSES[i])/ATOM_MASSES[i]
             if delta_i > self.delta:
                 self.delta = delta_i
-        print self.delta
+        # print self.delta
 
     def find_formulas(self, mass_list, ppm = 5, polarisation="None", max_mass_to_check=INFINITE):
         

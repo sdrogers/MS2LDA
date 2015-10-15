@@ -526,7 +526,7 @@ class Ms2Lda(object):
         # run EF annotation on MS1 dataframe        
         print "Annotating MS1 dataframe"
         mass_list = self.ms1.mz.values.tolist()
-        ef = ef_assigner(scale_factor=1000)
+        ef = ef_assigner(scale_factor=scale_factor)
         formulas_out, top_hit_string, precursor_mass_list = ef.find_formulas(mass_list, ppm=ppm_max, polarisation=mode.upper(), max_mass_to_check=max_ms1)
         
         # replace all None with NaN
@@ -539,8 +539,8 @@ class Ms2Lda(object):
         
         # run EF annotation on MS2 dataframe        
         print "Annotating MS2 dataframe"
-        mass_list = self.ms1.mz.values.tolist()
-        ef = ef_assigner(scale_factor=1000)
+        mass_list = self.ms2.mz.values.tolist()
+        ef = ef_assigner(scale_factor=scale_factor)
         formulas_out, top_hit_string, precursor_mass_list = ef.find_formulas(mass_list, ppm=ppm_max, polarisation=mode.upper())
         
         # replace all None with NaN
@@ -549,7 +549,7 @@ class Ms2Lda(object):
                 top_hit_string[i] = np.NaN        
 
         # set the results back into the dataframe        
-        self.ms1['annotation'] = top_hit_string
+        self.ms2['annotation'] = top_hit_string
 
         
     # def annotate_with_name(self, peaklist_file, ppm_max=5):  
