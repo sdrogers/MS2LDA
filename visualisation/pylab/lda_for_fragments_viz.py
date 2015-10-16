@@ -3,7 +3,10 @@ import os
 import sys
 
 from pandas.core.frame import DataFrame
+import networkx as nx
+from networkx.algorithms import bipartite
 
+import matplotlib.pylab as pylab
 import matplotlib.patches as mpatches
 import numpy as np
 import pylab as plt
@@ -391,6 +394,81 @@ class Ms2Lda_Viz(object):
         # convert topic_coordinates from dictionary to a list of coordinates, sorted by the topic id
         sorted_coords = sorted(self.topic_coordinates.iteritems(), key=lambda key_value: key_value[0])
         self.topic_coordinates = [item[1] for item in sorted_coords]        
+        
+    def plot_cosine_clustering(self, motif_id, ions_of_interest, clustering, peak_names):  
+        
+        C, P, G, pos, peak_nodes = self._get_cosine_network_graph(clustering, peak_names)
+        interest_nodes = [n for i,n in peak_nodes.items() if i in ions_of_interest]      
+        
+        scaling = 10
+        fig = plt.figure(figsize=(12,12))
+        ax = fig.add_subplot(111)
+        nx.draw_networkx_edges(G, pos, width=0.2, ax=ax)
+        nx.draw_networkx_nodes(G, pos, nodelist=C, node_size = 1*scaling, node_color = 'g', linewidths=0.1, ax=ax)
+        nx.draw_networkx_nodes(G, pos, nodelist=P, node_size = 0.5*scaling, node_color = 'b', linewidths=0.1, ax=ax)
+        nx.draw_networkx_nodes(G, pos, nodelist=interest_nodes, node_size=2*scaling, node_color='r', linewidths=0.1, ax=ax)
+
+        title = 'Mass2Motif ' + str(motif_id)
+        plt.title(title)
+        plt.axis('off')
+        plt.show()
+        
+    def _get_cosine_network_graph(self, clustering, peak_names):
+
+        # Create the networkx graph object.
+        # Clusters with fewer than min_size_to_plot members are not plotted
+        min_size_to_plot = 4
+        node_no = 0
+        G = nx.Graph()
+        uc = np.unique(clustering)
+        cluster_nodes = {}
+        singleton_clusters = []
+        for cluster in uc:
+            members = np.where(clustering == cluster)[0]
+            if len(members) < min_size_to_plot:
+                singleton_clusters.append(cluster)
+                continue
+            cluster_nodes[cluster] = node_no
+            G.add_node(node_no,bipartite=0)
+            node_no += 1
+        
+        peak_nodes = {}
+        for i,name in enumerate(peak_names):
+            this_cluster = clustering[i]
+            if this_cluster in cluster_nodes:
+                peak_nodes[name] = node_no
+                G.add_node(node_no,bipartite=1)
+                G.add_edge(node_no,cluster_nodes[clustering[i]])
+                node_no += 1
+        
+        # Position the clusters in a grid, and their members in circle coming out from the cluster. 
+        # cstep determines the distance between grid points. 
+        # If you want cluster members closer to the cluster centers, change the 0.75 in 
+        # the x_pos and y_pos lines
+        C,P = bipartite.sets(G)
+        n_clusters = len(C)
+        n_rows = np.ceil(np.sqrt(n_clusters))
+        pos = {}
+        current_row = 0
+        current_col = 0
+        cstep = 2.0
+        for c in C:
+            n_list = G.neighbors(c)
+            pos[c] = [cstep*current_row,cstep*current_col]
+            # find neighbours
+            step = 2*np.pi/len(n_list)
+            angle = 0.0
+            for n in n_list:
+                x_pos = 0.75*np.sin(angle)
+                y_pos = 0.75*np.cos(angle)
+                pos[n] = [pos[c][0]+x_pos,pos[c][1]+y_pos]
+                angle += step
+            current_col += 1
+            if current_col >= n_rows:
+                current_col = 0
+                current_row += 1
+                
+        return C, P, G, pos, peak_nodes
         
     def _update_topic_ordering(self, i, parent_ids, parent_topic_fragments, parent_topic_losses, wordfreq, consistency):
 

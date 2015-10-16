@@ -9,8 +9,10 @@ import timeit
 import numpy as np
 import pandas as pd
 import pylab as plt
-from scipy.sparse import coo_matrix
 import yaml
+from scipy.sparse import coo_matrix
+import scipy.spatial.distance as distance
+import scipy.cluster.hierarchy as hierarchy
 
 from lda_cgs import CollapseGibbsLda
 from visualisation.pylab.lda_for_fragments_viz import Ms2Lda_Viz
@@ -466,6 +468,73 @@ class Ms2Lda(object):
         else:
             plotter.plot_lda_fragments(consistency=consistency, sort_by=sort_by, 
                                        selected_motifs=selected_motifs, interactive=interactive)
+
+    # this should only ever be run once LDA has been run
+    # because docdf wouldn't exist otherwise            
+    def run_cosine_clustering(self, method='greedy'):
+        
+        if not hasattr(self, 'topic_word'):
+            raise ValueError('Thresholding not done yet.')        
+        
+        # Swap the NaNs for zeros. Turn into a numpy array and grab the parent names
+        data = self.docdf.fillna(0)
+        data_array = np.array(data)
+        peak_names = list(data.columns.values)
+
+        # Create a matrix with the normalised values (each parent ion has magnitude 1)
+        l = np.sqrt((data_array**2).sum(axis=0))
+        norm_data = np.divide(data_array,l)
+
+        if method.lower() == 'hierarchical': # scipy hierarchical clustering
+        
+            clustering = hierarchy.fclusterdata(norm_data.transpose(), 0.8, criterion = 'distance', 
+                                                metric='euclidean', method='single')
+        
+        elif method.lower() == 'greedy': # greedy cosine clustering
+        
+            cosine_sim = np.dot(norm_data.transpose(),norm_data)
+            finished = False
+            total_intensity = data_array.sum(axis=0)
+            total_intensity = total_intensity
+            n_features, n_parents = data_array.shape
+            clustering = np.zeros((n_parents,),np.int)
+            current_cluster = 1
+            thresh = 0.55
+            count = 0
+            while not finished:
+                # Find the parent with the max intensity left
+                current = np.argmax(total_intensity)
+                total_intensity[current] = 0.0
+                count += 1
+                clustering[current] = current_cluster
+                # Find other parents with cosine similarity over the threshold
+                friends = np.where((cosine_sim[current,:]>thresh) * (total_intensity > 0.0))[0]
+                clustering[friends] = current_cluster
+                total_intensity[friends] = 0.0
+                # When points are clustered, their total_intensity is set zto zero. 
+                # If there is nothing left with zero, quit
+                left = np.where(total_intensity > 0.0)[0]
+                if len(left) == 0:
+                    finished = True
+                current_cluster += 1
+                    
+        else:
+            raise ValueError('Unknown clustering method')
+        
+        return peak_names, clustering
+    
+    def plot_cosine_clustering(self, motif_id, clustering, peak_names):  
+        
+        if not hasattr(self, 'topic_word'):
+            raise ValueError('Thresholding not done yet.')        
+        
+        colnames = self.docdf.columns.values
+        row = self.docdf.iloc[[motif_id]]
+        pos = row.values[0] > 0
+        ions_of_interest = colnames[pos]
+        
+        plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdf)
+        plotter.plot_cosine_clustering(motif_id, ions_of_interest, clustering, peak_names)
 
     def print_topic_words(self, selected_topics=None, with_probabilities=True, compact_output=False):
         
