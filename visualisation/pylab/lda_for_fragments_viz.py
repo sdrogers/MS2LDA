@@ -18,10 +18,14 @@ class Ms2Lda_Viz(object):
         self.ms2 = ms2
         self.docdf = docdf
         self.topicdf = topicdf        
-    
+
     def rank_topics(self, sort_by="h_index", selected_topics=None, top_N=None, interactive=False):
 
-        print "Ranking topics ..."
+        raise ValueError("rank_topics is now called rank_motifs")
+    
+    def rank_motifs(self, sort_by="h_index", selected_motifs=None, top_N=None, interactive=False):
+
+        print "Ranking motifs ..."
         self.sort_by = sort_by
         if sort_by == 'h_index':
             topic_sort_criteria = self._h_index() 
@@ -49,16 +53,16 @@ class Ms2Lda_Viz(object):
         return topic_sort_criteria, sorted_topic_counts                
                 
     def plot_lda_fragments(self, consistency=0.50, sort_by="h_index", 
-                           selected_topics=None, interactive=False,
+                           selected_motifs=None, interactive=False,
                            to_highlight=None):
         
         self.to_highlight = to_highlight
                 
-        if selected_topics is not None and interactive:
-            raise ValueError("For interactive mode, the selected_topics parameter is not yet supported so you must visualise all topics.")
+        if selected_motifs is not None and interactive:
+            raise ValueError("For interactive mode, the selected_motifs parameter is not yet supported so you must visualise all motifs.")
                 
-        topic_ranking, sorted_topic_counts = self.rank_topics(sort_by=sort_by, 
-                                                              selected_topics=selected_topics, interactive=interactive)               
+        topic_ranking, sorted_topic_counts = self.rank_motifs(sort_by=sort_by, 
+                                                              selected_motifs=selected_motifs, interactive=interactive)               
         self.topic_plots = {}
         self.topic_ms1_count = {}
         self.topic_ms1_ordering = {}
@@ -67,15 +71,15 @@ class Ms2Lda_Viz(object):
         for (i, c) in sorted_topic_counts:
             
             # skip non-selected topics
-            if selected_topics is not None:
-                if i not in selected_topics:
+            if selected_motifs is not None:
+                if i not in selected_motifs:
                     continue
 
             if not interactive:            
                 if sort_by == 'h_index':
-                    print "Topic " + str(i) + " h-index=" + str(topic_ranking[i])
+                    print "Mass2Motif " + str(i) + " h-index=" + str(topic_ranking[i])
                 elif sort_by == 'in_degree':
-                    print "Topic " + str(i) + " in-degree=" + str(topic_ranking[i])
+                    print "Mass2Motif " + str(i) + " in-degree=" + str(topic_ranking[i])
                     print "====================="
                     print
 
@@ -98,7 +102,7 @@ class Ms2Lda_Viz(object):
             
             if not interactive:            
                 if len(top_n_docs) == 0:
-                    print "No parent peaks above the threshold found for this topic"
+                    print "No parent peaks above the threshold found for this motif"
                     continue
                 print "Parent peaks"
                 print
@@ -354,7 +358,7 @@ class Ms2Lda_Viz(object):
             
                 for n in range(num_peaks):
                         # compute the ordering of ms1 peaks to be plotted in this topic
-                        self.update_topic_ordering(i, parent_ids, parent_topic_fragments, parent_topic_losses, wordfreq, consistency)
+                        self._update_topic_ordering(i, parent_ids, parent_topic_fragments, parent_topic_losses, wordfreq, consistency)
                         # make the plot
                         self._make_ms1_plot(i, n, parent_masses, parent_rts, parent_ids, 
                            parent_all_fragments, parent_topic_fragments, parent_topic_losses,
@@ -369,12 +373,12 @@ class Ms2Lda_Viz(object):
                            wordfreq, consistency, max_parent_mz, parent_annots)
 
                 # compute the ordering of ms1 peaks to be plotted in this topic
-                self.update_topic_ordering(i, parent_ids, parent_topic_fragments, parent_topic_losses, wordfreq, consistency)
+                self._update_topic_ordering(i, parent_ids, parent_topic_fragments, parent_topic_losses, wordfreq, consistency)
 
                 # save the plot data for interactive use later
                 self.topic_plots[i] = plot_data
                 self.topic_ms1_count[i] = num_peaks                
-                print "Generating plots for topic " + str(i) + " h-index=" + str(topic_ranking[i]) + ", degree=" + str(num_peaks)
+                print "Generating plots for Mass2Motif " + str(i) + " h-index=" + str(topic_ranking[i]) + ", degree=" + str(num_peaks)
 
                 # set coordinate of each circle too
                 x_coord = topic_ranking[i]
@@ -388,7 +392,7 @@ class Ms2Lda_Viz(object):
         sorted_coords = sorted(self.topic_coordinates.iteritems(), key=lambda key_value: key_value[0])
         self.topic_coordinates = [item[1] for item in sorted_coords]        
         
-    def update_topic_ordering(self, i, parent_ids, parent_topic_fragments, parent_topic_losses, wordfreq, consistency):
+    def _update_topic_ordering(self, i, parent_ids, parent_topic_fragments, parent_topic_losses, wordfreq, consistency):
 
         # count how many words are being plotted (above the consistency ratio) for each parent id
         parent_word_counts = []
@@ -603,14 +607,14 @@ class Ms2Lda_Viz(object):
         pid_value = ("%d" % parent_id)
         mz_value = ("%.4f" % parent_mass)
         rt_value = ("%.3f" % parent_rt)
-        title = 'Topic ' + str(i) + ' peak ' + str(n+1) + '/' + ms1_peak_counts
+        title = 'Mass2Motif ' + str(i) + ' peak ' + str(n+1) + '/' + ms1_peak_counts
         title += ' (pid=' + pid_value + ' m/z=' + mz_value + ' RT=' + rt_value + ")"
         plt.title(title)
         
         blue_patch = mpatches.Patch(color='blue', label='Parent peak')
         yellow_patch = mpatches.Patch(color='#FF9933', label='Fragment peaks')
-        red_patch = mpatches.Patch(color='#800000', label='Topic fragment')
-        green_patch = mpatches.Patch(color='green', label='Topic loss')                
+        red_patch = mpatches.Patch(color='#800000', label='M2M fragment')
+        green_patch = mpatches.Patch(color='green', label='M2M loss')                
         plt.legend(handles=[blue_patch, yellow_patch, red_patch, green_patch])                
 
         return fig
@@ -756,20 +760,11 @@ class Ms2Lda_Viz(object):
                         else:
                             break
 
-                print " - topic " + str(i) + " h-index = " + str(h_index)
+                print " - Mass2Motif " + str(i) + " h-index = " + str(h_index)
                 topic_counts[i] = h_index
             
         return topic_counts
-    
-    def _get_docname(self, row_index):
-        tokens = row_index.split('_')
-        docname = "doc_"+ str(tokens[0]) + "_" + str(tokens[1])
-        return docname
-    
-    def _get_topicname(self, col_index):
-        topic = "topic_" + str(col_index)
-        return topic    
-    
+        
     # computes the in-degree of topics
     def _in_degree(self):    
 

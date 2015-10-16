@@ -16,6 +16,8 @@ import numpy as np
 import pandas as pd
 import pylab as plt
 
+# this should match the same constant defined in graph.html
+TOPIC_NAME = "motif" 
 
 def export_docdf_to_cytoscape(infile, sif_out, noa_out):
     """ Exports docdf to a format that can be parsed by cytoscape """
@@ -52,7 +54,7 @@ def export_docdf_to_cytoscape(infile, sif_out, noa_out):
     for docname in docnames:
         print(docname + " = document", file=f)
     for topic in topics:
-        print(topic + " = topic", file=f)
+        print(topic + " = " + TOPIC_NAME, file=f)
     f.close()    
     print("Saved to " + noa_out)
 
@@ -63,7 +65,7 @@ def _get_docname(row_index):
     return docname, peakid
 
 def _get_topicname(col_index):
-    topic = "topic_" + str(col_index)
+    topic = TOPIC_NAME + "_" + str(col_index)
     return topic
 
 def export_docdf_to_gephi(infile, nodes_out, edges_out):
@@ -172,7 +174,7 @@ def get_json_from_docdf(docdf, to_highlight, threshold):
                                type=node_type, special=special)
 
             # for topics, insert only those whose in-degree is above threshold
-            elif n.startswith('topic'):
+            elif n.startswith(TOPIC_NAME):
                 node_group = 2
                 node_size = 60
                 node_score = 1

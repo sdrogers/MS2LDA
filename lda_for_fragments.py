@@ -324,12 +324,12 @@ class Ms2Lda(object):
         for i, topic_dist in enumerate(self.topic_word):
             if selected_topics is not None:
                 if i < len(selected_topics):
-                    topic_name = 'Fixed Topic {}'.format(selected_topics[i])
+                    topic_name = 'Fixed_M2M {}'.format(selected_topics[i])
                 else:
-                    topic_name = 'Topic {}'.format(counter)
+                    topic_name = 'M2M_{}'.format(counter)
                     counter += 1
             else:
-                topic_name = 'Topic {}'.format(i)                    
+                topic_name = 'M2M_{}'.format(i)                    
             self.topic_names.append(topic_name)
         
         # create document-topic output file        
@@ -381,8 +381,8 @@ class Ms2Lda(object):
             raise ValueError('Thresholding not done yet.')
         
         # create topic-word output file
-        outfile = self._get_outfile(results_prefix, '_topics.csv') 
-        print "Writing topics to " + outfile
+        outfile = self._get_outfile(results_prefix, '_motifs.csv') 
+        print "Writing Mass2Motif features to " + outfile
         with open(outfile,'w') as f:
             
             for i, topic_dist in enumerate(self.topic_word):
@@ -404,13 +404,15 @@ class Ms2Lda(object):
     
         # write out topicdf and docdf
 
-        outfile = self._get_outfile(results_prefix, '_all.csv') 
-        print "Writing fragments x topics to " + outfile
+        outfile = self._get_outfile(results_prefix, '_features.csv') 
+        print "Writing features X motifs to " + outfile
         self.topicdf.to_csv(outfile)
     
         outfile = self._get_outfile(results_prefix, '_docs.csv') 
-        print "Writing topic docs to " + outfile
-        self.docdf.transpose().to_csv(outfile)
+        print "Writing docs X motifs to " + outfile
+        docdf = self.docdf.transpose()
+        docdf.columns = self.topic_names
+        docdf.to_csv(outfile)
         
     def save_project(self, project_out, message=None):
         start = timeit.default_timer()        
@@ -429,7 +431,8 @@ class Ms2Lda(object):
         return plotter.rank_topics(sort_by=sort_by, selected_topics=selected_topics, top_N=top_N)
         
     def plot_lda_fragments(self, consistency=0.0, sort_by="h_index", 
-                           selected_topics=None, interactive=False, to_highlight=None):
+                           selected_motifs=None, interactive=False, to_highlight=None, 
+                           additional_info=None):
 
         if not hasattr(self, 'topic_word'):
             raise ValueError('Thresholding not done yet.')        
@@ -438,7 +441,7 @@ class Ms2Lda(object):
         if interactive:
             # if interactive mode, we always sort by the h_index because we need both the h-index and degree for plotting
             plotter.plot_lda_fragments(consistency=consistency, sort_by='h_index', 
-                                       selected_topics=selected_topics, interactive=interactive,
+                                       selected_motifs=selected_motifs, interactive=interactive,
                                        to_highlight=to_highlight)
             # self.model.visualise(plotter)
             data = {}
@@ -457,13 +460,18 @@ class Ms2Lda(object):
             data['th_doc_topic'] = self.th_doc_topic
             data['topic_wordfreq'] = plotter.topic_wordfreqs
             data['topic_ms1_count'] = plotter.topic_ms1_count
+            data['topic_annotation'] = additional_info
             vis_data = pyLDAvis.prepare(**data)   
             pyLDAvis.show(vis_data, topic_plotter=plotter)
         else:
             plotter.plot_lda_fragments(consistency=consistency, sort_by=sort_by, 
-                                       selected_topics=selected_topics, interactive=interactive)
-            
+                                       selected_motifs=selected_motifs, interactive=interactive)
+
     def print_topic_words(self, selected_topics=None, with_probabilities=True, compact_output=False):
+        
+        raise ValueError("print_topic_words is now called print_motif_features")
+            
+    def print_motif_features(self, selected_motifs=None, with_probabilities=True, compact_output=False):
         
         if not hasattr(self, 'topic_word'):
             raise ValueError('Thresholding not done yet.')
@@ -471,21 +479,21 @@ class Ms2Lda(object):
         for i, topic_dist in enumerate(self.topic_word):    
 
             show_print = False
-            if selected_topics is None:
+            if selected_motifs is None:
                 show_print = True
-            if selected_topics is not None and i in selected_topics:
+            if selected_motifs is not None and i in selected_motifs:
                 show_print = True
                 
             if show_print:
                 ordering = np.argsort(topic_dist)
                 topic_words = np.array(self.vocab)[ordering][::-1]
                 dist = topic_dist[ordering][::-1]        
-                topic_name = 'Topic {}:'.format(i)
+                topic_name = 'Mass2Motif {}:'.format(i)
                 print topic_name,                    
                 for j in range(len(topic_words)):
                     if dist[j] > 0:
                         if with_probabilities:
-                            print('{} ({}),'.format(topic_words[j], dist[j])),
+                            print '%s (%.3f),' % (topic_words[j], dist[j]),
                         else:
                             print('{},'.format(topic_words[j])),                            
                     else:

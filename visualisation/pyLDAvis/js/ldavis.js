@@ -185,14 +185,20 @@ var LDAvis = function(to_select, data_or_file_name) {
 		var topic_ranking = data['topic.ranking'];
 		var topic_degree_map = {};
 		var topic_h_index_map = {};
+		var topic_motif_annotation_map = {};
 		for (var i = 0; i < K; i++) {
+			
 			var topic_id = topic_ranking['topic_id'][i];
 			var rank = topic_ranking['rank'][i];
 			var degree = topic_ranking['degree'][i];
-			topic_degree_map[topic_id + 1] = degree; // +1 to make it same as
-														// the initial LDAVis
-			topic_h_index_map[topic_id + 1] = rank; // +1 to make it same as the
-													// initial LDAVis
+			var annotation = topic_ranking['annotation'][i];
+			
+			// +1 to make it same as the initial LDAVis
+			var idx = topic_id + 1;
+			topic_degree_map[idx] = degree;
+			topic_h_index_map[idx] = rank; 
+			topic_motif_annotation_map[idx] = annotation;
+			
 		}
 		vis_state.lambda = data['lambda.min'];
 
@@ -649,6 +655,11 @@ var LDAvis = function(to_select, data_or_file_name) {
 		.attr("x", 5).attr("y", 7).text(data['plot.opts'].ylab).attr("fill",
 				"grey");
 
+		// draw separator between the left and right panels
+		mdsplot.append("line") // draw y-axis
+		.attr("x1", mdswidth+20).attr("x2", mdswidth+20).attr("y1", -40).attr("y2", mdsheight+300).attr(
+				"stroke", "black");
+		
 		// new definitions based on fixing the sum of the areas of the default
 		// topic circles:
 		var newSmall = Math.sqrt(0.02 * mdsarea * circle_prop / Math.PI);
@@ -670,29 +681,29 @@ var LDAvis = function(to_select, data_or_file_name) {
 					.style("opacity", 0.3).style('visibility', 'hidden');
 		};
 
-		circleGuide(newSmall, "Small", 650, 660);
-		circleGuide(newMedium, "Medium", 640, 620);
-		circleGuide(newLarge, "Large", 630, 590);
+		circleGuide(newSmall, "Small", 800, 810);
+		circleGuide(newMedium, "Medium", 790, 770);
+		circleGuide(newLarge, "Large", 780, 740);
 
 		var defaultLabelSmall = "2%";
 		var defaultLabelMedium = "5%";
 		var defaultLabelLarge = "10%";
 
 		d3.select("#" + leftPanelID).append("text").attr("x", 10)
-				.attr("y", 570).attr('class', "circleGuideTitle").style(
+				.attr("y", 720).attr('class', "circleGuideTitle").style(
 						"text-anchor", "left").style("fontWeight", "bold")
 				.text("Marginal topic distribution").style('visibility',
 						'hidden');
 		d3.select("#" + leftPanelID).append("text").attr("x", cx2 + 10).attr(
-				"y", 662).attr('class', "circleGuideLabelSmall").style(
+				"y", 812).attr('class', "circleGuideLabelSmall").style(
 				"text-anchor", "start").text(defaultLabelSmall).style(
 				'visibility', 'hidden');
 		d3.select("#" + leftPanelID).append("text").attr("x", cx2 + 10).attr(
-				"y", 625).attr('class', "circleGuideLabelMedium").style(
+				"y", 775).attr('class', "circleGuideLabelMedium").style(
 				"text-anchor", "start").text(defaultLabelMedium).style(
 				'visibility', 'hidden');
 		d3.select("#" + leftPanelID).append("text").attr("x", cx2 + 10).attr(
-				"y", 595).attr('class', "circleGuideLabelLarge").style(
+				"y", 745).attr('class', "circleGuideLabelLarge").style(
 				"text-anchor", "start").text(defaultLabelLarge).style(
 				'visibility', 'hidden');
 
@@ -789,8 +800,8 @@ var LDAvis = function(to_select, data_or_file_name) {
 		// this will be used in various event handlers in the form
 		vis_state.circles = circles;
 
-		svg.append("text").text("Topic log(degree) vs. h-index").attr("x",
-				mdswidth / 2 + margin.left).attr("y", 60).style("font-size",
+		svg.append("text").text("Mass2Motif log(degree) vs. h-index").attr("x",
+				mdswidth / 2 + margin.left).attr("y", 40).style("font-size",
 				"24px").style("text-anchor", "middle");
 
 		// establish layout and vars for bar chart
@@ -822,32 +833,32 @@ var LDAvis = function(to_select, data_or_file_name) {
 			"width" : 100,
 			"height" : 15
 		};
-		d3.select("#" + barFreqsID).append("rect").attr("x", -400).attr("y",
+		d3.select("#" + barFreqsID).append("rect").attr("x", -670).attr("y",
 				mdsheight / 3 + 10).attr("height", barguide.height).attr(
 				"width", barguide.width).style("fill", color1).attr("opacity",
 				0.4);
 		d3.select("#" + barFreqsID).append("text").attr("x",
-				barguide.width + 5 - 400).attr("y",
+				barguide.width + 5 - 670).attr("y",
 				mdsheight / 3 + barguide.height / 2 + 10).style(
-				"dominant-baseline", "middle").text("Overall term freq.");
+				"dominant-baseline", "middle").text("Overall frequencies");
 
-		d3.select("#" + barFreqsID).append("rect").attr("x", -400).attr("y",
+		d3.select("#" + barFreqsID).append("rect").attr("x", -670).attr("y",
 				mdsheight / 3 + 10 + barguide.height + 5).attr("height",
 				barguide.height).attr("width", barguide.width / 2).style(
 				"fill", color2).attr("opacity", 0.8);
 		d3.select("#" + barFreqsID).append("text").attr("x",
-				barguide.width / 2 + 5 - 400).attr("y",
+				barguide.width / 2 + 5 - 670).attr("y",
 				mdsheight / 3 + 10 + (3 / 2) * barguide.height + 5).style(
 				"dominant-baseline", "middle").text(
-				"Estimated term freq. within topic");
+				"Within-motif frequencies");
 
 		// footnotes:
 		d3.select("#" + barFreqsID).append("a").attr("xlink:href",
 				"http://vis.stanford.edu/files/2012-Termite-AVI.pdf").attr(
-				"target", "_blank").append("text").attr("x", -400).attr("y",
+				"target", "_blank").append("text").attr("x", -670).attr("y",
 				mdsheight / 3 + 10 + (6 / 2) * barguide.height + 5).style(
 				"dominant-baseline", "middle").text(
-				"1. saliency(term w) = frequency(w) * [sum_t p(t | w) *");
+				"1. saliency(feature w) = freq(w) * [sum_t p(t | w) * log(p(t | w)/p(t))] for motif t. This measures");
 		d3
 				.select("#" + barFreqsID)
 				.append("a")
@@ -855,21 +866,20 @@ var LDAvis = function(to_select, data_or_file_name) {
 						"http://nlp.stanford.edu/events/illvi2014/papers/sievert-illvi2014.pdf")
 				.attr("target", "_blank")
 				.append("text")
-				.attr("x", -400)
+				.attr("x", -670)
 				.attr("y", mdsheight / 3 + 10 + (8 / 2) * barguide.height + 5)
 				.style("dominant-baseline", "middle")
-				.text(
-						"log(p(t | w)/p(t))] for topics t; see Chuang et. al (2012)");
+				.text("how much information a feature conveys about the motifs. See Chuang et. al (2012) for more info.");
 		d3
 				.select("#" + barFreqsID)
 				.append("a")
 				.attr("xlink:href",
 						"http://nlp.stanford.edu/events/illvi2014/papers/sievert-illvi2014.pdf")
-				.attr("target", "_blank").append("text").attr("x", -400).attr(
+				.attr("target", "_blank").append("text").attr("x", -670).attr(
 						"y",
 						mdsheight / 3 + 10 + (10 / 2) * barguide.height + 5)
 				.style("dominant-baseline", "middle").text(
-						"2. Term w in topic t is ranked based on p(w|t)");
+						"2. Within each motif t, each feature w is ranked based on the conditional probability p(w|t)");
 
 		// ##### corpus-wide frequencies ######		
 		
@@ -984,7 +994,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 			topicLabel.setAttribute("for", topicID);
 			topicLabel.setAttribute("style",
 					"font-family: sans-serif; font-size: 14px");
-			topicLabel.innerHTML = "Type the topic number and press enter: <span id='" + topicID
+			topicLabel.innerHTML = "Type the motif number and press enter: <span id='" + topicID
 					+ "-value'></span>";
 			topicDiv.appendChild(topicLabel);
 
@@ -1010,14 +1020,14 @@ var LDAvis = function(to_select, data_or_file_name) {
 			var previous = document.createElement("button");
 			previous.setAttribute("id", topicDown);
 			previous.setAttribute("style", "margin-left: 5px;");
-			previous.innerHTML = "Previous Topic";
+			previous.innerHTML = "Previous Motif";
 			// previous.title = "Select the previous topic."
 			topicDiv.appendChild(previous);
 
 			var next = document.createElement("button");
 			next.setAttribute("id", topicUp);
 			next.setAttribute("style", "margin-left: 5px;");
-			next.innerHTML = "Next Topic";
+			next.innerHTML = "Next Motif";
 			// next.title = "Select the next topic."
 			topicDiv.appendChild(next);
 
@@ -1236,25 +1246,29 @@ var LDAvis = function(to_select, data_or_file_name) {
 			// append text with info relevant to topic of interest
 			var degree = topic_degree_map[topics];
 			var h_index = topic_h_index_map[topics];
-			var msg = "Topic " + (topics - 1) + ", degree=" + degree
-					+ ", h-index=" + h_index;
-						
+			var motif_annotation = topic_motif_annotation_map[topics];
+			var msg = "Mass2Motif " + (topics - 1) + ", degree=" + degree
+					+ ", h-index=" + h_index
+			var msg2 = motif_annotation
+					
 			d3.select("#" + barFreqsID).append("text")
-					.attr("x", 220).attr("y", -410)
-					.attr("class", "bubble-tool") // set class so we can
-														// remove it when
-														// highlight_off is
-														// called
-			.style("text-anchor", "middle").style("font-size", "16px")
+					.attr("x", 220).attr("y", -430)
+					.attr("class", "bubble-tool") // set class so we can remove it when highlight_off is called
+					.style("text-anchor", "middle").style("font-size", "16px")
 					.text(msg);
+			d3.select("#" + barFreqsID).append("text")
+				.attr("x", 220).attr("y", -410)
+				.attr("class", "bubble-tool3") // set class so we can remove it when highlight_off is called
+				.style("text-anchor", "middle").style("font-size", "14px")
+				.text(msg2);
 			
 			// add header for topic-specific barcharts
 			
-			var msg = "Within-topic counts"
+			var msg = "Mass2Motif Feature Frequencies"
 			d3.select("#" + barFreqsID).append("text")
-				.attr("x", 90).attr("y", 30)
+				.attr("x", 0).attr("y", 30)
 				.attr("class", "bubble-tool2")
-				.style("text-anchor", "middle").style("font-size", "16px")
+				.style("text-anchor", "left").style("font-size", "16px")
 				.text(msg);			
 			
 			// add header for corpus-specific barcharts
@@ -1376,11 +1390,11 @@ var LDAvis = function(to_select, data_or_file_name) {
 			
 			var offset = y.range()[visible_count-1] + 60
 			
-			var msg = "Term Frequencies in Corpus"
+			var msg = "Global Feature Frequencies"
 				d3.select("#" + barFreqsID).append("text")
-					.attr("x", 90).attr("y", offset+10)
+					.attr("x", 0).attr("y", offset+10)
 					.attr("class", "bubble-tool2")
-					.style("text-anchor", "middle").style("font-size", "16px")
+					.style("text-anchor", "left").style("font-size", "16px")
 					.text(msg);			
 			
 			// scale the bars to the top R terms:
@@ -1597,6 +1611,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 			d3.selectAll(to_select + " .bar-totals2").attr("opacity", 0)
 			d3.selectAll(to_select + " .terms2").attr("display", "none")
 			d3.selectAll(to_select + " .bubble-tool2").attr("display", "none")
+			d3.selectAll(to_select + " .bubble-tool3").attr("display", "none")
 			d3.selectAll(to_select + " .xaxis2").remove();
 
 			// ########## other plots ###########			
@@ -1756,75 +1771,6 @@ var LDAvis = function(to_select, data_or_file_name) {
 			d3.select(to_select + " .lineGuideSmall").style('visibility',
 					'hidden');
 		}
-
-		// serialize the visualization state using fragment identifiers --
-		// http://en.wikipedia.org/wiki/Fragment_identifier
-		// location.hash holds the address information
-
-		// var params = location.hash.split("&");
-		// if (params.length > 1) {
-		// vis_state.topic = params[0].split("=")[1];
-		// vis_state.lambda = params[1].split("=")[1];
-		// vis_state.term = params[2].split("=")[1];
-		//
-		// // Idea: write a function to parse the URL string
-		// // only accept values in [0,1] for lambda, {0, 1, ..., K} for topics
-		// (any string is OK for term)
-		// // Allow for subsets of the three to be entered:
-		// // (1) topic only (lambda = 1 term = "")
-		// // (2) lambda only (topic = 0 term = "") visually the same but upon
-		// hovering a topic, the effect of lambda will be seen
-		// // (3) term only (topic = 0 lambda = 1) only fires when the term is
-		// among the R most salient
-		// // (4) topic + lambda (term = "")
-		// // (5) topic + term (lambda = 1)
-		// // (6) lambda + term (topic = 0) visually lambda doesn't make a
-		// difference unless a topic is hovered
-		// // (7) topic + lambda + term
-		//
-		// // Short-term: assume format of "#topic=k&lambda=l&term=s" where k,
-		// l, and s are strings (b/c they're from a URL)
-		//
-		// // Force k (topic identifier) to be an integer between 0 and K:
-		// vis_state.topic = Math.round(Math.min(K, Math.max(0,
-		// vis_state.topic)));
-		//
-		// // Force l (lambda identifier) to be in [0, 1]:
-		// vis_state.lambda = Math.min(1, Math.max(0, vis_state.lambda));
-		//
-		// // impose the value of lambda:
-		// document.getElementById(lambdaID).value = vis_state.lambda;
-		// document.getElementById(lambdaID + "-value").innerHTML =
-		// vis_state.lambda;
-		//
-		// // select the topic and transition the order of the bars (if
-		// approporiate)
-		// if (!isNaN(vis_state.topic)) {
-		// document.getElementById(topicID).value = vis_state.topic;
-		// if (vis_state.topic > 0) {
-		// topic_on(document.getElementById(topicID + vis_state.topic));
-		// }
-		// if (vis_state.lambda < 1 && vis_state.topic > 0) {
-		// reorder_bars(false);
-		// }
-		// }
-		// lambda.current = vis_state.lambda;
-		// var termElem = document.getElementById(termID + vis_state.term);
-		// if (termElem !== undefined) term_on(termElem);
-		// }
-
-		// function state_url() {
-		// return location.origin + location.pathname + "#topic=" +
-		// vis_state.topic +
-		// "&lambda=" + vis_state.lambda + "&term=" + vis_state.term;
-		// }
-		//
-		// function state_save(replace) {
-		// if (replace)
-		// history.replaceState(vis_state, "Query", state_url());
-		// else
-		// history.pushState(vis_state, "Query", state_url());
-		// }
 
 		function state_reset() {
 			if (vis_state.topic > 0) {

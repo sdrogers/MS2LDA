@@ -223,7 +223,7 @@ def _term_topic_freq(topic_term_dists, topic_freq, term_frequency):
 
 def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequency, topic_ranking, topic_coordinates, plot_opts, \
                 lambda_step, lambda_min, lambda_max, th_topic_word, th_doc_topic, topic_wordfreq, topic_ms1_count, \
-                R=30, mds=js_PCoA, n_jobs=-1):
+                topic_annotation, R=30, mds=js_PCoA, n_jobs=-1):
     """Transforms the topic model distributions and related corpus data into
     the data structures needed for the visualization.
 
@@ -312,10 +312,19 @@ def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequenc
     K = topic_term_dists.shape[0]
     client_topic_order = range(K)
     
-    # instead we pass the topic h-indices for displaying on the front-end later
+    # create a list of the annotation for each topic
+    topic_annotation_list = []
+    for topic_id in topic_ranking[:, 0]:
+        annot = None
+        if topic_id in topic_annotation:
+            annot = topic_annotation[topic_id]
+        topic_annotation_list.append(annot)
+    
+    # pass the topic h-indices for displaying on the front-end later
     topic_ranking = pd.DataFrame({'topic_id': topic_ranking[:, 0], 
                                   'rank': topic_ranking[:, 1], 
-                                  'degree': topic_ranking[:, 2]}).sort('rank', ascending=False)
+                                  'degree': topic_ranking[:, 2], 
+                                  'annotation': topic_annotation_list}).sort('rank', ascending=False)
 
     return PreparedData(topic_coordinates, topic_info, token_table, R, lambda_step, lambda_min, lambda_max, plot_opts, \
                         client_topic_order, topic_ranking, th_topic_word, th_doc_topic)
