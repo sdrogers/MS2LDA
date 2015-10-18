@@ -397,7 +397,7 @@ class Ms2Lda_Viz(object):
         
     def plot_cosine_clustering(self, motif_id, ions_of_interest, clustering, peak_names):  
         
-        C, P, G, pos, peak_nodes = self._get_cosine_network_graph(clustering, peak_names)
+        C, P, G, pos, peak_nodes, cluster_interests = self._get_cosine_network_graph(ions_of_interest, clustering, peak_names)
         interest_nodes = [n for i,n in peak_nodes.items() if i in ions_of_interest]      
         
         scaling = 10
@@ -407,13 +407,31 @@ class Ms2Lda_Viz(object):
         nx.draw_networkx_nodes(G, pos, nodelist=C, node_size = 1*scaling, node_color = 'g', linewidths=0.1, ax=ax)
         nx.draw_networkx_nodes(G, pos, nodelist=P, node_size = 0.5*scaling, node_color = 'b', linewidths=0.1, ax=ax)
         nx.draw_networkx_nodes(G, pos, nodelist=interest_nodes, node_size=2*scaling, node_color='r', linewidths=0.1, ax=ax)
+        
+        labels_pos = {}
+        labels = {} 
+        for c in C:
+            cluster = G.node[c]['name']
+            if cluster in cluster_interests:
+                labels_pos[c] = pos[c]
+                labels[c] = cluster
+        nx.draw_networkx_labels(G, labels_pos, labels, font_size=10, font_weight='bold')
 
         title = 'Mass2Motif ' + str(motif_id)
         plt.title(title)
         plt.axis('off')
         plt.show()
         
-    def _get_cosine_network_graph(self, clustering, peak_names):
+        return G, cluster_interests
+        
+    def _get_cosine_network_graph(self, ions_of_interest, clustering, peak_names):
+
+        ions_of_interest_clustering = []
+        for item in ions_of_interest:
+            pos = peak_names.index(item)
+            cl = clustering[pos]
+            ions_of_interest_clustering.append(cl)
+        ions_of_interest_clustering = np.array(ions_of_interest_clustering)
 
         # Create the networkx graph object.
         # Clusters with fewer than min_size_to_plot members are not plotted
@@ -423,21 +441,33 @@ class Ms2Lda_Viz(object):
         uc = np.unique(clustering)
         cluster_nodes = {}
         singleton_clusters = []
+        cluster_interests = {}
         for cluster in uc:
+            # check cluster size
             members = np.where(clustering == cluster)[0]
             if len(members) < min_size_to_plot:
+                # print "Not plotting cluster %d with %d members." % (cluster, len(members))
                 singleton_clusters.append(cluster)
                 continue
+            # append to graph
             cluster_nodes[cluster] = node_no
-            G.add_node(node_no,bipartite=0)
+            G.add_node(node_no, bipartite=0, name=cluster)
             node_no += 1
+            # also print out the ions of interest in this cluster
+            interest_members = np.where(ions_of_interest_clustering == cluster)[0]
+            if len(interest_members) > 0:
+                cluster_interests[cluster] = []
+                for idx in interest_members:
+                    tokens = ions_of_interest[idx].split('_')
+                    pid = int(tokens[2])
+                    cluster_interests[cluster].append(pid)
         
         peak_nodes = {}
         for i,name in enumerate(peak_names):
             this_cluster = clustering[i]
             if this_cluster in cluster_nodes:
                 peak_nodes[name] = node_no
-                G.add_node(node_no,bipartite=1)
+                G.add_node(node_no,bipartite=1, name=name)
                 G.add_edge(node_no,cluster_nodes[clustering[i]])
                 node_no += 1
         
@@ -468,7 +498,7 @@ class Ms2Lda_Viz(object):
                 current_col = 0
                 current_row += 1
                 
-        return C, P, G, pos, peak_nodes
+        return C, P, G, pos, peak_nodes, cluster_interests
         
     def _update_topic_ordering(self, i, parent_ids, parent_topic_fragments, parent_topic_losses, wordfreq, consistency):
 

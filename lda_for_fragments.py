@@ -469,7 +469,7 @@ class Ms2Lda(object):
             plotter.plot_lda_fragments(consistency=consistency, sort_by=sort_by, 
                                        selected_motifs=selected_motifs, interactive=interactive)
 
-    # this should only ever be run once LDA has been run
+    # this should only be run once LDA has been run and the thresholding applied,
     # because docdf wouldn't exist otherwise            
     def run_cosine_clustering(self, method='greedy'):
         
@@ -534,7 +534,8 @@ class Ms2Lda(object):
         ions_of_interest = colnames[pos]
         
         plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdf)
-        plotter.plot_cosine_clustering(motif_id, ions_of_interest, clustering, peak_names)
+        G, cluster_interests = plotter.plot_cosine_clustering(motif_id, ions_of_interest, clustering, peak_names)
+        return G, cluster_interests
 
     def print_topic_words(self, selected_topics=None, with_probabilities=True, compact_output=False):
         
