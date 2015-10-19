@@ -175,10 +175,13 @@ class Ms2Lda(object):
             for fname in obj.input_filenames:
                 print "\t" + fname
             print " - df.shape = " + str(obj.df.shape)
-            print " - K = " + str(obj.model.K)
-            print " - alpha = " + str(obj.model.alpha[0])
-            print " - beta = " + str(obj.model.beta[0])
-            print " - number of samples stored = " + str(len(obj.model.samples))
+            if hasattr(obj, 'model'):
+                print " - K = " + str(obj.model.K)
+                print " - alpha = " + str(obj.model.alpha[0])
+                print " - beta = " + str(obj.model.beta[0])
+                print " - number of samples stored = " + str(len(obj.model.samples))
+            else:
+                print " - No LDA model found"
             print " - last_saved_timestamp = " + str(obj.last_saved_timestamp)  
             if hasattr(obj, 'message'):
                 print " - message = " + str(obj.message)  
