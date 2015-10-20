@@ -474,7 +474,7 @@ class Ms2Lda(object):
 
     # this should only be run once LDA has been run and the thresholding applied,
     # because docdf wouldn't exist otherwise            
-    def run_cosine_clustering(self, method='greedy'):
+    def run_cosine_clustering(self, method='greedy', th_clustering=0.55):
         
         if not hasattr(self, 'topic_word'):
             raise ValueError('Thresholding not done yet.')        
@@ -490,7 +490,7 @@ class Ms2Lda(object):
 
         if method.lower() == 'hierarchical': # scipy hierarchical clustering
         
-            clustering = hierarchy.fclusterdata(norm_data.transpose(), 0.8, criterion = 'distance', 
+            clustering = hierarchy.fclusterdata(norm_data.transpose(), th_clustering, criterion = 'distance', 
                                                 metric='euclidean', method='single')
         
         elif method.lower() == 'greedy': # greedy cosine clustering
@@ -502,7 +502,7 @@ class Ms2Lda(object):
             n_features, n_parents = data_array.shape
             clustering = np.zeros((n_parents,),np.int)
             current_cluster = 1
-            thresh = 0.55
+            thresh = th_clustering
             count = 0
             while not finished:
                 # Find the parent with the max intensity left
