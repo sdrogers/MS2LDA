@@ -437,7 +437,7 @@ class Ms2Lda(object):
         
     def plot_lda_fragments(self, consistency=0.0, sort_by="h_index", 
                            selected_motifs=None, interactive=False, to_highlight=None, 
-                           additional_info=None):
+                           additional_info={}):
 
         if not hasattr(self, 'topic_word'):
             raise ValueError('Thresholding not done yet.')        
