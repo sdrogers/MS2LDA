@@ -87,12 +87,12 @@ class ef_assigner(object):
                 filtered_formulas_out[precursor_mass], passed, failed = gr.filter_list(formulas_out[precursor_mass])
                 formulas_out[precursor_mass] = filtered_formulas_out[precursor_mass]
             
-#             if polarisation == "POS":
-#                 for f in formulas_out[precursor_mass]:
-#                     f['H'] += 1
-#             elif polarisation == "NEG":
-#                 for f in formulas_out[precursor_mass]:
-#                     f['H'] -= 1
+            if polarisation == "POS":
+                for f in formulas_out[precursor_mass]:
+                    f['H'] += 1
+            elif polarisation == "NEG":
+                for f in formulas_out[precursor_mass]:
+                    f['H'] -= 1
 
             # If there is more than one hit return the top hit as a top_hit_string
             if len(formulas_out[precursor_mass]) == 0:
