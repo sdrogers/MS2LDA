@@ -24,13 +24,13 @@ class ef_assigner(object):
 
     def find_formulas(self, mass_list, ppm = 5, polarisation="None", max_mass_to_check=INFINITE):
         
-        precursor_mass_list = []
-        for mass in mass_list:
-            if polarisation == "POS":
-                precursor_mass = float(mass) + PROTON_MASS
-            elif polarisation == "NEG":
-                precursor_mass = float(mass) - PROTON_MASS
-            precursor_mass_list.append(precursor_mass)
+#         precursor_mass_list = []
+#         for mass in mass_list:
+#             if polarisation == "POS":
+#                 precursor_mass = float(mass) + PROTON_MASS
+#             elif polarisation == "NEG":
+#                 precursor_mass = float(mass) - PROTON_MASS
+#             precursor_mass_list.append(precursor_mass)
 
         # used to accumulate values during the recursive calls in _find_all
         # TODO: better if we can get rid of the global keyword
@@ -41,20 +41,22 @@ class ef_assigner(object):
         gr = golden_rules()
         top_hit_string = []
         n = 0
-        total = len(precursor_mass_list)
-        for precursor_mass in precursor_mass_list:
+        total = len(mass_list)
+        precursor_mass_list = []
+        for mass in mass_list:
             
             n += 1
             k = len(self.rr)
             c = [0 for i in range(0, k)]
 
-            print "Searching for %f (%d/%d)" % (precursor_mass, n, total)
             formulas = []
 
             if polarisation == "POS":
-                precursor_mass -= PROTON_MASS
+                precursor_mass = mass - PROTON_MASS
             elif polarisation == "NEG":
-                precursor_mass += PROTON_MASS
+                precursor_mass = mass + PROTON_MASS
+            precursor_mass_list.append(precursor_mass)
+            print "Searching for neutral mass %f (%d/%d)" % (precursor_mass, n, total)
                 
             ppm_error = ppm*precursor_mass/1e6
             lower_bound = precursor_mass - ppm_error
@@ -71,7 +73,7 @@ class ef_assigner(object):
             for int_mass in range(int_lower_bound, int_upper_bound+1):
                 self._find_all(int_mass, k-1, c, ppm, precursor_mass)
 
-            print "- found {}".format(len(formulas)),
+            print "- found {},".format(len(formulas)),
 
             formulas_out[precursor_mass] = []
             for f in formulas:
@@ -85,12 +87,12 @@ class ef_assigner(object):
                 filtered_formulas_out[precursor_mass], passed, failed = gr.filter_list(formulas_out[precursor_mass])
                 formulas_out[precursor_mass] = filtered_formulas_out[precursor_mass]
             
-            if polarisation == "POS":
-                for f in formulas_out[precursor_mass]:
-                    f['H'] += 1
-            elif polarisation == "NEG":
-                for f in formulas_out[precursor_mass]:
-                    f['H'] -= 1
+#             if polarisation == "POS":
+#                 for f in formulas_out[precursor_mass]:
+#                     f['H'] += 1
+#             elif polarisation == "NEG":
+#                 for f in formulas_out[precursor_mass]:
+#                     f['H'] -= 1
 
             # If there is more than one hit return the top hit as a top_hit_string
             if len(formulas_out[precursor_mass]) == 0:

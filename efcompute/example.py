@@ -1,5 +1,5 @@
 from ef_assigner import ef_assigner
-from ef_constants import ATOM_MASSES
+from ef_constants import ATOM_MASSES, PROTON_MASS
 
 def get_formula_mass(atoms,counts):
     
@@ -26,13 +26,20 @@ if __name__=='__main__':
 
     # Make some molecules and and compute their masses
     atoms = ['C','H','N','O','P','S']
-    test_molecules = [[0,2,0,1,0,0],[1,0,0,2,0,0],[0,0,0,2,0,0],[8,10,4,2,0,0],[1,1,1,1,1,1]]
+    test_molecules = [[0,2,0,1,0,0],[1,0,0,2,0,0],[0,0,0,2,0,0],[8,10,4,2,0,0],[1,1,1,1,1,1],[4,7,1,0,0,0]]
     mass_list = []
     for test_molecule in test_molecules:
         mass_list.append(get_formula_mass(atoms,test_molecule))
     
     # Create the ef_assigner object
     ef = ef_assigner(scale_factor=1000)
+
+    polarisation = "POS"    
+    for n in range(len(mass_list)):
+        if polarisation == "POS":
+            mass_list[n] = mass_list[n] + PROTON_MASS
+        elif polarisation == "NEG":
+            mass_list[n] = mass_list[n] + PROTON_MASS
 
     # Find the formulas for the list of masses
     formulas_out, top_hit_string, precursor_mass_list = ef.find_formulas(mass_list, ppm=10, 
@@ -42,7 +49,7 @@ if __name__=='__main__':
     # Print the output
     for precursor_mass, measured_mass in zip(precursor_mass_list, mass_list):
         print "Mass: {}".format(precursor_mass)
-        for f in formulas_out[measured_mass]:
+        for f in formulas_out[precursor_mass]:
             s, m = make_formula_string(f)
             ppm_error = 1e6*(m - float(precursor_mass))/m
             print "\t{} ({}) ({})".format(s, m, ppm_error)

@@ -93,7 +93,7 @@ def annotate_sirius(ms1, ms2, sirius_platform='orbitrap', mode="pos", ppm_max=5,
                     '-o', temp_dir, 
                     temp_filename]                
             if verbose:
-                subprocess.check_call(args, timeout=1)
+                subprocess.check_call(args)
             else:
                 subprocess.check_call(args, stdout=devnull, stderr=devnull)
         
