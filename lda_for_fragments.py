@@ -591,7 +591,7 @@ class Ms2Lda(object):
         self.ms1 = annot_ms1
         self.ms2 = annot_ms2
 
-    def annotate_with_ef_assigner(self, mode="pos", ppm_max=5, scale_factor=1000, max_ms1=700,
+    def annotate_with_ef_assigner(self, mode="pos", ppm_max=5, scale_factor=1000, max_ms1=400, max_ms2=200,
                              verbose=False):
         
         mode = mode.lower()
@@ -601,14 +601,21 @@ class Ms2Lda(object):
             print "Running EF annotation (with 7 golden rules filtering) with parameters:"
             print "- mode = " + mode
             print "- ppm_max = " + str(ppm_max)
+            print "- scale_factor = " + str(scale_factor)
             print "- max_ms1 = " + str(max_ms1)
+            print "- max_ms2 = " + str(max_ms2)
             print        
 
-        # run EF annotation on MS1 dataframe        
+        # run EF annotation on MS1 dataframe     
+        print "***********************************"   
         print "Annotating MS1 dataframe"
+        print "***********************************"   
+        print
+
         mass_list = self.ms1.mz.values.tolist()
         ef = ef_assigner(scale_factor=scale_factor)
         formulas_out, top_hit_string, precursor_mass_list = ef.find_formulas(mass_list, ppm=ppm_max, polarisation=mode.upper(), max_mass_to_check=max_ms1)
+        assert len(mass_list) == len(top_hit_string)
         
         # replace all None with NaN
         for i in range(len(top_hit_string)):
@@ -618,22 +625,38 @@ class Ms2Lda(object):
         # set the results back into the dataframe        
         self.ms1['annotation'] = top_hit_string
         
-        # run EF annotation on MS2 dataframe        
+        # run EF annotation on MS2 dataframe, but using the fragment bins, rather than the actual MS2 peaklist
+        print
+        print "***********************************"   
         print "Annotating MS2 dataframe"
-        mass_list = self.ms2.mz.values.tolist()
-        ef = ef_assigner(scale_factor=scale_factor)
-        formulas_out, top_hit_string, precursor_mass_list = ef.find_formulas(mass_list, ppm=ppm_max, polarisation=mode.upper())
-        
-        # replace all None with NaN
-        for i in range(len(top_hit_string)):
-            if top_hit_string[i] is None:
-                top_hit_string[i] = np.NaN        
+        print "***********************************"   
+        print
+        mass_list = self.ms2.fragment_bin_id.values.tolist()
+        for n in range(len(mass_list)):
+            mass_list[n] = float(mass_list[n])
+        mass_list = sorted(set(mass_list))
 
-        # set the results back into the dataframe        
-        self.ms2['annotation'] = top_hit_string
-
+        # will run for a long time ...                
+        formulas_out, top_hit_string, precursor_mass_list = ef.find_formulas(mass_list, ppm=ppm_max, polarisation=mode.upper(), max_mass_to_check=max_ms2)        
+        assert len(mass_list) == len(top_hit_string)
+        for n in range(len(mass_list)):
         
-    # def annotate_with_name(self, peaklist_file, ppm_max=5):  
+            # get the formula assigned to this fragment bin
+            mass_str = str(mass_list[n])
+            formula = top_hit_string[n]
+            if formula is None:
+                formula = np.NaN
+            
+            # write to the annotation column in the dataframe for all MS2 having this fragment bin
+            members = self.ms2[self.ms2.fragment_bin_id==mass_str]
+            for row_index, row in members.iterrows():
+                self.ms2.loc[row_index, 'annotation'] = formula
+        
+    def remove_all_annotations(self):
+        if 'annotation' in self.ms1.columns:        
+            self.ms1.drop('annotation', inplace=True, axis=1)        
+        if 'annotation' in self.ms2.columns:        
+            self.ms2.drop('annotation', inplace=True, axis=1)        
         
     def plot_log_likelihood(self):
         plt.plot(self.model.loglikelihoods_)        
