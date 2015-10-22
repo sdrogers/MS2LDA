@@ -8,11 +8,12 @@ import random
 import socket
 import sys
 import threading
-from urllib import urlopen
+from urllib import urlopen, pathname2url
 import urlparse
 import webbrowser
 import StringIO
 from . import urls
+import os
 
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from ..networkx import lda_visualisation
@@ -38,14 +39,25 @@ class GlobalVariable(object):
     ms1_idx = 0   
     degree = 0 
 
+# for http://bugs.python.org/issue6193
+def get_url_path(relative_path):
+    abs_path = os.path.abspath(relative_path)
+    url = pathname2url(abs_path)
+    return urlparse.urljoin('file:', url)    
+
 def generate_handler(html, files=None, topic_plotter=None):
     
     if files is None:
         files = {}
     
+    logo_url = get_url_path(urls.DEFAULT_LOGO_LOCAL)
+    show_graph_url = get_url_path(urls.DEFAULT_SHOW_GRAPH_LOCAL)
+    print "logo_url is " + logo_url
+    print "show_graph_url is " + show_graph_url
+    
     # add default images to files
-    logo_content = StringIO.StringIO(urlopen(urls.DEFAULT_LOGO_LOCAL).read()).read()
-    show_graph_content = StringIO.StringIO(urlopen(urls.DEFAULT_SHOW_GRAPH_LOCAL).read()).read()
+    logo_content = StringIO.StringIO(urlopen(logo_url).read()).read()
+    show_graph_content = StringIO.StringIO(urlopen(show_graph_url).read()).read()
     files['/images/default_logo.png'] = ('image/png', logo_content)
     files['/images/graph_example.jpg'] = ('image/jpg', show_graph_content)
 
