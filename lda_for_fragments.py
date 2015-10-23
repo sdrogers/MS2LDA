@@ -592,7 +592,7 @@ class Ms2Lda(object):
         self.ms2 = annot_ms2
 
     def annotate_with_ef_assigner(self, mode="pos", ppm_max=5, scale_factor=1000, max_ms1=400, max_ms2=200,
-                                  do_rule_8=True, verbose=False):
+                                  do_rule_8=True, rule_8_max_occurrences=None, verbose=False):
         
         mode = mode.lower()
         if mode != "pos" and mode != "neg":
@@ -613,7 +613,8 @@ class Ms2Lda(object):
         print
 
         mass_list = self.ms1.mz.values.tolist()
-        ef = ef_assigner(scale_factor=scale_factor, do_7_rules=True, do_rule_8=do_rule_8)
+        ef = ef_assigner(scale_factor=scale_factor, do_7_rules=True, 
+                         do_rule_8=do_rule_8, rule_8_max_occurrences=rule_8_max_occurrences)
         formulas_out, top_hit_string, precursor_mass_list = ef.find_formulas(mass_list, ppm=ppm_max, 
                                                                              polarisation=mode.upper(), 
                                                                              max_mass_to_check=max_ms1)

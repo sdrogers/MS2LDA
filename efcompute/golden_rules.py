@@ -2,9 +2,9 @@ from ef_constants import ATOM_MASSES, ATOM_VALENCES, DEFAULT_RULES_SWITCH
 
 class golden_rules(object):
 
-    def __init__(self, rule_switch=DEFAULT_RULES_SWITCH, rule_8_max_occurences=None):
+    def __init__(self, rule_switch=DEFAULT_RULES_SWITCH, rule_8_max_occurrences=None):
         self.rule_switch = rule_switch
-        self.rule_8_max_occurences = rule_8_max_occurences
+        self.rule_8_max_occurrences = rule_8_max_occurrences
 
     def get_formula_mass(self, formula):
         mass = 0.0
@@ -142,9 +142,11 @@ class golden_rules(object):
         :param formula: a formula
         :return: True if the formula passed this test
         """
-        if self.rule_8_max_occurences is None:
-            max_occurences = (1, 2, 2)
-        if formula['C13'] > max_occurences[0] or formula['F'] > max_occurences[1] or formula['Cl'] > max_occurences[2]:
+        if self.rule_8_max_occurrences is None:
+            max_occurrences = (1, 2, 2)
+        else:
+            max_occurrences = self.rule_8_max_occurrences
+        if formula['C13'] > max_occurrences[0] or formula['F'] > max_occurrences[1] or formula['Cl'] > max_occurrences[2]:
             return False
         else:
             return True

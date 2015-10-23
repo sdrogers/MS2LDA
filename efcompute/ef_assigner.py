@@ -5,7 +5,8 @@ from ef_constants import INFINITE, ATOM_NAME_LIST, ATOM_MASSES, PROTON_MASS, DEF
 
 class ef_assigner(object):
     
-    def __init__(self, scale_factor=1000, enforce_ppm=True, do_7_rules=True, do_rule_8=True):
+    def __init__(self, scale_factor=1000, enforce_ppm=True, do_7_rules=True, 
+                 do_rule_8=True, rule_8_max_occurrences=None):
 
         self.atoms = list(ATOM_NAME_LIST) # copy
         self.atom_masses = dict(ATOM_MASSES)
@@ -24,7 +25,7 @@ class ef_assigner(object):
                 del self.atom_masses['C13']
                 del self.atom_masses['F']
                 del self.atom_masses['Cl']
-            self.gr = golden_rules(rule_switch)
+            self.gr = golden_rules(rule_switch, rule_8_max_occurrences)
         
         self.scale_factor = scale_factor
         self.a = self._get_dictionary()
