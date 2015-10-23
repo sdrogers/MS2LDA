@@ -6,7 +6,7 @@ from ef_constants import INFINITE, ATOM_NAME_LIST, ATOM_MASSES, PROTON_MASS, DEF
 class ef_assigner(object):
     
     def __init__(self, scale_factor=1000, enforce_ppm=True, do_7_rules=True, 
-                 do_rule_8=True, rule_8_max_occurrences=None):
+                 do_rule_8=False, rule_8_max_occurrences=None):
 
         self.atoms = list(ATOM_NAME_LIST) # copy
         self.atom_masses = dict(ATOM_MASSES)

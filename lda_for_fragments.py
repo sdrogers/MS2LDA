@@ -592,7 +592,7 @@ class Ms2Lda(object):
         self.ms2 = annot_ms2
 
     def annotate_with_ef_assigner(self, mode="pos", ppm_max=5, scale_factor=1000, max_ms1=400, max_ms2=200,
-                                  do_rule_8=True, rule_8_max_occurrences=None, verbose=False):
+                                  do_rule_8=False, rule_8_max_occurrences=None, verbose=False):
         
         mode = mode.lower()
         if mode != "pos" and mode != "neg":
