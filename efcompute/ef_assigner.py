@@ -1,28 +1,45 @@
 import fractions
 from math import ceil,floor
 from golden_rules import golden_rules
-from ef_constants import INFINITE, ATOM_MASSES, PROTON_MASS
+from ef_constants import INFINITE, ATOM_NAME_LIST, ATOM_MASSES, PROTON_MASS, DEFAULT_RULES_SWITCH
 
 class ef_assigner(object):
     
-    def __init__(self,atoms = ['C','H','N','O','P','S'], scale_factor=1000, enforce_ppm = True, do_7_rules = True):
+    def __init__(self, scale_factor=1000, enforce_ppm=True, do_7_rules=True, do_rule_8=True):
+
+        self.atoms = list(ATOM_NAME_LIST) # copy
+        self.atom_masses = dict(ATOM_MASSES)
+
+        self.do_7_rules = do_7_rules
+        if self.do_7_rules:
+            rule_switch = list(DEFAULT_RULES_SWITCH)
+            if do_rule_8:
+                rule_switch[7] = True
+            else:
+                rule_switch[7] = False                
+                # remove C13, F and Cl from the list of atoms to be considered
+                self.atoms.remove('C13')
+                self.atoms.remove('F')
+                self.atoms.remove('Cl')
+                del self.atom_masses['C13']
+                del self.atom_masses['F']
+                del self.atom_masses['Cl']
+            self.gr = golden_rules(rule_switch)
         
-        self.atoms = atoms
         self.scale_factor = scale_factor
         self.a = self._get_dictionary()
         self.rr = self._round_robin()
         self.enforce_ppm = enforce_ppm
-        self.do_7_rules = do_7_rules
         
         # Compute correction factor for upper bound
         self.delta = 0
-        for i in atoms:
-            delta_i = (ceil(scale_factor*ATOM_MASSES[i]) - scale_factor*ATOM_MASSES[i])/ATOM_MASSES[i]
+        for i in self.atoms:
+            delta_i = (ceil(scale_factor*self.atom_masses[i]) - scale_factor*self.atom_masses[i])/self.atom_masses[i]
             if delta_i > self.delta:
                 self.delta = delta_i
         # print self.delta
 
-    def find_formulas(self, mass_list, ppm = 5, polarisation="None", max_mass_to_check=INFINITE):
+    def find_formulas(self, mass_list, ppm=5, polarisation="None", max_mass_to_check=INFINITE):
         
 #         precursor_mass_list = []
 #         for mass in mass_list:
@@ -38,7 +55,6 @@ class ef_assigner(object):
         
         print "Finding formulas at {}ppm".format(ppm)
         formulas_out = {}
-        gr = golden_rules()
         top_hit_string = []
         n = 0
         total = len(mass_list)
@@ -84,7 +100,7 @@ class ef_assigner(object):
 
             if self.do_7_rules:
                 filtered_formulas_out = {}
-                filtered_formulas_out[precursor_mass], passed, failed = gr.filter_list(formulas_out[precursor_mass])
+                filtered_formulas_out[precursor_mass], passed, failed = self.gr.filter_list(formulas_out[precursor_mass])
                 formulas_out[precursor_mass] = filtered_formulas_out[precursor_mass]
             
             if polarisation == "POS":
@@ -105,7 +121,7 @@ class ef_assigner(object):
                     mass = 0.0
                     f_string = ""
                     for atom in f:
-                        mass += f[atom]*ATOM_MASSES[atom]
+                        mass += f[atom]*self.atom_masses[atom]
                         if f[atom]>1:
                             f_string += "{}{}".format(atom,f[atom])
                         elif f[atom] == 1:
@@ -132,7 +148,7 @@ class ef_assigner(object):
             if self.enforce_ppm:
                 molecule_mass = 0.0
                 for i,atom in enumerate(self.atoms):
-                    molecule_mass += ATOM_MASSES[atom]*c[i]
+                    molecule_mass += self.atom_masses[atom]*c[i]
                 if abs(molecule_mass - precursor_mass)/precursor_mass <= 1e-6*ppm:
                     formulas.append(list(c))
 
@@ -157,7 +173,7 @@ class ef_assigner(object):
         
         atom_dict = []
         for a in self.atoms:
-            atom_dict.append(int(ceil(ATOM_MASSES[a]*self.scale_factor)))
+            atom_dict.append(int(ceil(self.atom_masses[a]*self.scale_factor)))
         return atom_dict
 
     def _round_robin(self):
