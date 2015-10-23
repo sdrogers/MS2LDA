@@ -1,4 +1,4 @@
-from ef_constants import ATOM_MASSES, ATOM_VALENCES, DEFAULT_RULES_SWITCH
+from ef_constants import ATOM_MASSES, ATOM_VALENCES, DEFAULT_RULES_SWITCH, INFINITE, RULE_8_MAX_OCCURRENCES
 
 class golden_rules(object):
 
@@ -142,15 +142,20 @@ class golden_rules(object):
         :param formula: a formula
         :return: True if the formula passed this test
         """
-        if self.rule_8_max_occurrences is None:
-            max_occurrences = (1, 2, 2)
-        else:
-            max_occurrences = self.rule_8_max_occurrences
-        if formula['C13'] > max_occurrences[0] or formula['F'] > max_occurrences[1] or formula['Cl'] > max_occurrences[2]:
-            return False
-        else:
-            return True
-    
+        max_occurrences = dict(RULE_8_MAX_OCCURRENCES) # use the default values initially
+        if self.rule_8_max_occurrences is not None:
+            max_occurrences.update(self.rule_8_max_occurrences) # and update to the user-defined values
+            
+        valid = True
+        for key in max_occurrences:
+
+            # check if the formula actually exceeds the max occurrences limit
+            if formula[key] > max_occurrences[key]:
+                valid = False
+                break
+
+        return valid
+                
     def make_formula_string(self, formula):
         f_string = ""
         for a in formula:

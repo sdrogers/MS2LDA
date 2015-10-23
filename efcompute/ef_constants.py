@@ -16,5 +16,8 @@ ATOM_MASSES = dict(zip(ATOM_NAME_LIST, ATOM_MASS_LIST))
 ATOM_VALENCES = dict(zip(ATOM_NAME_LIST, ATOM_VALENCE_LIST))
 
 # all the rules are turned on by default
-# DEFAULT_RULES_SWITCH = [True, True, True, True, True, True, True, True]
-DEFAULT_RULES_SWITCH = [False, False, False, False, False, False, False, True]
+DEFAULT_RULES_SWITCH = [True, True, True, True, True, True, True, True]
+
+RULE_8_MAX_OCCURRENCES = {}
+for name in ATOM_NAME_LIST:
+    RULE_8_MAX_OCCURRENCES[name] = INFINITE
