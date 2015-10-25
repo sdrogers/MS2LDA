@@ -55,6 +55,8 @@ class ef_assigner(object):
                 precursor_mass = mass - PROTON_MASS
             elif polarisation == "NEG":
                 precursor_mass = mass + PROTON_MASS
+            else:
+                precursor_mass = mass
             precursor_mass_list.append(precursor_mass)
             print "Searching for neutral mass %f (%d/%d)" % (precursor_mass, n, total)
                 
