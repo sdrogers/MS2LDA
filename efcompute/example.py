@@ -1,5 +1,5 @@
 from ef_assigner import ef_assigner
-from ef_constants import ATOM_MASSES, PROTON_MASS
+from ef_constants import ATOM_MASSES, PROTON_MASS, ATOM_NAME_LIST
 
 def get_formula_mass(atoms,counts):
     
@@ -25,14 +25,24 @@ def make_formula_string(formula):
 if __name__=='__main__':
 
     # Make some molecules and and compute their masses
-    atoms = ['C','H','N','O','P','S']
-    test_molecules = [[0,2,0,1,0,0],[1,0,0,2,0,0],[0,0,0,2,0,0],[8,10,4,2,0,0],[1,1,1,1,1,1],[4,7,1,0,0,0]]
+    atoms = ATOM_NAME_LIST
+    test_molecules = [[0,  2,  0,  1,  0,  0,  0,  0,  0],
+                      [1,  0,  0,  2,  0,  0,  0,  0,  0],
+                      [0,  0,  0,  2,  0,  0,  0,  0,  0],
+                      [8,  10, 4,  2,  0,  0,  0,  0,  0],
+                      [1,  1,  1,  1,  1,  1,  0,  0,  0],
+                      [4,  7,  1,  0,  0,  0,  0,  0,  0], 
+                      [0,  0,  0,  2,  0,  0,  1,  0,  0],
+                      [0,  1,  0,  0,  0,  0,  0,  1,  0],
+                      [0,  1,  0,  0,  0,  0,  0,  0,  1],
+                      ]
     mass_list = []
     for test_molecule in test_molecules:
         mass_list.append(get_formula_mass(atoms,test_molecule))
     
     # Create the ef_assigner object
-    ef = ef_assigner(scale_factor=1000)
+    ef = ef_assigner(scale_factor=100, do_7_rules=True, 
+                     do_rule_8=True, rule_8_max_occurrences={'N':0, 'F':0, 'C':5})
 
     polarisation = "POS"    
     for n in range(len(mass_list)):
@@ -42,9 +52,7 @@ if __name__=='__main__':
             mass_list[n] = mass_list[n] + PROTON_MASS
 
     # Find the formulas for the list of masses
-    formulas_out, top_hit_string, precursor_mass_list = ef.find_formulas(mass_list, ppm=10, 
-                                                                         polarisation="POS", 
-                                                                         max_mass_to_check=100)
+    formulas_out, top_hit_string, precursor_mass_list = ef.find_formulas(mass_list, ppm=10, polarisation="POS")
 
     # Print the output
     for precursor_mass, measured_mass in zip(precursor_mass_list, mass_list):
