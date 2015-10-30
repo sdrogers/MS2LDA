@@ -6,8 +6,10 @@ from ef_constants import INFINITE, ATOM_NAME_LIST, ATOM_MASSES, PROTON_MASS, DEF
 class ef_assigner(object):
     
     def __init__(self, scale_factor=1000, enforce_ppm=True, do_7_rules=True, 
-                 second_stage=False, rule_8_max_occurrences=None):
+                 second_stage=False, rule_8_max_occurrences=None,
+                 verbose = True):
 
+        self.verbose = verbose
         self.atoms = list(ATOM_NAME_LIST) # copy
         self.atom_masses = dict(ATOM_MASSES)
 
@@ -15,7 +17,7 @@ class ef_assigner(object):
         if self.do_7_rules:
             
             # if the limit on max occurrences of atoms is provided, then
-            # turn on rule #8
+            # turn on the filtering on the occurrences (so-called rule #8)
             rule_switch = list(DEFAULT_RULES_SWITCH)
             if rule_8_max_occurrences is None:
                 rule_switch[7] = False
@@ -54,14 +56,16 @@ class ef_assigner(object):
         # used to accumulate values during the recursive calls in _find_all
         # TODO: better if we can get rid of the global keyword
         global formulas
-        
+
         # check for conditional mass tolerance
         if type(ppm) is tuple:
             cond_mass_tol = True
         else:
             cond_mass_tol = False
         
-        print "Finding formulas at {}ppm".format(ppm)
+        if self.verbose:
+            print "Finding formulas at {}ppm".format(ppm)
+
         formulas_out = {}
         top_hit_string = []
         n = 0
@@ -82,7 +86,9 @@ class ef_assigner(object):
             else:
                 precursor_mass = mass
             precursor_mass_list.append(precursor_mass)
-            print "Searching for neutral mass %f (%d/%d)" % (precursor_mass, n, total)
+
+            if self.verbose:
+                print "Searching for neutral mass %f (%d/%d)" % (precursor_mass, n, total)
 
             if cond_mass_tol:
                 conditional_ppm = self._get_conditional_ppm(mass, ppm)
@@ -100,8 +106,8 @@ class ef_assigner(object):
             int_upper_bound = int(floor(upper_bound*self.scale_factor + self.delta*upper_bound))
             for int_mass in range(int_lower_bound, int_upper_bound+1):
                 self._find_all(int_mass, k-1, c, conditional_ppm, precursor_mass)
-
-            print "- found {}".format(len(formulas)),
+            if self.verbose:
+                print "- found {}".format(len(formulas)),
 
             formulas_out[precursor_mass] = []
             for f in formulas:
@@ -126,7 +132,8 @@ class ef_assigner(object):
             # If there is more than one hit return the top hit as a top_hit_string
             if len(formulas_out[precursor_mass]) == 0:
                 top_hit_string.append(None)
-                print ", all candidates filtered out"
+                if self.verbose:
+                    print ", all candidates filtered out"
                 continue
             else:
                 
@@ -155,14 +162,15 @@ class ef_assigner(object):
                     elif best_er > er:
                         best_er = er
                         closest = f_string
-
-                print ", best candidate formula = " + closest
+                
+                if self.verbose:
+                    print ", best candidate formula = " + closest
                 top_hit_string.append(closest)
 
         return formulas_out, top_hit_string, precursor_mass_list
     
     def _get_conditional_ppm(self, mass, ppm_list):
-        ''' Get the conditional ppm for the specified mass '''
+        ''' Get the conditional annotation ppm for the specified mass '''
         
         # each item in ppm_list should be (max_mass, ppm), in ascending order of max_mass
         ppm = None

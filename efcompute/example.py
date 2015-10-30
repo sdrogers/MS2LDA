@@ -42,7 +42,7 @@ if __name__=='__main__':
     
     # Create the ef_assigner object
     ef = ef_assigner(scale_factor=100, do_7_rules=True, 
-                     do_rule_8=True, rule_8_max_occurrences={'N':0, 'F':0, 'C':5})
+                     second_stage=False, rule_8_max_occurrences={'N':0, 'F':0, 'C':5})
 
     polarisation = "POS"    
     for n in range(len(mass_list)):
