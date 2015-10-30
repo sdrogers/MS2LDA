@@ -55,6 +55,12 @@ class ef_assigner(object):
         # TODO: better if we can get rid of the global keyword
         global formulas
         
+        # check for conditional mass tolerance
+        if type(ppm) is tuple:
+            cond_mass_tol = True
+        else:
+            cond_mass_tol = False
+        
         print "Finding formulas at {}ppm".format(ppm)
         formulas_out = {}
         top_hit_string = []
@@ -77,8 +83,13 @@ class ef_assigner(object):
                 precursor_mass = mass
             precursor_mass_list.append(precursor_mass)
             print "Searching for neutral mass %f (%d/%d)" % (precursor_mass, n, total)
+
+            if cond_mass_tol:
+                conditional_ppm = self._get_conditional_ppm(mass, ppm)
+            else:
+                conditional_ppm = ppm # unchanged
                 
-            ppm_error = ppm*precursor_mass/1e6
+            ppm_error = conditional_ppm*precursor_mass/1e6
             lower_bound = precursor_mass - ppm_error
             upper_bound = precursor_mass + ppm_error
 
@@ -88,9 +99,9 @@ class ef_assigner(object):
             int_lower_bound = int(ceil(lower_bound*self.scale_factor))
             int_upper_bound = int(floor(upper_bound*self.scale_factor + self.delta*upper_bound))
             for int_mass in range(int_lower_bound, int_upper_bound+1):
-                self._find_all(int_mass, k-1, c, ppm, precursor_mass)
+                self._find_all(int_mass, k-1, c, conditional_ppm, precursor_mass)
 
-            print "- found {},".format(len(formulas)),
+            print "- found {}".format(len(formulas)),
 
             formulas_out[precursor_mass] = []
             for f in formulas:
@@ -115,7 +126,7 @@ class ef_assigner(object):
             # If there is more than one hit return the top hit as a top_hit_string
             if len(formulas_out[precursor_mass]) == 0:
                 top_hit_string.append(None)
-                print
+                print ", all candidates filtered out"
                 continue
             else:
                 
@@ -145,10 +156,29 @@ class ef_assigner(object):
                         best_er = er
                         closest = f_string
 
-                print "top_hit = " + closest
+                print ", best candidate formula = " + closest
                 top_hit_string.append(closest)
 
         return formulas_out, top_hit_string, precursor_mass_list
+    
+    def _get_conditional_ppm(self, mass, ppm_list):
+        ''' Get the conditional ppm for the specified mass '''
+        
+        # each item in ppm_list should be (max_mass, ppm), in ascending order of max_mass
+        ppm = None
+        for item in ppm_list:
+            max_mass = item[0]
+            if mass > max_mass:
+                break # we can stop searching, use the last ppm value
+            else:
+                ppm = item[1]
+        
+        # or take the first value if nothing found
+        if ppm is None:
+            first_item = ppm_list[0]
+            ppm = first_item[1]
+            
+        return ppm            
     
     def _find_all(self, mass, i, c, ppm, precursor_mass):
 
