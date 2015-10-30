@@ -11,7 +11,6 @@ import pandas as pd
 import pylab as plt
 import yaml
 from scipy.sparse import coo_matrix
-import scipy.spatial.distance as distance
 import scipy.cluster.hierarchy as hierarchy
 
 from lda_cgs import CollapseGibbsLda
@@ -20,6 +19,7 @@ import visualisation.pyLDAvis as pyLDAvis
 import visualisation.sirius.sirius_wrapper as sir
 import lda_utils as utils
 from efcompute.ef_assigner import ef_assigner
+from visualisation.networkx import lda_visualisation
 
 class Ms2Lda(object):
     
@@ -435,9 +435,12 @@ class Ms2Lda(object):
         plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdf)
         return plotter.rank_topics(sort_by=sort_by, selected_topics=selected_topics, top_N=top_N)
         
-    def plot_lda_fragments(self, consistency=0.0, sort_by="h_index", 
-                           selected_motifs=None, interactive=False, to_highlight=None, 
+    def plot_lda_fragments(self, selected_motifs=None, interactive=False, to_highlight=None, 
                            additional_info={}):
+
+        # these used to be user-defined parameters, but now they're fixed
+        consistency=0.0 # TODO: remove this
+        sort_by="h_index"
 
         if not hasattr(self, 'topic_word'):
             raise ValueError('Thresholding not done yet.')        
@@ -471,6 +474,11 @@ class Ms2Lda(object):
         else:
             plotter.plot_lda_fragments(consistency=consistency, sort_by=sort_by, 
                                        selected_motifs=selected_motifs, interactive=interactive)
+            
+    def get_network_graph(self, to_highlight=None, degree_filter=0):
+        plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdf)
+        json_data, G = lda_visualisation.get_json_from_docdf(plotter.docdf.transpose(), to_highlight, degree_filter)
+        return G, json_data
 
     # this should only be run once LDA has been run and the thresholding applied,
     # because docdf wouldn't exist otherwise            

@@ -162,16 +162,17 @@ def get_json_from_docdf(docdf, to_highlight, threshold):
                 node_score = 0
                 node_type = "square"
                 special = False
-                n_pid = 'doc_' + peakid_map[n]
+                pid = peakid_map[n]
+                n_pid = 'doc_' + pid
                 if n_pid in to_highlight_labels:
                     node_size = 30
                     special = True
                     highlight_colour = to_highlight_colours[n_pid]
                     G.add_node(node_id, name=n, group=node_group, in_degree=0, size=node_size, score=node_score, 
-                               type=node_type, special=special, highlight_colour=highlight_colour)
+                               type=node_type, special=special, highlight_colour=highlight_colour, peakid=pid)
                 else:
                     G.add_node(node_id, name=n, group=node_group, in_degree=0, size=node_size, score=node_score, 
-                               type=node_type, special=special)
+                               type=node_type, special=special, peakid=pid)
 
             # for topics, insert only those whose in-degree is above threshold
             elif n.startswith(TOPIC_NAME):
