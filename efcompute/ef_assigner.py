@@ -6,25 +6,32 @@ from ef_constants import INFINITE, ATOM_NAME_LIST, ATOM_MASSES, PROTON_MASS, DEF
 class ef_assigner(object):
     
     def __init__(self, scale_factor=1000, enforce_ppm=True, do_7_rules=True, 
-                 do_rule_8=False, rule_8_max_occurrences=None):
+                 second_stage=False, rule_8_max_occurrences=None):
 
         self.atoms = list(ATOM_NAME_LIST) # copy
         self.atom_masses = dict(ATOM_MASSES)
 
         self.do_7_rules = do_7_rules
         if self.do_7_rules:
+            
+            # if the limit on max occurrences of atoms is provided, then
+            # turn on rule #8
             rule_switch = list(DEFAULT_RULES_SWITCH)
-            if do_rule_8:
-                rule_switch[7] = True
+            if rule_8_max_occurrences is None:
+                rule_switch[7] = False
             else:
-                rule_switch[7] = False                
-                # remove C13, F and Cl from the list of atoms to be considered
+                rule_switch[7] = True                
+
+            # if second stage clustering, then also include C13, F and Cl
+            # otherwise remove them from the list of atoms to be considered
+            if not second_stage:
                 self.atoms.remove('C13')
                 self.atoms.remove('F')
                 self.atoms.remove('Cl')
                 del self.atom_masses['C13']
                 del self.atom_masses['F']
                 del self.atom_masses['Cl']
+
             self.gr = golden_rules(rule_switch, rule_8_max_occurrences)
         
         self.scale_factor = scale_factor
@@ -42,14 +49,8 @@ class ef_assigner(object):
 
     def find_formulas(self, mass_list, ppm=5, polarisation="None", max_mass_to_check=INFINITE):
         
-#         precursor_mass_list = []
-#         for mass in mass_list:
-#             if polarisation == "POS":
-#                 precursor_mass = float(mass) + PROTON_MASS
-#             elif polarisation == "NEG":
-#                 precursor_mass = float(mass) - PROTON_MASS
-#             precursor_mass_list.append(precursor_mass)
-
+        polarisation = polarisation.lower()
+        
         # used to accumulate values during the recursive calls in _find_all
         # TODO: better if we can get rid of the global keyword
         global formulas
@@ -68,9 +69,9 @@ class ef_assigner(object):
 
             formulas = []
 
-            if polarisation == "POS":
+            if polarisation == "pos":
                 precursor_mass = mass - PROTON_MASS
-            elif polarisation == "NEG":
+            elif polarisation == "neg":
                 precursor_mass = mass + PROTON_MASS
             else:
                 precursor_mass = mass
@@ -81,14 +82,11 @@ class ef_assigner(object):
             lower_bound = precursor_mass - ppm_error
             upper_bound = precursor_mass + ppm_error
 
-            # always return None for all precursor masses above max_ms1
-            if precursor_mass > max_mass_to_check:
+            if precursor_mass > max_mass_to_check: # always return None for all precursor masses above max_ms1
                 lower_bound = 0
                 upper_bound = 0
-
             int_lower_bound = int(ceil(lower_bound*self.scale_factor))
             int_upper_bound = int(floor(upper_bound*self.scale_factor + self.delta*upper_bound))
-
             for int_mass in range(int_lower_bound, int_upper_bound+1):
                 self._find_all(int_mass, k-1, c, ppm, precursor_mass)
 
@@ -106,12 +104,13 @@ class ef_assigner(object):
                 filtered_formulas_out[precursor_mass], passed, failed = self.gr.filter_list(formulas_out[precursor_mass])
                 formulas_out[precursor_mass] = filtered_formulas_out[precursor_mass]
             
-            if polarisation == "POS":
+            if polarisation == "pos":
                 for f in formulas_out[precursor_mass]:
                     f['H'] += 1
-            elif polarisation == "NEG":
+            elif polarisation == "neg":
                 for f in formulas_out[precursor_mass]:
-                    f['H'] -= 1
+                    if f['H'] >= 1:
+                        f['H'] -= 1
 
             # If there is more than one hit return the top hit as a top_hit_string
             if len(formulas_out[precursor_mass]) == 0:
@@ -119,16 +118,24 @@ class ef_assigner(object):
                 print
                 continue
             else:
+                
                 closest = None
                 for f in formulas_out[precursor_mass]:
                     mass = 0.0
                     f_string = ""
                     for atom in f:
+                        
                         mass += f[atom]*self.atom_masses[atom]
+
+                        # print C13 as [C13]
+                        atom_str = atom
+                        if atom_str == 'C13':
+                            atom_str = '[C13]'
                         if f[atom]>1:
-                            f_string += "{}{}".format(atom,f[atom])
+                            f_string += "{}{}".format(atom_str, f[atom])
                         elif f[atom] == 1:
-                            f_string += "{}".format(atom)
+                            f_string += "{}".format(atom_str)
+                    
                     er = abs(mass - precursor_mass)
                     # print er, f_string
                     if closest == None:
@@ -137,6 +144,7 @@ class ef_assigner(object):
                     elif best_er > er:
                         best_er = er
                         closest = f_string
+
                 print "top_hit = " + closest
                 top_hit_string.append(closest)
 
