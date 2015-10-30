@@ -6,15 +6,9 @@ Main transformation functions for preparing LDAdata to the visualization's data 
 
 from collections import namedtuple
 import json
-from joblib import Parallel, delayed, cpu_count
 import numpy as np
 import pandas as pd
-import scipy.spatial.distance as dist
-from scipy.stats import entropy
-from skbio._principal_coordinate_analysis import PCoA
-from skbio._base_distance import DistanceMatrix
 from .utils import NumPyEncoder
-
 
 def __num_dist_rows__(array, ndigits=2):
     return int(pd.DataFrame(array).sum(axis=1).map(lambda x: round(x, ndigits)).sum())
@@ -58,29 +52,6 @@ def _input_validate(*args):
     if res:
         raise ValidationError('\n' + '\n'.join([' * ' + s for s in res]))
 
-
-def _jensen_shannon(_P, _Q):
-    _M = 0.5 * (_P + _Q)
-    return 0.5 * (entropy(_P, _M) + entropy(_Q, _M))
-
-
-def js_PCoA(distributions):
-    """Dimension reduction via Jensen-Shannon Divergence & Principal Components
-
-     Parameters
-     ----------
-     distributions : array-like, shape (`n_dists`, `k`)
-          Matrix of distributions probabilities.
-
-     Returns
-     -------
-     pcoa : array, shape (`n_dists`, 2)
-    """
-    dist_matrix = DistanceMatrix(dist.squareform(dist.pdist(distributions.values, _jensen_shannon)))
-    pcoa = PCoA(dist_matrix).scores()
-    return pcoa.site[:,0:2]
-
-
 def _df_with_names(data, index_name, columns_name):
     if type(data) == pd.DataFrame:
         # we want our index to be numbered
@@ -101,14 +72,7 @@ def _series_with_name(data, name):
         return pd.Series(data, name=name)
 
 
-def _topic_coordinates(mds, topic_term_dists, topic_proportion, topic_coords):
-#     K = topic_term_dists.shape[0]
-#     mds_res = mds(topic_term_dists)
-#     assert mds_res.shape == (K, 2)
-#     mds_df = pd.DataFrame({'x': mds_res[:,0], 'y': mds_res[:,1], 'topics': range(1, K + 1), \
-#                                   'cluster': 1, 'Freq': topic_proportion * 100})
-    # note: cluster (should?) be deprecated soon. See: https://github.com/cpsievert/LDAvis/issues/26
-
+def _topic_coordinates(topic_term_dists, topic_proportion, topic_coords):
     K = topic_term_dists.shape[0]
     assert(K==len(topic_coords))
     xs = [coor[0] for coor in topic_coords]
@@ -223,7 +187,7 @@ def _term_topic_freq(topic_term_dists, topic_freq, term_frequency):
 
 def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequency, topic_ranking, topic_coordinates, plot_opts, \
                 lambda_step, lambda_min, lambda_max, th_topic_word, th_doc_topic, topic_wordfreq, topic_ms1_count, \
-                topic_annotation, R=30, mds=js_PCoA, n_jobs=-1):
+                topic_annotation, R=30, n_jobs=-1):
     """Transforms the topic model distributions and related corpus data into
     the data structures needed for the visualization.
 
@@ -249,10 +213,6 @@ def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequenc
           Determines the interstep distance in the grid of lambda values over
           which to iterate when computing relevance.
           Default is 0.01. Recommended to be between 0.01 and 0.1.
-     mds : function
-          A function that takes `topic_term_dists` as an input and outputs a
-          `n_topics` by `2`  distance matrix. The output approximates the distance
-          between topics. See :func:`js_PCoA` for details on the default function.
      n_jobs: int
           The number of cores to be used to do the computations. The regular
           joblib conventions are followed so `-1`, which is the default, will
@@ -305,7 +265,7 @@ def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequenc
                                         topic_wordfreq, topic_ms1_count, 
                                         vocab, lambda_step, R, n_jobs)
     token_table          = _token_table(topic_info, term_topic_freq, vocab, term_frequency)
-    topic_coordinates = _topic_coordinates(mds, topic_term_dists, topic_proportion, topic_coordinates)
+    topic_coordinates = _topic_coordinates(topic_term_dists, topic_proportion, topic_coordinates)
 
     # ignore topic_order completely and leave the ordering of the topics as it is
 #     client_topic_order = [x + 1 for x in topic_order]

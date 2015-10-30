@@ -150,7 +150,7 @@ class golden_rules(object):
         for key in max_occurrences:
 
             # check if the formula actually exceeds the max occurrences limit
-            if formula[key] > max_occurrences[key]:
+            if key in formula and formula[key] > max_occurrences[key]:
                 valid = False
                 break
 

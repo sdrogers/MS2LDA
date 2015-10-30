@@ -11,7 +11,6 @@ import pandas as pd
 import pylab as plt
 import yaml
 from scipy.sparse import coo_matrix
-import scipy.spatial.distance as distance
 import scipy.cluster.hierarchy as hierarchy
 
 from lda_cgs import CollapseGibbsLda
@@ -20,6 +19,7 @@ import visualisation.pyLDAvis as pyLDAvis
 import visualisation.sirius.sirius_wrapper as sir
 import lda_utils as utils
 from efcompute.ef_assigner import ef_assigner
+from visualisation.networkx import lda_visualisation
 
 class Ms2Lda(object):
     
@@ -435,9 +435,12 @@ class Ms2Lda(object):
         plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdf)
         return plotter.rank_topics(sort_by=sort_by, selected_topics=selected_topics, top_N=top_N)
         
-    def plot_lda_fragments(self, consistency=0.0, sort_by="h_index", 
-                           selected_motifs=None, interactive=False, to_highlight=None, 
+    def plot_lda_fragments(self, selected_motifs=None, interactive=False, to_highlight=None, 
                            additional_info={}):
+
+        # these used to be user-defined parameters, but now they're fixed
+        consistency=0.0 # TODO: remove this
+        sort_by="h_index"
 
         if not hasattr(self, 'topic_word'):
             raise ValueError('Thresholding not done yet.')        
@@ -471,6 +474,11 @@ class Ms2Lda(object):
         else:
             plotter.plot_lda_fragments(consistency=consistency, sort_by=sort_by, 
                                        selected_motifs=selected_motifs, interactive=interactive)
+            
+    def get_network_graph(self, to_highlight=None, degree_filter=0):
+        plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdf)
+        json_data, G = lda_visualisation.get_json_from_docdf(plotter.docdf.transpose(), to_highlight, degree_filter)
+        return G, json_data
 
     # this should only be run once LDA has been run and the thresholding applied,
     # because docdf wouldn't exist otherwise            
@@ -591,71 +599,90 @@ class Ms2Lda(object):
         self.ms1 = annot_ms1
         self.ms2 = annot_ms2
 
-    def annotate_with_ef_assigner(self, mode="pos", ppm_max=5, scale_factor=1000, max_ms1=400, max_ms2=200,
-                                  do_rule_8=False, rule_8_max_occurrences=None, verbose=False):
+    def annotate_peaks(self, mode="pos", target="ms2_fragment", ppm_max=5, scale_factor=1000, max_mass=200, 
+                           rule_8_max_occurrences=None, verbose=False):
         
         mode = mode.lower()
-        if mode != "pos" and mode != "neg":
-            raise ValueError("mode is either 'pos' or 'neg'")
-        else:
-            print "Running EF annotation (with 7 golden rules filtering) with parameters:"
-            print "- mode = " + mode
-            print "- ppm_max = " + str(ppm_max)
-            print "- scale_factor = " + str(scale_factor)
-            print "- max_ms1 = " + str(max_ms1)
-            print "- max_ms2 = " + str(max_ms2)
-            print        
+        if mode != "pos" and mode != "neg" and mode != None:
+            raise ValueError("mode is either 'pos', 'neg' or 'none'")        
 
-        # run EF annotation on MS1 dataframe     
-        print "***********************************"   
-        print "Annotating MS1 dataframe"
-        print "***********************************"   
-        print
+        target = target.lower()
+        if target != "ms1" and target != "ms2_fragment" and target != 'ms2_loss':
+            raise ValueError("target is either 'ms1', 'ms2_fragment' or 'ms2_loss'")        
+        
+        self._print_annotate_banner(target, mode, ppm_max, scale_factor, max_mass)
+        if target == 'ms1':
+            # use the masses from the MS1 peaklist
+            mass_list = self.ms1.mz.values.tolist()
+        elif target == 'ms2_fragment':
+            # use the fragment bins, rather than the actual MS2 peaklist
+            mass_list = self.ms2.fragment_bin_id.values.tolist()
+            for n in range(len(mass_list)):
+                mass_list[n] = float(mass_list[n])
+            mass_list = sorted(set(mass_list))
+        elif target == 'ms2_loss':
+            raise ValueError("Unsupported yet..")                    
 
-        mass_list = self.ms1.mz.values.tolist()
+        # run first-stage EF annotation 
         ef = ef_assigner(scale_factor=scale_factor, do_7_rules=True, 
-                         do_rule_8=do_rule_8, rule_8_max_occurrences=rule_8_max_occurrences)
-        formulas_out, top_hit_string, precursor_mass_list = ef.find_formulas(mass_list, ppm=ppm_max, 
-                                                                             polarisation=mode.upper(), 
-                                                                             max_mass_to_check=max_ms1)
+                         second_stage=False, rule_8_max_occurrences=rule_8_max_occurrences)
+        _, top_hit_string, _ = ef.find_formulas(mass_list, ppm=ppm_max, polarisation=mode.upper(), 
+                                                max_mass_to_check=max_mass)
         assert len(mass_list) == len(top_hit_string)
+
+        # anything that's None is to be annotated again for the second stage
+        mass_list_2 = []
+        to_process_idx = []
+        for n in range(len(mass_list)):
+            mass = mass_list[n]
+            tophit = top_hit_string[n]
+            if tophit is None:
+                mass_list_2.append(mass)
+                to_process_idx.append(n)
+        print "Found " + str(len(mass_list_2)) + " masses for second-stage EF annotation"
+
+        # run second-stage EF annotation        
+        ef = ef_assigner(scale_factor=scale_factor, do_7_rules=True, 
+                         second_stage=True, rule_8_max_occurrences=rule_8_max_occurrences)
+        _, top_hit_string_2, _ = ef.find_formulas(mass_list_2, ppm=ppm_max, polarisation=mode.upper(), 
+                                                  max_mass_to_check=max_mass)
+        
+        # copy 2nd stage result back to the 1st stage result
+        for n in range(len(top_hit_string_2)):
+            idx = to_process_idx[n]
+            top_hit_string[idx] = mass_list_2[n]
         
         # replace all None with NaN
         for i in range(len(top_hit_string)):
             if top_hit_string[i] is None:
                 top_hit_string[i] = np.NaN        
 
-        # set the results back into the dataframe        
-        self.ms1['annotation'] = top_hit_string
-        
-        # run EF annotation on MS2 dataframe, but using the fragment bins, rather than the actual MS2 peaklist
-        print
-        print "***********************************"   
-        print "Annotating MS2 dataframe"
-        print "***********************************"   
-        print
-        mass_list = self.ms2.fragment_bin_id.values.tolist()
-        for n in range(len(mass_list)):
-            mass_list[n] = float(mass_list[n])
-        mass_list = sorted(set(mass_list))
+        if target == 'ms1': # set the results back into the MS1 dataframe
+            self.ms1['annotation'] = top_hit_string        
 
-        # will run for a long time ...                
-        formulas_out, top_hit_string, precursor_mass_list = ef.find_formulas(mass_list, ppm=ppm_max, 
-                                                                             polarisation=mode.upper(), 
-                                                                             max_mass_to_check=max_ms2)        
-        assert len(mass_list) == len(top_hit_string)
-        for n in range(len(mass_list)):
-        
+        elif target == 'ms2_fragment':
             # get the formula assigned to this fragment bin
             mass_str = str(mass_list[n])
             formula = top_hit_string[n]
-            if formula is None:
-                formula = np.NaN
             
             # write to the annotation column in the dataframe for all MS2 having this fragment bin
             members = self.ms2[self.ms2.fragment_bin_id==mass_str]
             for row_index, row in members.iterrows():
                 self.ms2.loc[row_index, 'annotation'] = formula
+
+        elif target == 'ms2_loss':
+            raise ValueError("Unsupported yet..")
+        
+    def _print_annotate_banner(self, title, mode, ppm_max, scale_factor, max_mass):
+        print "***********************************"   
+        print "Annotating " + title
+        print "***********************************"   
+        print
+        print "- mode = " + mode
+        print "- ppm_max = " + str(ppm_max)
+        print "- scale_factor = " + str(scale_factor)
+        print "- max_mass = " + str(max_mass)
+        print        
         
     def remove_all_annotations(self):
         if 'annotation' in self.ms1.columns:        
