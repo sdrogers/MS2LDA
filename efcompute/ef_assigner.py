@@ -6,8 +6,10 @@ from ef_constants import INFINITE, ATOM_NAME_LIST, ATOM_MASSES, PROTON_MASS, DEF
 class ef_assigner(object):
     
     def __init__(self, scale_factor=1000, enforce_ppm=True, do_7_rules=True, 
-                 do_rule_8=False, rule_8_max_occurrences=None):
+                 do_rule_8=False, rule_8_max_occurrences=None,
+                 verbose = True):
 
+        self.verbose = verbose
         self.atoms = list(ATOM_NAME_LIST) # copy
         self.atom_masses = dict(ATOM_MASSES)
 
@@ -53,8 +55,8 @@ class ef_assigner(object):
         # used to accumulate values during the recursive calls in _find_all
         # TODO: better if we can get rid of the global keyword
         global formulas
-        
-        print "Finding formulas at {}ppm".format(ppm)
+        if self.verbose:
+            print "Finding formulas at {}ppm".format(ppm)
         formulas_out = {}
         top_hit_string = []
         n = 0
@@ -75,7 +77,8 @@ class ef_assigner(object):
             else:
                 precursor_mass = mass
             precursor_mass_list.append(precursor_mass)
-            print "Searching for neutral mass %f (%d/%d)" % (precursor_mass, n, total)
+            if self.verbose:
+                print "Searching for neutral mass %f (%d/%d)" % (precursor_mass, n, total)
                 
             ppm_error = ppm*precursor_mass/1e6
             lower_bound = precursor_mass - ppm_error
@@ -91,8 +94,8 @@ class ef_assigner(object):
 
             for int_mass in range(int_lower_bound, int_upper_bound+1):
                 self._find_all(int_mass, k-1, c, ppm, precursor_mass)
-
-            print "- found {},".format(len(formulas)),
+            if self.verbose:
+                print "- found {},".format(len(formulas)),
 
             formulas_out[precursor_mass] = []
             for f in formulas:
@@ -116,7 +119,8 @@ class ef_assigner(object):
             # If there is more than one hit return the top hit as a top_hit_string
             if len(formulas_out[precursor_mass]) == 0:
                 top_hit_string.append(None)
-                print
+                if self.verbose:
+                    print
                 continue
             else:
                 closest = None
@@ -137,7 +141,8 @@ class ef_assigner(object):
                     elif best_er > er:
                         best_er = er
                         closest = f_string
-                print "top_hit = " + closest
+                if self.verbose:
+                    print "top_hit = " + closest
                 top_hit_string.append(closest)
 
         return formulas_out, top_hit_string, precursor_mass_list
