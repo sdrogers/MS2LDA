@@ -629,7 +629,12 @@ class Ms2Lda(object):
             if tophit is None:
                 mass_list_2.append(mass)
                 to_process_idx.append(n)
+            
+        print
+        print "=================================================================="
         print "Found " + str(len(mass_list_2)) + " masses for second-stage EF annotation"
+        print "=================================================================="
+        print
 
         # run second-stage EF annotation        
         ef = ef_assigner(scale_factor=scale_factor, do_7_rules=True, 
@@ -638,9 +643,9 @@ class Ms2Lda(object):
                                                   max_mass_to_check=max_mass)
         
         # copy 2nd stage result back to the 1st stage result
-        for n in range(len(top_hit_string_2)):
-            idx = to_process_idx[n]
-            top_hit_string[idx] = mass_list_2[n]
+        for i in range(len(top_hit_string_2)):
+            n = to_process_idx[i]
+            top_hit_string[n] = top_hit_string_2[i]
         
         # set the results back
         self._set_annotation_results(target, mass_list, top_hit_string)        
@@ -659,18 +664,18 @@ class Ms2Lda(object):
             raise ValueError("target is either 'ms1', 'ms2_fragment' or 'ms2_loss'")        
         
         ## Checks if it's a conditional ppm list then it's in a valid format
-        if type(ppm_list) is tuple:                
+        if type(ppm_list) is list:                
 
             # check length
-            if len(ppm_list) < 2:
-                raise ValueError("The list of conditional ppm values is not valid. Valid example: [(80, 5), (sys.maxint, 10)]")
+            if len(ppm_list) != 2:
+                raise ValueError("The list of conditional ppm values is not valid. Valid example: [(80, 5), (200, 10)]")
             
             # check items are in the right order
             prev = 0
             for item in ppm_list:
                 mass = item[0]
                 if mass < prev:
-                    raise ValueError("The list of conditional ppm values is in the right order valid. Valid example: [(80, 5), (sys.maxint, 10)]")
+                    raise ValueError("The list of conditional ppm values is in the right order. Valid example: [(80, 5), (200, 10)]")
                 prev = mass
             
     def _print_annotate_banner(self, title, mode, ppm, scale_factor, max_mass):
