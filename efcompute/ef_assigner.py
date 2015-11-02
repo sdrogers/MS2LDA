@@ -1,5 +1,6 @@
+import sys
 import fractions
-from math import ceil,floor
+from math import ceil, floor
 from golden_rules import golden_rules
 from ef_constants import INFINITE, ATOM_NAME_LIST, ATOM_MASSES, PROTON_MASS, DEFAULT_RULES_SWITCH
 
@@ -95,9 +96,6 @@ class ef_assigner(object):
             if precursor_mass > max_mass_to_check:
                 top_hit_string.append(None)
                 continue
-            elif self.verbose:
-                    print "Searching for neutral mass %f (%d/%d) at tolerance %d ppm" % (precursor_mass, n, total, 
-                                                                                         conditional_ppm)
 
             # find all the candidate formulae                
             ppm_error = conditional_ppm*precursor_mass/1e6
@@ -166,12 +164,13 @@ class ef_assigner(object):
 
                 if self.verbose:
                     if len(formulas) > 0:
+                        print "Searching for neutral mass %f (%d/%d) at tolerance %d ppm" % (precursor_mass, n, total, 
+                                                                                             conditional_ppm)                    
                         if len(formulas_out[precursor_mass]) > 0:
                             print "- found " + str(len(formulas)) + " candidate(s), best formula = " + closest
                         else:
                             print "- found " + str(len(formulas)) + " candidate(s), nothing after filtering"                        
-                    else:
-                        print "- no candidate formula found"
+                        sys.stdout.flush()
 
         return formulas_out, top_hit_string, precursor_mass_list
     

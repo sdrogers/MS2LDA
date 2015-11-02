@@ -599,8 +599,9 @@ class Ms2Lda(object):
         self.ms1 = annot_ms1
         self.ms2 = annot_ms2
 
-    def annotate_peaks(self, mode="pos", target="ms2_fragment", ppm=5, scale_factor=1000, max_mass=200, 
-                           rule_8_max_occurrences=None, verbose=False):
+    def annotate_peaks(self, mode="pos", target="ms2_fragment", ppm=5, 
+                       scale_factor=1000, max_mass=200, n_stages=1,
+                       rule_8_max_occurrences=None, verbose=False):
 
         self._check_valid_input(mode, target, ppm)        
         self._print_annotate_banner(target, mode, ppm, scale_factor, max_mass)
@@ -621,32 +622,34 @@ class Ms2Lda(object):
         assert len(mass_list) == len(top_hit_string)
 
         # anything that's None is to be annotated again for the second stage
-        mass_list_2 = []
-        to_process_idx = []
-        for n in range(len(mass_list)):
-            mass = mass_list[n]
-            tophit = top_hit_string[n]
-            if tophit is None:
-                mass_list_2.append(mass)
-                to_process_idx.append(n)
-            
-        print
-        print "=================================================================="
-        print "Found " + str(len(mass_list_2)) + " masses for second-stage EF annotation"
-        print "=================================================================="
-        print
+        if n_stages == 2:
 
-        # run second-stage EF annotation        
-        ef = ef_assigner(scale_factor=scale_factor, do_7_rules=True, 
-                         second_stage=True, rule_8_max_occurrences=rule_8_max_occurrences)
-        _, top_hit_string_2, _ = ef.find_formulas(mass_list_2, ppm=ppm, polarisation=mode.upper(), 
-                                                  max_mass_to_check=max_mass)
-        
-        # copy 2nd stage result back to the 1st stage result
-        for i in range(len(top_hit_string_2)):
-            n = to_process_idx[i]
-            top_hit_string[n] = top_hit_string_2[i]
-        
+            mass_list_2 = []
+            to_process_idx = []
+            for n in range(len(mass_list)):
+                mass = mass_list[n]
+                tophit = top_hit_string[n]
+                if tophit is None:
+                    mass_list_2.append(mass)
+                    to_process_idx.append(n)
+                
+            print
+            print "=================================================================="
+            print "Found " + str(len(mass_list_2)) + " masses for second-stage EF annotation"
+            print "=================================================================="
+            print
+    
+            # run second-stage EF annotation        
+            ef = ef_assigner(scale_factor=scale_factor, do_7_rules=True, 
+                             second_stage=True, rule_8_max_occurrences=rule_8_max_occurrences)
+            _, top_hit_string_2, _ = ef.find_formulas(mass_list_2, ppm=ppm, polarisation=mode.upper(), 
+                                                      max_mass_to_check=max_mass)
+            
+            # copy 2nd stage result back to the 1st stage result
+            for i in range(len(top_hit_string_2)):
+                n = to_process_idx[i]
+                top_hit_string[n] = top_hit_string_2[i
+                                                 ]        
         # set the results back
         self._set_annotation_results(target, mass_list, top_hit_string)        
 
@@ -655,7 +658,7 @@ class Ms2Lda(object):
 
         ## Checks mode is valid
         mode = mode.lower()
-        if mode != "pos" and mode != "neg" and mode != None:
+        if mode != "pos" and mode != "neg" and mode != 'none':
             raise ValueError("mode is either 'pos', 'neg' or 'none'")        
 
         ## Checks target is valid
@@ -688,6 +691,7 @@ class Ms2Lda(object):
         print "- scale_factor = " + str(scale_factor)
         print "- max_mass = " + str(max_mass)
         print        
+        sys.stdout.flush()
         
     def _get_mass_list(self, target):
         ''' Retrieves a different mass list, depending on the target
@@ -715,11 +719,11 @@ class Ms2Lda(object):
             for n in range(len(mass_list)):
                 p_pid = parent_ids[n]
                 p_row = self.ms1.loc[self.ms1['peakID'] == p_pid]
-                p_mass = p_row['mz']
-                loss = p_mass - float(mass_list[n])
+                p_mass = p_row['mz'].values[0]
+                loss = abs(p_mass - float(mass_list[n]))
                 losses.append(loss)
             mass_list = losses
-            
+
         return mass_list        
 
     def _set_annotation_results(self, target, mass_list, top_hit_string):
@@ -753,11 +757,19 @@ class Ms2Lda(object):
             if 'annotation' in self.ms2.columns:        
                 n = 0
                 for row_index, row in self.ms2.iterrows():
-                    formula = top_hit_string[n]                    
+                    formula = top_hit_string[n]
+                    if type(top_hit_string[n]) is str:
+                        formula = 'loss_' + formula
                     self.ms2.loc[row_index, 'annotation'] += ',' + formula
                     n += 1
             else:
-                self.ms2['annotation'] = top_hit_string        
+                loss_list = []
+                for n in range(len(top_hit_string)):
+                    formula = top_hit_string[n]
+                    if type(top_hit_string[n]) is str:
+                        formula = 'loss_' + formula
+                    loss_list.append(formula)
+                self.ms2['annotation'] = loss_list        
         
     def remove_all_annotations(self):
         ''' Clears all EF annotations from the dataframes '''
