@@ -24,19 +24,25 @@ class ef_assigner(object):
                 rule_switch[7] = False
             else:
                 rule_switch[7] = True                
+                for key in rule_8_max_occurrences:
+                    value = rule_8_max_occurrences[key]
+                    if value == 0 and key in self.atoms:
+                        print key + " removed from the list of atoms to search"
+                        self.atoms.remove(key)
+                        del self.atom_masses[key]                        
 
             # if second stage clustering, then also include C13, F and Cl
             # otherwise remove them from the list of atoms to be considered
             if not second_stage:
-                self.atoms.remove('C13')
-                self.atoms.remove('F')
-                self.atoms.remove('Cl')
-                del self.atom_masses['C13']
-                del self.atom_masses['F']
-                del self.atom_masses['Cl']
+                to_remove = ('C13', 'F', 'Cl')
+                for a_name in to_remove:
+                    if a_name in self.atoms:
+                        self.atoms.remove(a_name)
+                        del self.atom_masses[a_name]
 
             self.gr = golden_rules(rule_switch, rule_8_max_occurrences)
         
+        print "Atoms being considered = " + str(self.atoms)
         self.scale_factor = scale_factor
         self.a = self._get_dictionary()
         self.rr = self._round_robin()
@@ -93,7 +99,7 @@ class ef_assigner(object):
                 conditional_ppm = ppm # unchanged, this should be a float
 
             # always return None for all precursor masses above max_ms1
-            if precursor_mass > max_mass_to_check:
+            if  precursor_mass is None or precursor_mass > max_mass_to_check:
                 top_hit_string.append(None)
                 continue
 

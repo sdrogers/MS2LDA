@@ -5,6 +5,7 @@ import re
 import sys
 import time
 import timeit
+import math
 
 import numpy as np
 import pandas as pd
@@ -712,65 +713,76 @@ class Ms2Lda(object):
         
         elif target == 'ms2_loss':
 
-            # compute the losses
-            mass_list = self.ms2.mz.values.tolist()
-            parent_ids = self.ms2.MSnParentPeakID.values.tolist()
-            losses = []
-            for n in range(len(mass_list)):
-                p_pid = parent_ids[n]
-                p_row = self.ms1.loc[self.ms1['peakID'] == p_pid]
-                p_mass = p_row['mz'].values[0]
-                loss = abs(p_mass - float(mass_list[n]))
-                losses.append(loss)
-            mass_list = losses
+            # use the loss bins, rather than the actual MS2 loss values
+            from_dataframe = self.ms2.loss_bin_id.values.tolist()
+            mass_list = []
+            for mass in from_dataframe:
+                mass = float(mass)
+                if not math.isnan(mass):
+                    mass_list.append(mass)
+            mass_list = sorted(set(mass_list))
 
         return mass_list        
 
     def _set_annotation_results(self, target, mass_list, top_hit_string):
         ''' Writes annotation results back into the right dataframe column '''
 
-        # replace all None with NaN
-        for i in range(len(top_hit_string)):
-            if top_hit_string[i] is None:
-                top_hit_string[i] = np.NaN
-
         if target == 'ms1': # set the results back into the MS1 dataframe
+
+            # replace all formulae from None to NaN
+            for i in range(len(top_hit_string)):
+                if top_hit_string[i] is None:
+                    top_hit_string[i] = np.NaN
 
             self.ms1['annotation'] = top_hit_string        
 
-        elif target == 'ms2_fragment':
+        elif target == 'ms2_fragment' or target == 'ms2_loss':
+
+            # annotation doesn't exist, set new annotation column
+            new_column = False
+            if 'annotation' not in self.ms2.columns:
+                self.ms2['annotation'] = np.NaN
+                new_column = True
             
             for n in range(len(mass_list)):
             
-                # get the formula assigned to this fragment bin
+                # write to the annotation column in the dataframe for all MS2 having this fragment or loss bin
                 mass_str = str(mass_list[n])
-                formula = top_hit_string[n]
-                
-                # write to the annotation column in the dataframe for all MS2 having this fragment bin
-                members = self.ms2[self.ms2.fragment_bin_id==mass_str]
+                if target == 'ms2_fragment':
+                    members = self.ms2[self.ms2.fragment_bin_id==mass_str]
+                elif target == 'ms2_loss':
+                    members = self.ms2[self.ms2.loss_bin_id==mass_str]
+
                 for row_index, row in members.iterrows():
-                    self.ms2.loc[row_index, 'annotation'] = formula
-
-        elif target == 'ms2_loss':
-
-            # append to the existing annotations if exists
-            if 'annotation' in self.ms2.columns:        
-                n = 0
-                for row_index, row in self.ms2.iterrows():
                     formula = top_hit_string[n]
-                    if type(top_hit_string[n]) is str:
-                        formula = 'loss_' + formula
-                    self.ms2.loc[row_index, 'annotation'] += ',' + formula
-                    n += 1
-            else:
-                loss_list = []
-                for n in range(len(top_hit_string)):
-                    formula = top_hit_string[n]
-                    if type(top_hit_string[n]) is str:
-                        formula = 'loss_' + formula
-                    loss_list.append(formula)
-                self.ms2['annotation'] = loss_list        
-        
+                    if new_column:
+                        # annotation column is empty for this row, so overwrite it
+                        if formula is None:
+                            formula = np.NaN
+                        elif target == 'ms2_loss':
+                            formula = "loss_" + formula                                
+                        self.ms2.loc[row_index, 'annotation'] = formula
+                    else:
+                        # annotation column already exists
+                        if formula is not None:
+
+                            if target == 'ms2_loss':
+                                formula = "loss_" + formula
+                            
+                            current_val = self.ms2.loc[row_index, 'annotation']
+                            try: # detect NaN
+                                parsed_val = float(current_val)
+                                if np.isnan(parsed_val):
+                                    append = False # if NaN then overwrite
+                            except ValueError:
+                                parsed_val = current_val 
+                                append = True # otherwise append to the existing annotation value
+                            
+                            if append:
+                                self.ms2.loc[row_index, 'annotation'] += ',' + formula
+                            else:
+                                self.ms2.loc[row_index, 'annotation'] = formula
+
     def remove_all_annotations(self):
         ''' Clears all EF annotations from the dataframes '''
         if 'annotation' in self.ms1.columns:        
