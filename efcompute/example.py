@@ -24,17 +24,19 @@ def make_formula_string(formula):
 
 if __name__=='__main__':
 
+    ATOM_NAME_LIST = ['H', 'C', 'C13', 'N', 'O', 'F', 'P', 'S', 'Cl']
+
     # Make some molecules and and compute their masses
     atoms = ATOM_NAME_LIST
-    test_molecules = [[0,  2,  0,  1,  0,  0,  0,  0,  0],
-                      [1,  0,  0,  2,  0,  0,  0,  0,  0],
-                      [0,  0,  0,  2,  0,  0,  0,  0,  0],
-                      [8,  10, 4,  2,  0,  0,  0,  0,  0],
-                      [1,  1,  1,  1,  1,  1,  0,  0,  0],
-                      [4,  7,  1,  0,  0,  0,  0,  0,  0], 
-                      [0,  0,  0,  2,  0,  0,  1,  0,  0],
-                      [0,  1,  0,  0,  0,  0,  0,  1,  0],
-                      [0,  1,  0,  0,  0,  0,  0,  0,  1],
+    test_molecules = [[2,  0,  0,  0,  1,  0,  0,  0,  0], # H2O
+                      [0,  1,  0,  0,  2,  0,  0,  0,  0], # CO2
+                      [0,  0,  0,  0,  2,  0,  0,  0,  0], # O2
+                      [10, 8,  0,  4,  0,  0,  2,  0,  0], # C8H10N4P2
+                      [1,  1,  0,  1,  1,  0,  1,  0,  0], # CHNOPS
+                      [7,  4,  0,  1,  0,  0,  0,  0,  0], # C4H7N
+                      [0,  0,  1,  0,  2,  0,  0,  0,  0], # [C13]O2
+                      [1,  0,  0,  0,  0,  1,  0,  0,  0], # HF
+                      [1,  0,  0,  0,  0,  0,  0,  0,  1], # HCl
                       ]
     mass_list = []
     for test_molecule in test_molecules:
@@ -42,7 +44,7 @@ if __name__=='__main__':
     
     # Create the ef_assigner object
     ef = ef_assigner(scale_factor=100, do_7_rules=True, 
-                     second_stage=False, rule_8_max_occurrences={'N':0, 'F':0, 'C':5})
+                     second_stage=False)
 
     polarisation = "POS"    
     for n in range(len(mass_list)):
