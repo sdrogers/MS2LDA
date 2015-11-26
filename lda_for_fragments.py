@@ -553,11 +553,12 @@ class Ms2Lda(object):
         
         raise ValueError("print_topic_words is now called print_motif_features")
             
-    def print_motif_features(self, selected_motifs=None, with_probabilities=True, compact_output=False):
+    def print_motif_features(self, selected_motifs=None, with_probabilities=True, quiet=False):
         
         if not hasattr(self, 'topic_word'):
             raise ValueError('Thresholding not done yet.')
         
+        word_map = {}
         for i, topic_dist in enumerate(self.topic_word):    
 
             show_print = False
@@ -571,19 +572,23 @@ class Ms2Lda(object):
                 topic_words = np.array(self.vocab)[ordering][::-1]
                 dist = topic_dist[ordering][::-1]        
                 topic_name = 'Mass2Motif {}:'.format(i)
-                print topic_name,                    
+                output = topic_name                    
                 for j in range(len(topic_words)):
                     if dist[j] > 0:
-                        if with_probabilities:
-                            print '%s (%.3f),' % (topic_words[j], dist[j]),
+                        single_word = topic_words[j]
+                        if single_word in word_map:
+                            word_map[single_word].add(i)
                         else:
-                            print('{},'.format(topic_words[j])),                            
+                            word_map[single_word] = set([i])
+                        if with_probabilities:
+                            output += '%s (%.3f),' % (single_word, dist[j])
+                        else:
+                            output += '%s,' % (single_word)
                     else:
                         break
-                if compact_output:
-                    print
-                else:
-                    print "\n"
+                if not quiet:
+                    print output
+        return word_map
         
     def plot_posterior_alpha(self):
         posterior_alpha = self.model.posterior_alpha

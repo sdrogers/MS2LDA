@@ -191,10 +191,10 @@ def get_json_from_docdf(docdf, to_highlight, threshold):
                     else:
                         G.add_node(node_id, name=n, group=node_group, in_degree=in_degree, size=in_degree*5, score=node_score, 
                                    type=node_type, special=special)
-                    print(str(node_id) + ", " + n + " degree=" + str(in_degree) + " added")        
+#                     print(str(node_id) + ", " + n + " degree=" + str(in_degree) + " added")        
                 else:
                     G.remove_node(node_id)
-                    print(str(node_id) + ", " + n + " degree=" + str(in_degree) + " removed")   
+#                     print(str(node_id) + ", " + n + " degree=" + str(in_degree) + " removed")   
 
     # final cleanup, delete all unconnected documents
     unconnected = []
@@ -206,8 +206,8 @@ def get_json_from_docdf(docdf, to_highlight, threshold):
                 unconnected.append(node_id)
     G.remove_nodes_from(unconnected)    
 
-    print("Total nodes = " + str(G.number_of_nodes()))
-    print("Total edges = " + str(G.number_of_edges()))
+#     print("Total nodes = " + str(G.number_of_nodes()))
+#     print("Total edges = " + str(G.number_of_edges()))
 
     json_out = json_graph.node_link_data(G) # node-link format to serialize
     return json_out, G
