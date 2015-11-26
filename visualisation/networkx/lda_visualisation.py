@@ -253,7 +253,7 @@ def plot_bipartite(G, min_degree, fig_width=10, fig_height=20, spacing_left=1, s
             doc_nodes_to_keep.add(node_id)
             motif_nodes_to_keep.update(neighbours)
     to_keep = doc_nodes_to_keep | motif_nodes_to_keep # set union
-    SG = G.subgraph(to_keep)
+    SG = nx.Graph(G.subgraph(to_keep))
 
     # make bipartite layout, put doc nodes on left, motif nodes on right
     pos = dict()
@@ -324,7 +324,7 @@ def plot_fragmentation_spectrum(df, motif_colour, motif_idx, save_to=None):
     # make sure that the fragment and loss words got plotted first
     df.sort_values(['fragment_motif', 'loss_motif'], ascending=True, inplace=True, na_position='last')
     
-    plt.figure(figsize=(20, 10), dpi=300)
+    plt.figure(figsize=(20, 10), dpi=900)
     ax = plt.subplot(111)
     font_size = 24
     
