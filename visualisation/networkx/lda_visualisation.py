@@ -322,6 +322,7 @@ def get_word_motif(word, doc_motifs, word_map):
 def plot_fragmentation_spectrum(df, motif_colour, motif_idx, title=None, save_to=None, xlim_upper=300):
     
     # make sure that the fragment and loss words got plotted first
+    df = df.fillna(value=np.NaN)
     df.sort_values(['fragment_motif', 'loss_motif'], ascending=True, inplace=True, na_position='last')
     
     plt.figure(figsize=(20, 10), dpi=900)
@@ -329,7 +330,7 @@ def plot_fragmentation_spectrum(df, motif_colour, motif_idx, title=None, save_to
     font_size = 24
     
     for row_index, row in df.iterrows():
-        
+
         mz = row['ms2_mz']
         intensity = row['ms2_intensity']    
         frag_m2m = row['fragment_motif']
