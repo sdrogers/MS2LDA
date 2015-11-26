@@ -476,9 +476,9 @@ class Ms2Lda(object):
             plotter.plot_lda_fragments(consistency=consistency, sort_by=sort_by, 
                                        selected_motifs=selected_motifs, interactive=interactive)
             
-    def get_network_graph(self, to_highlight=None, degree_filter=0):
+    def get_network_graph(self, to_highlight=None, degree_filter=0, selected_motifs=None):
         plotter = Ms2Lda_Viz(self.model, self.ms1, self.ms2, self.docdf, self.topicdf)
-        json_data, G = lda_visualisation.get_json_from_docdf(plotter.docdf.transpose(), to_highlight, degree_filter)
+        json_data, G = lda_visualisation.get_json_from_docdf(plotter.docdf.transpose(), to_highlight, degree_filter, selected_motifs=selected_motifs)
         return G, json_data
 
     # this should only be run once LDA has been run and the thresholding applied,
