@@ -319,7 +319,7 @@ def get_word_motif(word, doc_motifs, word_map):
             word_motif = same_motifs[0]
     return word_motif
     
-def plot_fragmentation_spectrum(df, motif_colour, motif_idx, title=None, save_to=None):
+def plot_fragmentation_spectrum(df, motif_colour, motif_idx, title=None, save_to=None, xlim_upper=300):
     
     # make sure that the fragment and loss words got plotted first
     df.sort_values(['fragment_motif', 'loss_motif'], ascending=True, inplace=True, na_position='last')
@@ -345,6 +345,7 @@ def plot_fragmentation_spectrum(df, motif_colour, motif_idx, title=None, save_to
 
     plt.xlabel('m/z')
     plt.ylabel('Relative Intensity')
+    plt.xlim([0, xlim_upper])    
 
     fragment_m2m = df['fragment_motif'].values
     fragment_m2m = set(fragment_m2m[~np.isnan(fragment_m2m)].tolist())
@@ -371,7 +372,7 @@ def plot_fragmentation_spectrum(df, motif_colour, motif_idx, title=None, save_to
         plt.savefig(save_to, bbox_inches='tight')
     plt.show()        
 
-def print_report(ms2lda, G, peak_id, motif_annotation, motif_colour, motif_idx, word_map, save_to=None):
+def print_report(ms2lda, G, peak_id, motif_annotation, motif_colour, motif_idx, word_map, save_to=None, xlim_upper=300):
                 
     # read the annotation assigned to each Mass2Motif from a CSV file for the report
     motif_annotation = {}
@@ -439,7 +440,7 @@ def print_report(ms2lda, G, peak_id, motif_annotation, motif_colour, motif_idx, 
         document.append(item)
 
     df = pd.DataFrame(document, columns=['ms2_mz', 'ms2_intensity', 'fragment_word', 'fragment_motif', 'loss_word', 'loss_motif', 'ef'])
-    plot_fragmentation_spectrum(df, motif_colour, motif_idx, title=title, save_to=save_to)
+    plot_fragmentation_spectrum(df, motif_colour, motif_idx, title=title, save_to=save_to, xlim_upper=xlim_upper)
     return df
     
 def get_peak_ids_of_m2m(G, m2m):
