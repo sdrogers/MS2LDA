@@ -193,26 +193,20 @@ def get_json_from_docdf(docdf, to_highlight, threshold, selected_motifs=None):
                     else:
                         G.add_node(node_id, name=n, group=node_group, in_degree=in_degree, size=in_degree*5, score=node_score, 
                                    type=node_type, special=special)
-<<<<<<< HEAD
 #                     print(str(node_id) + ", " + n + " degree=" + str(in_degree) + " added")        
                 else:
                     G.remove_node(node_id)
 #                     print(str(node_id) + ", " + n + " degree=" + str(in_degree) + " removed")   
-=======
                     included = True                                   
-                else:
-                    G.remove_node(node_id)
-                    included = False
 
                 if selected_motifs is not None and n not in selected_motifs:
                     G.remove_node(node_id)
                     included = False
 
-                if included:
-                    print(str(node_id) + ", " + n + " degree=" + str(in_degree) + " added")        
-                else:
-                    print(str(node_id) + ", " + n + " degree=" + str(in_degree) + " removed")   
->>>>>>> 69bdf5e3470d96a46ee06d855cb950a7106e0e2b
+#                 if included:
+#                     print(str(node_id) + ", " + n + " degree=" + str(in_degree) + " added")        
+#                 else:
+#                     print(str(node_id) + ", " + n + " degree=" + str(in_degree) + " removed")   
 
 
     # final cleanup, delete all unconnected documents
