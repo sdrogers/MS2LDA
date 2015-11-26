@@ -319,7 +319,7 @@ def get_word_motif(word, doc_motifs, word_map):
             word_motif = same_motifs[0]
     return word_motif
     
-def plot_fragmentation_spectrum(df, motif_colour, motif_idx, save_to=None):
+def plot_fragmentation_spectrum(df, motif_colour, motif_idx, title=None, save_to=None):
     
     # make sure that the fragment and loss words got plotted first
     df.sort_values(['fragment_motif', 'loss_motif'], ascending=True, inplace=True, na_position='last')
@@ -358,13 +358,14 @@ def plot_fragmentation_spectrum(df, motif_colour, motif_idx, save_to=None):
         m2m_colour = motif_colour.to_rgba(motif_idx[m2m])
         m2m_patch = mpatches.Patch(color=m2m_colour, label='M2M_%d' % m2m)
         m2m_patches.append(m2m_patch)
-    ax.legend(handles=m2m_patches, loc='upper center', bbox_to_anchor=(0.5, 1.05),
-              ncol=3, fancybox=True, shadow=True, prop={'size': font_size})        
+    ax.legend(handles=m2m_patches, loc='upper right', bbox_to_anchor=(1.20, 0.50),
+              ncol=1, fancybox=True, shadow=True, prop={'size': font_size})        
 
+    plt.title(title)
     for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
                  ax.get_xticklabels() + ax.get_yticklabels()):
         item.set_fontsize(font_size)    
-    
+
     if save_to is not None:
         print "Figure saved to %s" % save_to
         plt.savefig(save_to, bbox_inches='tight')
@@ -397,8 +398,9 @@ def print_report(ms2lda, G, peak_id, motif_annotation, motif_colour, motif_idx, 
     ms1_rt = first_row['rt'].values[0]
     ms1_intensity = first_row['intensity'].values[0]
     ms1_annotation = first_row['annotation'].values[0]
-    ms1_motifs = doc_motifs[peak_id]
-    print "MS1 peakID %d mz %.4f rt %.2f intensity %.2f (%s)" % (peak_id, ms1_mz, ms1_rt, ms1_intensity, ms1_annotation)
+    ms1_motifs = doc_motifs[peak_id]    
+    title = "MS1 peakID %d mz %.4f rt %.2f intensity %.2f (%s)" % (peak_id, ms1_mz, ms1_rt, ms1_intensity, ms1_annotation)
+
     for m2m in ms1_motifs:
         try:
             m2m_annot = motif_annotation[m2m]
@@ -437,7 +439,7 @@ def print_report(ms2lda, G, peak_id, motif_annotation, motif_colour, motif_idx, 
         document.append(item)
 
     df = pd.DataFrame(document, columns=['ms2_mz', 'ms2_intensity', 'fragment_word', 'fragment_motif', 'loss_word', 'loss_motif', 'ef'])
-    plot_fragmentation_spectrum(df, motif_colour, motif_idx, save_to)
+    plot_fragmentation_spectrum(df, motif_colour, motif_idx, title=title, save_to=save_to)
     return df
     
 def get_peak_ids_of_m2m(G, m2m):
