@@ -16,6 +16,7 @@ import pandas as pd
 import pylab as plt
 import csv
 import matplotlib.patches as mpatches
+from matplotlib.colors import rgb2hex
 
 # this should match the same constant defined in graph.html
 TOPIC_NAME = "motif" 
@@ -318,6 +319,99 @@ def get_word_motif(word, doc_motifs, word_map):
         if len(same_motifs) > 0:
             word_motif = same_motifs[0]
     return word_motif
+
+def plot_subgraph(G, m2m_list, ms1_peakids_to_highlight, motif_idx, colour_map, save_to=None):
+    
+    # parameters for the M2M nodes
+    motif_node_alpha = 0.75
+    motif_node_size = 2000
+    
+    # parameters for the ms1_peakids_to_highlight
+    highlight_node_colour = 'gray'
+    highlight_node_alpha = 0.75
+    highlight_node_size = 600
+    
+    # parameters for other nodes
+    other_nodes_colour = 'lightgray'
+    other_nodes_alpha = 0.20
+    other_nodes_size = 600
+
+    # label parameters
+    label_colour = 'black'
+    label_background_colour = 'gray'
+    label_alpha = 0.50
+    label_fontsize = 16
+    
+    # other parameters
+    fig_width = 15
+    fig_height = 15
+    edge_alpha = 0.25    
+        
+    highlight_docs = set()
+    other_docs = set()
+    motif_nodes = set()    
+    motif_colours = []
+    doc_labels = {}
+    motif_labels = {}
+    for node_id, node_data in G.nodes(data=True):
+        
+        # group == 1 is a doc, 2 is a motif
+        if node_data['group'] == 1 and int(node_data['peakid']) in ms1_peakids_to_highlight:
+            highlight_docs.add(node_id)
+            doc_labels[node_id] = node_data['peakid']
+
+        elif node_data['group'] == 2:
+            motif_name = node_data['name']
+            _, motif_id = motif_name.split('_')
+            motif_id = int(motif_id)
+            if motif_id in m2m_list:
+                motif_nodes.add(node_id)
+                neighbours = G.neighbors(node_id)
+                other_docs.update(neighbours)
+                node_colour = colour_map.to_rgba(motif_idx[motif_id])
+                node_colour = rgb2hex(node_colour)
+                motif_colours.append(node_colour)
+                motif_labels[node_id] = 'M2M_%d' % motif_id
+
+    other_docs = other_docs - highlight_docs
+    to_keep = motif_nodes | highlight_docs | other_docs
+    SG = nx.Graph(G.subgraph(to_keep))
+    for u, v, d in SG.edges(data=True):
+        d['weight'] *= 100
+
+    plt.figure(figsize=(fig_width, fig_height), dpi=900)
+    plt.axis('off')
+    fig = plt.figure(1)
+    
+    pos = nx.spring_layout(SG, k=0.25, iterations=50)
+    nx.draw_networkx_nodes(SG, pos, nodelist=other_docs, 
+                           alpha=other_nodes_alpha, node_color=other_nodes_colour, 
+                           node_size=other_nodes_size)
+    nx.draw_networkx_nodes(SG, pos, nodelist=highlight_docs, 
+                           alpha=highlight_node_alpha, node_color=highlight_node_colour, 
+                           node_size=highlight_node_size)
+    nx.draw_networkx_nodes(SG, pos, nodelist=motif_nodes, 
+                           alpha=motif_node_alpha, node_color=motif_colours,
+                           node_size=motif_node_size)
+    nx.draw_networkx_edges(SG, pos, alpha=edge_alpha)    
+    nx.draw_networkx_labels(SG, pos, doc_labels, font_size=10)
+    nx.draw_networkx_labels(SG, pos, motif_labels, font_size=16)    
+    
+#     for node_id in node_labels:
+#         x, y = pos[node_id]
+#         label = node_labels[node_id]
+#         y_offset = -0.3
+#         if node_id in motif_nodes:
+#             y_offset += -0.5
+#         plt.text(x,y+y_offset, s=node_labels[node_id], 
+#                  color=label_colour, fontsize=label_fontsize,
+#                  bbox=dict(facecolor=label_background_colour, alpha=label_alpha), 
+#                  horizontalalignment='center') 
+        
+    if save_to is not None:
+        print "Figure saved to %s" % save_to
+        plt.savefig(save_to, bbox_inches='tight')
+    plt.show()        
     
 def plot_fragmentation_spectrum(df, motif_colour, motif_idx, title=None, save_to=None, xlim_upper=300):
     
@@ -373,14 +467,8 @@ def plot_fragmentation_spectrum(df, motif_colour, motif_idx, title=None, save_to
         plt.savefig(save_to, bbox_inches='tight')
     plt.show()        
 
-def print_report(ms2lda, G, peak_id, motif_annotation, motif_colour, motif_idx, word_map, save_to=None, xlim_upper=300):
-                
-    # read the annotation assigned to each Mass2Motif from a CSV file for the report
-    motif_annotation = {}
-    for item in csv.reader(open("results/beer3pos_annotation.csv"), skipinitialspace=True):
-        key = int(item[0])
-        val = item[1]
-        motif_annotation[key] = val
+def print_report(ms2lda, G, peak_id, motif_annotation, motif_colour, motif_idx, word_map, 
+                 ms1_label=None, save_to=None, xlim_upper=300):
     
     doc_motifs = {}
     for node_id, node_data in G.nodes(data=True):
@@ -392,7 +480,7 @@ def print_report(ms2lda, G, peak_id, motif_annotation, motif_colour, motif_idx, 
                 _, motif_id = motif_name.split('_')
                 parent_motifs.add(int(motif_id))
             doc_motifs[pid] = parent_motifs    
-    
+            
     # get the ms1 info
     ms1_rows = ms2lda.ms1.loc[ms2lda.ms1['peakID'] == peak_id]
     first_row = ms1_rows.head(1)
@@ -400,9 +488,19 @@ def print_report(ms2lda, G, peak_id, motif_annotation, motif_colour, motif_idx, 
     ms1_rt = first_row['rt'].values[0]
     ms1_intensity = first_row['intensity'].values[0]
     ms1_annotation = first_row['annotation'].values[0]
-    ms1_motifs = doc_motifs[peak_id]    
-    title = "MS1 peakID %d mz %.4f rt %.2f intensity %.2f (%s)" % (peak_id, ms1_mz, ms1_rt, ms1_intensity, ms1_annotation)
 
+    if ms1_label is not None:
+        ms1_annotation += "; " + ms1_label[peak_id]
+    title = "MS1 peakID %d mz %.4f rt %.2f intensity %.2f (%s)" % (peak_id, ms1_mz, ms1_rt, ms1_intensity, ms1_annotation)
+    print title
+
+    try:
+        ms1_motifs = doc_motifs[peak_id]    
+    except KeyError:
+        print " - No M2M for this MS1 peak at the specified thresholding levels"
+        print
+        return None
+    
     for m2m in ms1_motifs:
         try:
             m2m_annot = motif_annotation[m2m]
