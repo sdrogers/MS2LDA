@@ -559,6 +559,7 @@ class Ms2Lda(object):
             raise ValueError('Thresholding not done yet.')
         
         word_map = {}
+        topic_map = {}
         for i, topic_dist in enumerate(self.topic_word):    
 
             show_print = False
@@ -572,7 +573,8 @@ class Ms2Lda(object):
                 topic_words = np.array(self.vocab)[ordering][::-1]
                 dist = topic_dist[ordering][::-1]        
                 topic_name = 'Mass2Motif {}:'.format(i)
-                output = topic_name                    
+                front = topic_name
+                back = ""                    
                 for j in range(len(topic_words)):
                     if dist[j] > 0:
                         single_word = topic_words[j]
@@ -581,14 +583,16 @@ class Ms2Lda(object):
                         else:
                             word_map[single_word] = set([i])
                         if with_probabilities:
-                            output += '%s (%.3f),' % (single_word, dist[j])
+                            back += '%s (%.3f),' % (single_word, dist[j])
                         else:
-                            output += '%s,' % (single_word)
+                            back += '%s,' % (single_word)
                     else:
                         break
+                topic_map[i] = back
                 if not quiet:
+                    output = front + back
                     print output
-        return word_map
+        return word_map, topic_map
         
     def plot_posterior_alpha(self):
         posterior_alpha = self.model.posterior_alpha

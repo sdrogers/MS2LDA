@@ -413,7 +413,7 @@ def plot_subgraph(G, m2m_list, ms1_peakids_to_highlight, motif_idx, colour_map, 
         plt.savefig(save_to, bbox_inches='tight')
     plt.show()        
     
-def plot_fragmentation_spectrum(df, motif_colour, motif_idx, title=None, save_to=None, xlim_upper=300):
+def plot_fragmentation_spectrum(df, ms1_mz, motif_colour, motif_idx, title=None, save_to=None, xlim_upper=300):
     
     # make sure that the fragment and loss words got plotted first
     df = df.fillna(value=np.NaN)
@@ -422,6 +422,7 @@ def plot_fragmentation_spectrum(df, motif_colour, motif_idx, title=None, save_to
     plt.figure(figsize=(20, 10), dpi=900)
     ax = plt.subplot(111)
     font_size = 24
+    linewidth = 2.5
     
     for row_index, row in df.iterrows():
 
@@ -429,14 +430,30 @@ def plot_fragmentation_spectrum(df, motif_colour, motif_idx, title=None, save_to
         intensity = row['ms2_intensity']    
         frag_m2m = row['fragment_motif']
         loss_m2m = row['loss_motif']
+        frag_word = row['fragment_word']
+        loss_word = row['loss_word']
         
-        word_colour = 'lightgray'
         if not np.isnan(loss_m2m):
             word_colour = motif_colour.to_rgba(motif_idx[loss_m2m])            
+            plot_intensity = intensity if intensity < 1 else 0.5
+            arrow_x2 = (mz-ms1_mz)+5
+            plt.arrow(ms1_mz, plot_intensity, arrow_x2, 0, head_width=0.05, head_length=4.0, width=0.005, fc=word_colour, ec=word_colour)
+            bbox_props = dict(boxstyle="round", fc="white", ec=word_colour, lw=linewidth)
+            text_x = mz+(ms1_mz-mz)/2
+            text_y = plot_intensity
+            if abs(ms1_mz-mz) < 20:
+                text_x += 28
+            t = ax.text(text_x, text_y, loss_word, ha="center", va="center", rotation=0,
+                        size=15, bbox=bbox_props)
+
         if not np.isnan(frag_m2m):
             word_colour = motif_colour.to_rgba(motif_idx[frag_m2m])
+        else:
+            word_colour = 'lightgray'
+        plt.plot((mz, mz), (0, intensity), linewidth=linewidth, color=word_colour)
 
-        plt.plot((mz, mz), (0, intensity), linewidth=5.0, color=word_colour)
+    # plot the ms1 peak too
+    plt.plot((ms1_mz, ms1_mz), (0, 1), linewidth=linewidth, color='k')
 
     plt.xlabel('m/z')
     plt.ylabel('Relative Intensity')
@@ -454,6 +471,8 @@ def plot_fragmentation_spectrum(df, motif_colour, motif_idx, title=None, save_to
         m2m_colour = motif_colour.to_rgba(motif_idx[m2m])
         m2m_patch = mpatches.Patch(color=m2m_colour, label='M2M_%d' % m2m)
         m2m_patches.append(m2m_patch)
+    ms1_patch = mpatches.Patch(color='k', label='MS1 peak')
+    m2m_patches.append(ms1_patch)
     ax.legend(handles=m2m_patches, loc='upper right', bbox_to_anchor=(1.20, 0.50),
               ncol=1, fancybox=True, shadow=True, prop={'size': font_size})        
 
@@ -467,7 +486,7 @@ def plot_fragmentation_spectrum(df, motif_colour, motif_idx, title=None, save_to
         plt.savefig(save_to, bbox_inches='tight')
     plt.show()        
 
-def print_report(ms2lda, G, peak_id, motif_annotation, motif_colour, motif_idx, word_map, 
+def print_report(ms2lda, G, peak_id, motif_annotation, motif_words, motif_colour, motif_idx, word_map, 
                  ms1_label=None, save_to=None, xlim_upper=300):
     
     doc_motifs = {}
@@ -507,6 +526,7 @@ def print_report(ms2lda, G, peak_id, motif_annotation, motif_colour, motif_idx, 
         except KeyError:
             m2m_annot = '?'
         print " - M2M_%s\t: %s" % (m2m, m2m_annot)
+        print "\t\t  %s" % (motif_words[m2m])
     print
 
     # get the ms2 info
@@ -539,7 +559,7 @@ def print_report(ms2lda, G, peak_id, motif_annotation, motif_colour, motif_idx, 
         document.append(item)
 
     df = pd.DataFrame(document, columns=['ms2_mz', 'ms2_intensity', 'fragment_word', 'fragment_motif', 'loss_word', 'loss_motif', 'ef'])
-    plot_fragmentation_spectrum(df, motif_colour, motif_idx, title=title, save_to=save_to, xlim_upper=xlim_upper)
+    plot_fragmentation_spectrum(df, ms1_mz, motif_colour, motif_idx, title=title, save_to=save_to, xlim_upper=xlim_upper)
     return df
     
 def get_peak_ids_of_m2m(G, m2m):
