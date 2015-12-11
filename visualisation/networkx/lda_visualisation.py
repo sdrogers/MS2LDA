@@ -17,6 +17,7 @@ import pylab as plt
 import csv
 import matplotlib.patches as mpatches
 from matplotlib.colors import rgb2hex
+import math
 
 # this should match the same constant defined in graph.html
 TOPIC_NAME = "motif" 
@@ -197,7 +198,7 @@ def export_docdf_to_networkx(infile):
     print("serving at port " + str(PORT))
     httpd.serve_forever()        
 
-def get_network_graph(ms2lda, motifs_of_interest):
+def get_network_graph(ms2lda, motifs_of_interest, verbose=True):
 
     G, json_data = ms2lda.get_network_graph(to_highlight=None, degree_filter=0)
     motifs_of_interest = ['motif_' + str(id) for id in motifs_of_interest]
@@ -210,7 +211,8 @@ def get_network_graph(ms2lda, motifs_of_interest):
         if node_data['group'] == 2 and node_data['name'] not in motifs_of_interest: 
             remove_count += 1
             G.remove_node(node_id)
-    print "Removed %d motifs from the graph because they're not in the list" % remove_count
+    if verbose:
+        print "Removed %d motifs from the graph because they're not in the list" % remove_count
 
     # 2. keep only motifs having shared nodes with other motifs
     removed_motifs = []
@@ -228,7 +230,8 @@ def get_network_graph(ms2lda, motifs_of_interest):
             if not share:
                 removed_motifs.append(node_data['name'])
                 G.remove_node(node_id)
-    print "Removed %s from the graph because they don't share documents with other motifs in the list" % removed_motifs
+    if verbose:
+        print "Removed %s from the graph because they don't share documents with other motifs in the list" % removed_motifs
     
     # 3. delete all unconnected nodes from the graph
     unconnected = []
@@ -237,7 +240,8 @@ def get_network_graph(ms2lda, motifs_of_interest):
         if G.degree(node_id) == 0:
             unconnected.append(node_id)
     G.remove_nodes_from(unconnected)   
-    print "Removed %d unconnected documents from the graph" % len(unconnected)
+    if verbose:
+        print "Removed %d unconnected documents from the graph" % len(unconnected)
                     
     return G
     
@@ -312,7 +316,7 @@ def plot_bipartite(G, min_degree, fig_width=10, fig_height=20, spacing_left=1, s
     return doc_nodes_to_keep, doc_motifs, motif_idx    
     
 def get_word_motif(word, doc_motifs, word_map):
-    word_motif = None
+    word_motif = np.NaN
     if word in word_map:
         to_check = word_map[word]
         same_motifs = list(to_check.intersection(doc_motifs))
@@ -413,18 +417,27 @@ def plot_subgraph(G, m2m_list, ms1_peakids_to_highlight, motif_idx, colour_map, 
         plt.savefig(save_to, bbox_inches='tight')
     plt.show()        
     
-def plot_fragmentation_spectrum(df, ms1_mz, motif_colour, motif_idx, title=None, save_to=None, xlim_upper=300):
+def plot_fragmentation_spectrum(ms2_df, ms1_row, motif_colour, motif_idx, ms1_label=None, save_to=None, xlim_upper=300):
     
-    # make sure that the fragment and loss words got plotted first
-    df = df.fillna(value=np.NaN)
-    df.sort_values(['fragment_motif', 'loss_motif'], ascending=True, inplace=True, na_position='last')
+    # make sure that the fragment and loss words got plotted first in the loop below
+    ms2_df = ms2_df.fillna(value=np.NaN)
+    ms2_df.sort_values(['fragment_motif', 'loss_motif'], ascending=True, inplace=True, na_position='last')
     
+    # set figure and font sizes
     plt.figure(figsize=(20, 10), dpi=900)
     ax = plt.subplot(111)
-    font_size = 24
-    linewidth = 2.5
-    
-    for row_index, row in df.iterrows():
+    font_size = 30
+    linewidth = 5
+
+    # the ms1 info
+    ms1_peakid = ms1_row['peakID'].values[0]
+    ms1_mz = ms1_row['mz'].values[0]    
+    ms1_rt = ms1_row['rt'].values[0]
+    ms1_intensity = ms1_row['intensity'].values[0]
+    ms1_annotation = ms1_row['annotation'].values[0]    
+
+    # plot each MS2 peak    
+    for row_index, row in ms2_df.iterrows():
 
         mz = row['ms2_mz']
         intensity = row['ms2_intensity']    
@@ -433,19 +446,23 @@ def plot_fragmentation_spectrum(df, ms1_mz, motif_colour, motif_idx, title=None,
         frag_word = row['fragment_word']
         loss_word = row['loss_word']
         
+        # draw loss arrow
         if not np.isnan(loss_m2m):
             word_colour = motif_colour.to_rgba(motif_idx[loss_m2m])            
-            plot_intensity = intensity if intensity < 1 else 0.5
+            arrow_x1 = ms1_mz
+            arrow_y1 = intensity if intensity < 1 else 0.5
             arrow_x2 = (mz-ms1_mz)+5
-            plt.arrow(ms1_mz, plot_intensity, arrow_x2, 0, head_width=0.05, head_length=4.0, width=0.005, fc=word_colour, ec=word_colour)
+            arrow_y2 = 0
+            plt.arrow(arrow_x1, arrow_y1, arrow_x2, arrow_y2, head_width=0.05, head_length=4.0, width=0.005, fc=word_colour, ec=word_colour)
             bbox_props = dict(boxstyle="round", fc="white", ec=word_colour, lw=linewidth)
             text_x = mz+(ms1_mz-mz)/2
-            text_y = plot_intensity
+            text_y = arrow_y1
             if abs(ms1_mz-mz) < 20:
                 text_x += 28
             t = ax.text(text_x, text_y, loss_word, ha="center", va="center", rotation=0,
                         size=15, bbox=bbox_props)
 
+        # draw the fragment
         if not np.isnan(frag_m2m):
             word_colour = motif_colour.to_rgba(motif_idx[frag_m2m])
         else:
@@ -453,41 +470,45 @@ def plot_fragmentation_spectrum(df, ms1_mz, motif_colour, motif_idx, title=None,
         plt.plot((mz, mz), (0, intensity), linewidth=linewidth, color=word_colour)
 
     # plot the ms1 peak too
-    plt.plot((ms1_mz, ms1_mz), (0, 1), linewidth=linewidth, color='k')
+    plt.plot((ms1_mz, ms1_mz), (0, 0.25), linewidth=linewidth, color='k')
 
+    # set title, axes labels and ranges
+    if ms1_label is not None and ms1_peakid in ms1_label:
+        ms1_annotation += "; " + ms1_label[ms1_peakid]
+    title = "MS1 peakID %d mz %.4f rt %.2f intensity %.2f (%s)" % (ms1_peakid, ms1_mz, ms1_rt, ms1_intensity, ms1_annotation)    
+    plt.title(title)
     plt.xlabel('m/z')
     plt.ylabel('Relative Intensity')
     plt.xlim([0, xlim_upper])    
+    plt.ylim([0, 1.1])
 
-    fragment_m2m = df['fragment_motif'].values
+    # plot legend
+    fragment_m2m = ms2_df['fragment_motif'].values
     fragment_m2m = set(fragment_m2m[~np.isnan(fragment_m2m)].tolist())
-
-    loss_m2m = df['loss_motif'].values
+    loss_m2m = ms2_df['loss_motif'].values
     loss_m2m = set(loss_m2m[~np.isnan(loss_m2m)].tolist())
-    
     m2m_used = fragment_m2m | loss_m2m
     m2m_patches = []
     for m2m in m2m_used:
         m2m_colour = motif_colour.to_rgba(motif_idx[m2m])
         m2m_patch = mpatches.Patch(color=m2m_colour, label='M2M_%d' % m2m)
         m2m_patches.append(m2m_patch)
-    ms1_patch = mpatches.Patch(color='k', label='MS1 peak')
-    m2m_patches.append(ms1_patch)
     ax.legend(handles=m2m_patches, loc='upper right', bbox_to_anchor=(1.20, 0.50),
               ncol=1, fancybox=True, shadow=True, prop={'size': font_size})        
 
-    plt.title(title)
+    # increase fontsize
     for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
                  ax.get_xticklabels() + ax.get_yticklabels()):
         item.set_fontsize(font_size)    
 
+    # save figure
     if save_to is not None:
         print "Figure saved to %s" % save_to
         plt.savefig(save_to, bbox_inches='tight')
-    plt.show()        
-
+    plt.show()
+    
 def print_report(ms2lda, G, peak_id, motif_annotation, motif_words, motif_colour, motif_idx, word_map, 
-                 ms1_label=None, save_to=None, xlim_upper=300):
+                 ms1_label=None, save_to=None, xlim_upper=300, plotting_func=None):
     
     doc_motifs = {}
     for node_id, node_data in G.nodes(data=True):
@@ -503,16 +524,7 @@ def print_report(ms2lda, G, peak_id, motif_annotation, motif_words, motif_colour
     # get the ms1 info
     ms1_rows = ms2lda.ms1.loc[ms2lda.ms1['peakID'] == peak_id]
     first_row = ms1_rows.head(1)
-    ms1_mz = first_row['mz'].values[0]
-    ms1_rt = first_row['rt'].values[0]
-    ms1_intensity = first_row['intensity'].values[0]
-    ms1_annotation = first_row['annotation'].values[0]
-
-    if ms1_label is not None:
-        ms1_annotation += "; " + ms1_label[peak_id]
-    title = "MS1 peakID %d mz %.4f rt %.2f intensity %.2f (%s)" % (peak_id, ms1_mz, ms1_rt, ms1_intensity, ms1_annotation)
-    print title
-
+    
     try:
         ms1_motifs = doc_motifs[peak_id]    
     except KeyError:
@@ -559,7 +571,12 @@ def print_report(ms2lda, G, peak_id, motif_annotation, motif_words, motif_colour
         document.append(item)
 
     df = pd.DataFrame(document, columns=['ms2_mz', 'ms2_intensity', 'fragment_word', 'fragment_motif', 'loss_word', 'loss_motif', 'ef'])
-    plot_fragmentation_spectrum(df, ms1_mz, motif_colour, motif_idx, title=title, save_to=save_to, xlim_upper=xlim_upper)
+
+    if plotting_func is None:
+        plot_fragmentation_spectrum(df, first_row, motif_colour, motif_idx, ms1_label, save_to=save_to, xlim_upper=xlim_upper)
+    else:
+        plotting_func(df, first_row, motif_colour, motif_idx, ms1_label, save_to=save_to, xlim_upper=xlim_upper)
+        
     return df
     
 def get_peak_ids_of_m2m(G, m2m):
@@ -578,6 +595,104 @@ def get_peak_ids_of_m2m(G, m2m):
                 return set(children_pids)
                                      
     return None        
+
+def map_standard_to_ms1(std_file, mass_tol, rt_tol, ms2lda, mode='POS', verbose=False):
+
+    std_peaks = []
+    with open(std_file, "rb") as infile:
+        reader = csv.reader(infile)
+        next(reader, None)  # skip the headers
+        for row in reader:
+            stdmix = int(row[0])
+            compound_name = row[1]
+            formula = row[2]
+            polarity = row[3]
+            mz = float(row[4])
+            rt = float(row[5]) * 60
+            mh_intensity = float(row[6])
+            tup = (stdmix, compound_name, formula, polarity, mz, rt, mh_intensity)
+            if mode == 'POS' and polarity == '+':
+                std_peaks.append(tup)
+            elif mode == 'NEG' and polarity == '-':
+                std_peaks.append(tup)
+    
+    if verbose:
+        for tup in std_peaks:
+            print tup
+
+    std = np.array(std_peaks)
+    std_mz = np.array([x[4] for x in std_peaks])
+    std_rt = np.array([x[5] for x in std_peaks])
+    matches = {}
+    
+    ms1_label = {}
+    for row in ms2lda.ms1.itertuples(index=True):
+        peakid = row[1]
+        mz = row[5]
+        rt = row[4]
+    
+        # the following line is hacky for pos mode data
+        mass_delta = mz*mass_tol*1e-6
+        mass_start = mz-mass_delta
+        mass_end = mz+mass_delta
+        rt_start = rt-rt_tol
+        rt_end = rt+rt_tol
+    
+        match_mass = (std_mz>mass_start) & (std_mz<mass_end)
+        match_rt = (std_rt>rt_start) & (std_rt<rt_end)
+        match = match_mass & match_rt
+    
+        res = std[match]
+        if len(res) == 1:
+            closest = tuple(res[0])
+            matches[closest] = row
+            ms1_label[row[1]] = closest[1]        
+        elif len(res)>1:
+            closest = None
+            min_dist = sys.maxint
+            for match_res in res:
+                match_mz = float(match_res[4])
+                match_rt = float(match_res[5])
+                dist = math.sqrt((match_rt-rt)**2 + (match_mz-mz)**2)
+                if dist < min_dist:
+                    min_dist = dist
+                    closest = match_res
+            closest = tuple(closest)
+            matches[closest] = row
+            ms1_label[row[1]] = closest[1]
+    
+    if verbose:
+        print "Matches found %d/%d" % (len(matches), len(std))
+        print
+    
+    ms1_list = []
+    for match in matches:
+        key = str(match)
+        ms1_row = matches[match]
+        value = str(ms1_row)
+        pid = ms1_row[1]
+        if verbose:
+            print "Standard %s" % key
+            print "MS1 %s" % value
+            print
+        ms1_list.append(pid)
+        
+    return ms1_label, ms1_list
+
+def load_motif_annotation(annot_file, verbose=False):
+
+    motif_annotation = {}
+    motif_idx = {}
+    i = 0
+    for item in csv.reader(open(annot_file), skipinitialspace=True):
+        key = int(item[0])
+        val = item[1]
+        if verbose:
+            print str(key) + "\t" + val
+        motif_annotation[key] = val
+        motif_idx[key] = i
+        i += 1    
+    return motif_annotation, motif_idx
 
 def main():
     

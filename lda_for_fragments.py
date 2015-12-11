@@ -166,26 +166,27 @@ class Ms2Lda(object):
         return this_instance         
     
     @classmethod
-    def resume_from(cls, project_in):
+    def resume_from(cls, project_in, verbose=True):
         start = timeit.default_timer()        
         with gzip.GzipFile(project_in, 'rb') as f:
             obj = cPickle.load(f)
             stop = timeit.default_timer()
-            print "Project loaded from " + project_in + " time taken = " + str(stop-start)
-            print " - input_filenames = "
-            for fname in obj.input_filenames:
-                print "\t" + fname
-            print " - df.shape = " + str(obj.df.shape)
-            if hasattr(obj, 'model'):
-                print " - K = " + str(obj.model.K)
-                print " - alpha = " + str(obj.model.alpha[0])
-                print " - beta = " + str(obj.model.beta[0])
-                print " - number of samples stored = " + str(len(obj.model.samples))
-            else:
-                print " - No LDA model found"
-            print " - last_saved_timestamp = " + str(obj.last_saved_timestamp)  
-            if hasattr(obj, 'message'):
-                print " - message = " + str(obj.message)  
+            if verbose:
+                print "Project loaded from " + project_in + " time taken = " + str(stop-start)
+                print " - input_filenames = "
+                for fname in obj.input_filenames:
+                    print "\t" + fname
+                print " - df.shape = " + str(obj.df.shape)
+                if hasattr(obj, 'model'):
+                    print " - K = " + str(obj.model.K)
+                    print " - alpha = " + str(obj.model.alpha[0])
+                    print " - beta = " + str(obj.model.beta[0])
+                    print " - number of samples stored = " + str(len(obj.model.samples))
+                else:
+                    print " - No LDA model found"
+                print " - last_saved_timestamp = " + str(obj.last_saved_timestamp)  
+                if hasattr(obj, 'message'):
+                    print " - message = " + str(obj.message)  
             return obj  
         
     @classmethod
