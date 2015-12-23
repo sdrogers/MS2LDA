@@ -417,6 +417,8 @@ def plot_subgraph(G, m2m_list, ms1_peakids_to_highlight, motif_idx, colour_map, 
         plt.savefig(save_to, bbox_inches='tight')
     plt.show()        
     
+    return SG
+    
 def plot_fragmentation_spectrum(ms2_df, ms1_row, motif_colour, motif_idx, ms1_label=None, save_to=None, xlim_upper=300):
     
     # make sure that the fragment and loss words got plotted first in the loop below
