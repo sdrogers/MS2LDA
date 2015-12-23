@@ -426,8 +426,9 @@ def plot_fragmentation_spectrum(ms2_df, ms1_row, motif_colour, motif_idx, ms1_la
     # set figure and font sizes
     plt.figure(figsize=(20, 10), dpi=900)
     ax = plt.subplot(111)
-    font_size = 30
-    linewidth = 5
+    large_font_size = 32
+    small_font_size = 24
+    linewidth = 4
 
     # the ms1 info
     ms1_peakid = ms1_row['peakID'].values[0]
@@ -435,6 +436,10 @@ def plot_fragmentation_spectrum(ms2_df, ms1_row, motif_colour, motif_idx, ms1_la
     ms1_rt = ms1_row['rt'].values[0]
     ms1_intensity = ms1_row['intensity'].values[0]
     ms1_annotation = ms1_row['annotation'].values[0]    
+    
+    # hacky
+    neutral_loss_positions = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
+    neutral_loss_count = 0
 
     # plot each MS2 peak    
     for row_index, row in ms2_df.iterrows():
@@ -446,40 +451,47 @@ def plot_fragmentation_spectrum(ms2_df, ms1_row, motif_colour, motif_idx, ms1_la
         frag_word = row['fragment_word']
         loss_word = row['loss_word']
         
-        # draw loss arrow
         if not np.isnan(loss_m2m):
-            word_colour = motif_colour.to_rgba(motif_idx[loss_m2m])            
+
+            # draw neutral loss arrow
+            word_colour = get_colour(loss_m2m, motif_idx, motif_colour)
             arrow_x1 = ms1_mz
-            arrow_y1 = intensity if intensity < 1 else 0.5
+            arrow_y1 = neutral_loss_positions[neutral_loss_count]
             arrow_x2 = (mz-ms1_mz)+5
             arrow_y2 = 0
+            neutral_loss_count += 1
             plt.arrow(arrow_x1, arrow_y1, arrow_x2, arrow_y2, head_width=0.05, head_length=4.0, width=0.005, fc=word_colour, ec=word_colour)
-            bbox_props = dict(boxstyle="round", fc="white", ec=word_colour, lw=linewidth)
-            text_x = mz+(ms1_mz-mz)/2
-            text_y = arrow_y1
-            if abs(ms1_mz-mz) < 20:
-                text_x += 28
-            t = ax.text(text_x, text_y, loss_word, ha="center", va="center", rotation=0,
-                        size=15, bbox=bbox_props)
+
+            # draw neutral loss label
+            text_x = mz+(ms1_mz-mz)/4
+            text_y = arrow_y1+0.025
+            t = ax.text(text_x, text_y, loss_word.split('_')[1], ha="left", va="center", rotation=0,
+                        size=small_font_size, color=word_colour)
 
         # draw the fragment
         if not np.isnan(frag_m2m):
-            word_colour = motif_colour.to_rgba(motif_idx[frag_m2m])
+            word_colour = get_colour(frag_m2m, motif_idx, motif_colour)            
+            if intensity > 0.2:
+                ax.text(mz, intensity+0.025, frag_word.split('_')[1], ha="center", va="center", 
+                        size=small_font_size, color=word_colour)
         else:
             word_colour = 'lightgray'
         plt.plot((mz, mz), (0, intensity), linewidth=linewidth, color=word_colour)
 
     # plot the ms1 peak too
     plt.plot((ms1_mz, ms1_mz), (0, 0.25), linewidth=linewidth, color='k')
+    plt_label = "MS1 mz=%.4f RT=%.2f" % (ms1_mz, ms1_rt)
+    ax.text(ms1_mz+2, 0.38, plt_label, ha="left", va="center", 
+            size=small_font_size, color='k', rotation=90)
 
     # set title, axes labels and ranges
     if ms1_label is not None and ms1_peakid in ms1_label:
         ms1_annotation += "; " + ms1_label[ms1_peakid]
-    title = "MS1 peakID %d mz %.4f rt %.2f intensity %.2f (%s)" % (ms1_peakid, ms1_mz, ms1_rt, ms1_intensity, ms1_annotation)    
+    title = "Fragmentation spectrum for MS1 peakID %d (%s)" % (ms1_peakid, ms1_annotation)    
     plt.title(title)
     plt.xlabel('m/z')
     plt.ylabel('Relative Intensity')
-    plt.xlim([0, xlim_upper])    
+    plt.xlim([0, ms1_mz + 100])    
     plt.ylim([0, 1.1])
 
     # plot legend
@@ -490,16 +502,16 @@ def plot_fragmentation_spectrum(ms2_df, ms1_row, motif_colour, motif_idx, ms1_la
     m2m_used = fragment_m2m | loss_m2m
     m2m_patches = []
     for m2m in m2m_used:
-        m2m_colour = motif_colour.to_rgba(motif_idx[m2m])
+        m2m_colour = get_colour(m2m, motif_idx, motif_colour)        
         m2m_patch = mpatches.Patch(color=m2m_colour, label='M2M_%d' % m2m)
         m2m_patches.append(m2m_patch)
-    ax.legend(handles=m2m_patches, loc='upper right', bbox_to_anchor=(1.20, 0.50),
-              ncol=1, fancybox=True, shadow=True, prop={'size': font_size})        
+    ax.legend(handles=m2m_patches, loc='upper right', 
+              ncol=1, fancybox=True, shadow=True, prop={'size': large_font_size})        
 
     # increase fontsize
     for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
                  ax.get_xticklabels() + ax.get_yticklabels()):
-        item.set_fontsize(font_size)    
+        item.set_fontsize(large_font_size)    
 
     # save figure
     if save_to is not None:
@@ -507,8 +519,15 @@ def plot_fragmentation_spectrum(ms2_df, ms1_row, motif_colour, motif_idx, ms1_la
         plt.savefig(save_to, bbox_inches='tight')
     plt.show()
     
+def get_colour(m2m, motif_idx, motif_colour):
+    try:
+        word_colour = motif_colour.to_rgba(motif_idx[m2m])
+    except AttributeError:
+        word_colour = motif_colour[m2m]
+    return word_colour    
+        
 def print_report(ms2lda, G, peak_id, motif_annotation, motif_words, motif_colour, motif_idx, word_map, 
-                 ms1_label=None, save_to=None, xlim_upper=300, plotting_func=None):
+                 ms1_label=None, save_to=None, xlim_upper=300, contributions=None, plotting_func=None):
     
     doc_motifs = {}
     for node_id, node_data in G.nodes(data=True):
@@ -547,7 +566,10 @@ def print_report(ms2lda, G, peak_id, motif_annotation, motif_words, motif_colour
     ms2_intensity = ms2_rows['intensity'].values
     ms2_fragment_words = ms2_rows['fragment_bin_id'].values
     ms2_loss_words = ms2_rows['loss_bin_id'].values
-    ms2_annotation = ms2_rows['annotation'].values
+    if 'annotation' in ms2_rows:
+        ms2_annotation = ms2_rows['annotation'].values
+    else:
+        ms2_annotation = None
 
     document = []
     for w in range(len(ms2_mz)):
@@ -565,7 +587,10 @@ def print_report(ms2lda, G, peak_id, motif_annotation, motif_words, motif_colour
         else:
             loss_word = np.NaN
             loss_motif = np.NaN
-        annot = ms2_annotation[w]
+        if ms2_annotation is not None:
+            annot = ms2_annotation[w]
+        else:
+            annot = np.NaN
         item = (mz, intensity, fragment_word, fragment_motif, loss_word, loss_motif, annot)
         # print "%08.4f   %.2f    %-20s %-5s %-15s %-5s" % item
         document.append(item)
@@ -575,7 +600,7 @@ def print_report(ms2lda, G, peak_id, motif_annotation, motif_words, motif_colour
     if plotting_func is None:
         plot_fragmentation_spectrum(df, first_row, motif_colour, motif_idx, ms1_label, save_to=save_to, xlim_upper=xlim_upper)
     else:
-        plotting_func(df, first_row, motif_colour, motif_idx, ms1_label, save_to=save_to, xlim_upper=xlim_upper)
+        plotting_func(df, first_row, motif_colour, motif_idx, ms1_label, save_to=save_to, xlim_upper=xlim_upper, contributions=contributions)
         
     return df
     
