@@ -328,23 +328,23 @@ def plot_subgraph(G, m2m_list, ms1_peakids_to_highlight, motif_idx, colour_map, 
     
     # parameters for the M2M nodes
     motif_node_alpha = 0.75
-    motif_node_size = 2000
+    motif_node_size = 4000
     
     # parameters for the ms1_peakids_to_highlight
     highlight_node_colour = 'gray'
     highlight_node_alpha = 0.50
-    highlight_node_size = 600
+    highlight_node_size = 2000
     
     # parameters for other nodes
     other_nodes_colour = 'lightgray'
     other_nodes_alpha = 0.50
-    other_nodes_size = 600
+    other_nodes_size = 1000
 
     # label parameters
     label_colour = 'black'
     label_background_colour = 'gray'
-    label_alpha = 0.50
-    label_fontsize = 16
+    label_alpha = 0.75
+    label_fontsize = 24
     
     # other parameters
     fig_width = 15
@@ -398,8 +398,8 @@ def plot_subgraph(G, m2m_list, ms1_peakids_to_highlight, motif_idx, colour_map, 
                            alpha=motif_node_alpha, node_color=motif_colours,
                            node_size=motif_node_size)
     nx.draw_networkx_edges(SG, pos, alpha=edge_alpha)    
-    nx.draw_networkx_labels(SG, pos, doc_labels, font_size=10)
-    nx.draw_networkx_labels(SG, pos, motif_labels, font_size=16)    
+    nx.draw_networkx_labels(SG, pos, doc_labels, font_size=label_fontsize)
+    nx.draw_networkx_labels(SG, pos, motif_labels, font_size=label_fontsize)    
     
 #     for node_id in node_labels:
 #         x, y = pos[node_id]
