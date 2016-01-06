@@ -89,6 +89,10 @@ def sample_numba(random_state, n_burn, n_samples, n_thin,
         ckn_copy = np.copy(ckn)
         to_store = Sample(cdk_copy, ckn_copy)
         samples.append(to_store)                                      
+
+    # store the last Z
+    for (d, pos) in Z:
+        Z[(d, pos)] = Z_mat[d, pos]
             
     all_lls = np.array(all_lls)            
     return all_lls, samples

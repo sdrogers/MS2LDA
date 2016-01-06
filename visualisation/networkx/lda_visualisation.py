@@ -529,8 +529,15 @@ def plot_fragmentation_spectrum(ms2_df, ms1_row, motif_colour, motif_idx,
         plt.savefig(save_to, bbox_inches='tight')
     plt.show()
     
+def get_colour(m2m, motif_idx, motif_colour):
+    try:
+        word_colour = motif_colour.to_rgba(motif_idx[m2m])
+    except AttributeError:
+        word_colour = motif_colour[m2m]
+    return word_colour    
+        
 def print_report(ms2lda, G, peak_id, motif_annotation, motif_words, motif_colour, motif_idx, word_map, 
-                 ms1_label=None, save_to=None, xlim_upper=300, plotting_func=None):
+                 ms1_label=None, save_to=None, xlim_upper=300, contributions=None, plotting_func=None):
     
     doc_motifs = {}
     for node_id, node_data in G.nodes(data=True):
@@ -569,7 +576,10 @@ def print_report(ms2lda, G, peak_id, motif_annotation, motif_words, motif_colour
     ms2_intensity = ms2_rows['intensity'].values
     ms2_fragment_words = ms2_rows['fragment_bin_id'].values
     ms2_loss_words = ms2_rows['loss_bin_id'].values
-    ms2_annotation = ms2_rows['annotation'].values
+    if 'annotation' in ms2_rows:
+        ms2_annotation = ms2_rows['annotation'].values
+    else:
+        ms2_annotation = None
 
     document = []
     for w in range(len(ms2_mz)):
@@ -587,7 +597,10 @@ def print_report(ms2lda, G, peak_id, motif_annotation, motif_words, motif_colour
         else:
             loss_word = np.NaN
             loss_motif = np.NaN
-        annot = ms2_annotation[w]
+        if ms2_annotation is not None:
+            annot = ms2_annotation[w]
+        else:
+            annot = np.NaN
         item = (mz, intensity, fragment_word, fragment_motif, loss_word, loss_motif, annot)
         # print "%08.4f   %.2f    %-20s %-5s %-15s %-5s" % item
         document.append(item)
@@ -597,7 +610,7 @@ def print_report(ms2lda, G, peak_id, motif_annotation, motif_words, motif_colour
     if plotting_func is None:
         plot_fragmentation_spectrum(df, first_row, motif_colour, motif_idx, ms1_label, save_to=save_to, xlim_upper=xlim_upper)
     else:
-        plotting_func(df, first_row, motif_colour, motif_idx, ms1_label, save_to=save_to, xlim_upper=xlim_upper)
+        plotting_func(df, first_row, motif_colour, motif_idx, ms1_label, save_to=save_to, xlim_upper=xlim_upper, contributions=contributions)
         
     return df
     
