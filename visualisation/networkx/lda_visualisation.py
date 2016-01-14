@@ -651,10 +651,6 @@ def map_standard_to_ms1(std_file, mass_tol, rt_tol, ms2lda, mode='POS', verbose=
             elif mode == 'NEG' and polarity == '-':
                 std_peaks.append(tup)
     
-    if verbose:
-        for tup in std_peaks:
-            print tup
-
     std = np.array(std_peaks)
     std_mz = np.array([x[4] for x in std_peaks])
     std_rt = np.array([x[5] for x in std_peaks])
