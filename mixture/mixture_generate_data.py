@@ -7,7 +7,7 @@ from pandas.core.frame import DataFrame
 import numpy as np
 import pylab as plt
 import pandas as pd
-from justin.lda_generate_data import LdaDataGenerator
+from ms2lda.lda_generate_data import LdaDataGenerator
 
 
 class MixtureDataGenerator(LdaDataGenerator):

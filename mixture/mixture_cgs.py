@@ -7,7 +7,7 @@ from numpy import int32
 from numpy.random import RandomState
 from scipy.misc import logsumexp
 
-import justin.lda_utils as utils
+import ms2lda.lda_utils as utils
 from mixture_generate_data import MixtureDataGenerator
 
 Sample = namedtuple('Sample', 'cdk ckn')
