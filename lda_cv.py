@@ -223,34 +223,44 @@ def main():
     # find the current path of this script file        
     current_path = os.path.dirname(os.path.abspath(__file__))
 
-    if data == 'BEER3POS':
+    if data == 'BEER1POS':
+    
+        print "Data = Beer1 Positive"        
+        fragment = current_path + '/input/final/Beer1pos_MS1filter_Method3_fragments.csv'
+        loss = current_path + '/input/final/Beer1pos_MS1filter_Method3_losses.csv'
+        mzdiff = None    
+        ms1 = current_path + '/input/final/Beer1pos_MS1filter_Method3_ms1.csv'
+        ms2 = current_path + '/input/final/Beer1pos_MS1filter_Method3_ms2.csv'  
+        run_msms_data(fragment, loss, mzdiff, ms1, ms2)    
+    
+    elif data == 'BEER2POS':
+
+        print "Data = Beer2 Positive"        
+        fragment = current_path + '/input/final/Beer2pos_MS1filter_Method3_fragments.csv'
+        loss = current_path + '/input/final/Beer2pos_MS1filter_Method3_losses.csv'
+        mzdiff = None    
+        ms1 = current_path + '/input/final/Beer2pos_MS1filter_Method3_ms1.csv'
+        ms2 = current_path + '/input/final/Beer2pos_MS1filter_Method3_ms2.csv'  
+        run_msms_data(fragment, loss, mzdiff, ms1, ms2)
+
+    elif data == 'BEER3POS':
 
         print "Data = Beer3 Positive"        
-        fragment = current_path + '/input/final/Beer_3_full1_5_2E5_pos_fragments.csv'
-        loss = current_path + '/input/final/Beer_3_full1_5_2E5_pos_losses.csv'
+        fragment = current_path + '/input/final/Beer3pos_MS1filter_Method3_fragments.csv'
+        loss = current_path + '/input/final/Beer3pos_MS1filter_Method3_losses.csv'
         mzdiff = None    
-        ms1 = current_path + '/input/final/Beer_3_full1_5_2E5_pos_ms1.csv'
-        ms2 = current_path + '/input/final/Beer_3_full1_5_2E5_pos_ms2.csv'  
+        ms1 = current_path + '/input/final/Beer3pos_MS1filter_Method3_ms1.csv'
+        ms2 = current_path + '/input/final/Beer3pos_MS1filter_Method3_ms2.csv'  
         run_msms_data(fragment, loss, mzdiff, ms1, ms2)
 
-    elif data == 'URINE37POS':
+    elif data == 'BEERQCPOS':
 
-        print "Data = Urine37 Positive"        
-        fragment = current_path + '/input/final/Urine_64_fullscan1_5_2E5_POS_fragments.csv'
-        loss = current_path + '/input/final/Urine_64_fullscan1_5_2E5_POS_losses.csv'
+        print "Data = BeerQC Positive"        
+        fragment = current_path + '/input/final/BeerQCpos_MS1filter_Method3_fragments.csv'
+        loss = current_path + '/input/final/BeerQCpos_MS1filter_Method3_losses.csv'
         mzdiff = None    
-        ms1 = current_path + '/input/final/Urine_64_fullscan1_5_2E5_POS_ms1.csv'
-        ms2 = current_path + '/input/final/Urine_64_fullscan1_5_2E5_POS_ms2.csv'  
-        run_msms_data(fragment, loss, mzdiff, ms1, ms2)
-
-    elif data == 'STD1POS':
-    
-        print "Data = Standard Mix 1 Positive"
-        fragment = current_path + '/input/relative_intensities/STD_MIX1_POS_60stepped_1E5_Top5_fragments_rel.csv'
-        loss = current_path + '/input/relative_intensities/STD_MIX1_POS_60stepped_1E5_Top5_losses_rel.csv'
-        mzdiff = None
-        ms1 = current_path + '/input/relative_intensities/STD_MIX1_POS_60stepped_1E5_Top5_ms1_rel.csv'
-        ms2 = current_path + '/input/relative_intensities/STD_MIX1_POS_60stepped_1E5_Top5_ms2_rel.csv'
+        ms1 = current_path + '/input/final/BeerQCpos_MS1filter_Method3_ms1.csv'
+        ms2 = current_path + '/input/final/BeerQCpos_MS1filter_Method3_ms2.csv'  
         run_msms_data(fragment, loss, mzdiff, ms1, ms2)
 
     else:
