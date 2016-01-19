@@ -1311,7 +1311,10 @@ var LDAvis = function(to_select, data_or_file_name) {
 
 			// remove the red bars if there are any:
 			d3.selectAll(to_select + " .overlay").remove();
-
+			
+			// remove previous tooltip
+			d3.selectAll(to_select + " .bar-totals").selectAll('svg title').remove()
+			
 			// Change Total Frequency bars
 			var visible_count = 0
 			d3.selectAll(to_select + " .bar-totals")
@@ -1319,7 +1322,8 @@ var LDAvis = function(to_select, data_or_file_name) {
 				.attr("y", function(d) {
 					return y(d.Term);
 				})
-				.attr("height", y.rangeBand()).attr("width", function(d) {
+				.attr("height", y.rangeBand())
+				.attr("width", function(d) {
 					return x(d.ms1_count);
 				})
 				.style("fill", color1)
@@ -1330,7 +1334,9 @@ var LDAvis = function(to_select, data_or_file_name) {
 					} else {
 						return 0;
 					}
-				});
+				})
+				.append("svg:title")
+					.text(function(d) { return "Total = " + d.ms1_count; });
 
 			// Change word labels
 			d3.selectAll(to_select + " .terms")
@@ -1374,7 +1380,9 @@ var LDAvis = function(to_select, data_or_file_name) {
 					} else {
 						return 0;
 					}					
-				});
+				})
+				.append("svg:title")
+					.text(function(d) { return "Freq = " + d.label_count; });
 
 			// adapted from http://bl.ocks.org/mbostock/1166403
 			var xAxis = d3.svg.axis().scale(x).orient("top").tickSize(
@@ -1411,6 +1419,9 @@ var LDAvis = function(to_select, data_or_file_name) {
 
 			// remove the red bars if there are any:
 			d3.selectAll(to_select + " .overlay2").remove();
+			
+			// remove previous tooltip
+			d3.selectAll(to_select + " .bar-totals2").selectAll('svg title').remove()			
 
 			// Change Total Frequency bars
 			d3.selectAll(to_select + " .bar-totals2")
@@ -1418,7 +1429,8 @@ var LDAvis = function(to_select, data_or_file_name) {
 				.attr("y", function(d) {
 					return y(d.Term);
 				})
-				.attr("height", y.rangeBand()).attr("width", function(d) {
+				.attr("height", y.rangeBand())
+				.attr("width", function(d) {
 					return x(d.Total);
 				})
 				.style("fill", color1)
@@ -1428,7 +1440,9 @@ var LDAvis = function(to_select, data_or_file_name) {
 					} else {
 						return 0;
 					}
-				});
+				})
+				.append("svg:title")
+					.text(function(d) { return "Total = " + Math.round(d.Total); });
 
 			// Change word labels
 			d3.selectAll(to_select + " .terms2")
@@ -1472,7 +1486,9 @@ var LDAvis = function(to_select, data_or_file_name) {
 					} else {
 						return 0;
 					}					
-				});
+				})
+				.append("svg:title")
+					.text(function(d) { return "Freq = " + Math.round(d.Freq); });
 
 			// adapted from http://bl.ocks.org/mbostock/1166403
 			var xAxis = d3.svg.axis().scale(x).orient("top").tickSize(
