@@ -10,8 +10,9 @@ import sys
 from networkx.readwrite import json_graph
 from pandas.core.frame import DataFrame
 
-import networkx as nx
 import numpy as np
+import networkx as nx
+import numpy as nprem
 import pandas as pd
 import pylab as plt
 import csv
@@ -214,24 +215,24 @@ def get_network_graph(ms2lda, motifs_of_interest, verbose=True):
     if verbose:
         print "Removed %d motifs from the graph because they're not in the list" % remove_count
 
-    # 2. keep only motifs having shared nodes with other motifs
-    removed_motifs = []
-    nodes = G.nodes(data=True)    
-    for node_id, node_data in nodes:
-        if node_data['group'] == 2:
-            # check if any doc in this motif is shared with another motif (degree > 1)
-            neighbours = G.neighbors(node_id)
-            share = False
-            for nb in neighbours:
-                deg = G.degree(nb)
-                if deg > 1:
-                    share = True
-            # if not then delete from the graph too
-            if not share:
-                removed_motifs.append(node_data['name'])
-                G.remove_node(node_id)
-    if verbose:
-        print "Removed %s from the graph because they don't share documents with other motifs in the list" % removed_motifs
+#     # 2. keep only motifs having shared nodes with other motifs
+#     removed_motifs = []
+#     nodes = G.nodes(data=True)    
+#     for node_id, node_data in nodes:
+#         if node_data['group'] == 2:
+#             # check if any doc in this motif is shared with another motif (degree > 1)
+#             neighbours = G.neighbors(node_id)
+#             share = False
+#             for nb in neighbours:
+#                 deg = G.degree(nb)
+#                 if deg > 1:
+#                     share = True
+#             # if not then delete from the graph too
+#             if not share:
+#                 removed_motifs.append(node_data['name'])
+#                 G.remove_node(node_id)
+#     if verbose:
+#         print "Removed %s from the graph because they don't share documents with other motifs in the list" % removed_motifs
     
     # 3. delete all unconnected nodes from the graph
     unconnected = []
