@@ -206,14 +206,14 @@ def make_mgf(ms1_row, children, mode, processed, total):
             
 def main():
 
-    ms1_filename = '../../input/final/Beer_3_full1_5_2E5_pos_ms1.csv'
-    ms2_filename = '../../input/final/Beer_3_full1_5_2E5_pos_ms2.csv'
+    ms1_filename = '../../input/final/Beer1neg_MS1filter_Method3_ms1.csv'
+    ms2_filename = '../../input/final/Beer1neg_MS1filter_Method3_ms2.csv'
     ms1 = pd.read_csv(ms1_filename, index_col=0)
     ms2 = pd.read_csv(ms2_filename, index_col=0)
-    annot_ms1, annot_ms2 = annotate_sirius(ms1, ms2, 'orbitrap', verbose=False)
+    annot_ms1, annot_ms2 = annotate_sirius(ms1, ms2, 'orbitrap', verbose=True)
 
-    ms1_filename = '../../input/final/Beer_3_full1_5_2E5_pos_ms1_annotated.csv'
-    ms2_filename = '../../input/final/Beer_3_full1_5_2E5_pos_ms2_annotated.csv'
+    ms1_filename = '../../input/final/Beer1neg_MS1filter_Method3_ms1_annotated.csv'
+    ms2_filename = '../../input/final/Beer1neg_MS1filter_Method3_ms2_annotated.csv'
     annot_ms1.to_csv(ms1_filename)
     annot_ms2.to_csv(ms2_filename)
     print "Annotated MS1 results written to " + ms1_filename
