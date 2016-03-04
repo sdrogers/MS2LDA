@@ -445,13 +445,13 @@ text {
 	                    break;
 	            }
 	            link.style("display", function(d) {
-	                var flag = vis_by_type(d.source.special) || vis_by_type(d.target.special);
+	                var flag = vis_by_type(d.source.special) && vis_by_type(d.target.special);
 	                linkedByIndex[d.source.index + "," + d.target.index] = flag;
 	                return flag ? "inline" : "none";
 	            });
 	            node.style("display", function(d) {
 	                return vis_by_type_and_connection(d) ? "inline" : "none";
-	            	// return (key0 || hasConnections(d)) && vis_by_type(d.special) ? "inline" : "none";
+	            	// return (hasConnections(d)) && vis_by_type(d.special) ? "inline" : "none";
 	            });
 	            text.style("display", function(d) {
 	                return vis_by_type_and_connection(d) ? "inline" : "none";
@@ -480,10 +480,10 @@ text {
 		if (keyh) {
 			return true;
 		} else {
-			if (d.special) {
+			if (d.special && (d.name.indexOf(topic_name)>-1)) {
 				return true;
 			} else {
-				// check if we're connected to any special node
+				// check if we're connected to any special node that is a topic
 		        for (var property in graph_linked_by_index) {
 		            s = property.split(",");
 		            var other_node = undefined;
@@ -491,10 +491,12 @@ text {
 		            if ((s[0] == d.index) && graph_linked_by_index[property]) {
 		                other_node = graph_nodes[s[1]];		            	
 		            }
+		            // connection on the right side
 		            if ((s[1] == d.index) && graph_linked_by_index[property]) {
 		                other_node = graph_nodes[s[0]];		            	
 		            }
-		            if (other_node !== undefined && other_node.special) {
+		            // check other node is a special topic
+		            if (other_node !== undefined && other_node.special && (other_node.name.indexOf(topic_name)>-1)) {
 		            	return true;
 		            }		            
 		        }
