@@ -1,512 +1,497 @@
-<!-- With credit to http://bl.ocks.org/eyaler/10586116 -->
-
 <!DOCTYPE html>
-<meta charset="utf-8">
+<meta charset='utf-8'>
 <style>
-body {
-  overflow:hidden;
-   margin:0;
+
+.link {
+    stroke: #000;
+    stroke-width: 1.5px;
+    stroke-opacity: .6;
 }
 
-text {
+.node-shape {
+    cursor: pointer;
+    stroke: #000;
+    stroke-width: 6.0px;
+    opacity: 0.9;
+}
+
+.node-label {
+    cursor: pointer;
+    text-anchor: 'middle';
+    font-size: 96px;
+    font-weight: bold;
+    font-family: sans-serif;
+}
+
+.d3-tip {
+  line-height: 1;
+  font-weight: bold;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 2px;
   font-family: sans-serif;
-  pointer-events: none;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
 }
 
 </style>
 <body>
-<script src="/d3.js"></script>
+
+<script type='text/javascript' src="http://code.jquery.com/jquery-2.2.2.min.js"></script>
+<script type='text/javascript' src="http://code.jquery.com/ui/1.11.1/jquery-ui.min.js"> </script>
+<script src='//d3js.org/d3.v3.min.js'></script>
+<script type='text/javascript' src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"> </script>
+<link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
+
 <script>
 
-	var topic_name = "motif"
-	var w = window.innerWidth;
-	var h = window.innerHeight;
-	var keyh = true;
-	var focus_node = null,
-	    highlight_node = null;
-	var text_center = true;
-	var outline = false;
-	var min_score = 0;
-	var max_score = 1;
-	var highlight_color = "blue";
-	var highlight_trans = 0.1;
-	var default_node_color = "#ccc";
-	var special_node_color = "#CC0000";
-	//var default_node_color = "rgb(3,190,100)";
-	var default_link_color = "#888";
-	var nominal_base_node_size = 8;
-	var nominal_text_size = 10;
-	var max_text_size = 24;
-	var nominal_stroke = 1.5;
-	var max_stroke = 4.5;
-	var max_base_node_size = 36;
-	var min_zoom = 0.1;
-	var max_zoom = 7;
-	var svg = d3.select("body").append("svg");
-	var zoom = d3.behavior.zoom().scaleExtent([min_zoom, max_zoom])
-	var circle_opacity = 0.9
-	
-	var color = d3.scale.linear()
-	    .domain([min_score, (min_score + max_score) / 2, max_score])
-	    .range(["#1f77b4", "#2ca02c", "#ff7f0e"]);
-	
-	var size = d3.scale.pow().exponent(1)
-	    .domain([1, 100])
-	    .range([8, 24]);
-	
-	var force = d3.layout.force()
-	    .linkDistance(60)
-	    .charge(-300)
-	    .size([w, h]);
-	
-	// Create a group for the graph plot
-	var g = svg.append("g")
-	    .attr("id", "vis-graph")
-	    .attr("transform", "translate(267.1187199163185,285.8524262385378)scale(0.28677675605654135)")
-	svg.style("cursor", "move");
-	
-	// global functions and variables to be called from parent window too
-	var set_focus = undefined; 
-	var set_highlight = undefined;	
-	var exit_highlight = undefined;
-	var graph_circle = undefined;
-	var graph_link = undefined;
-	var graph_nodes = undefined;
-	var graph_linked_by_index = undefined;
+// see:
+// - http://bl.ocks.org/mbostock/3750558
+// - https://github.com/mbostock/d3/wiki/Force-Layout
+// - http://www.coppelia.io/2014/07/an-a-to-z-of-extra-features-for-the-d3-force-layout/
 
-	d3.json("/graph.json", function(error, graph) {
+var width = window.innerWidth;
+var height = window.innerHeight;
+var topicName = 'motif';
 
-	    graph_nodes = graph.nodes; // to be used in parent window later
-		
-	    var linkedByIndex = {};
-	    graph.links.forEach(function(d) {
-	        linkedByIndex[d.source + "," + d.target] = true;
-	    });
-	    graph_linked_by_index = linkedByIndex;
-	
-	    function isConnected(a, b) {
-	        return linkedByIndex[a.index + "," + b.index] || linkedByIndex[b.index + "," + a.index] || a.index == b.index;
-	    }
-	
- 	    function hasConnections(a) {
-	        for (var property in linkedByIndex) {
-	            s = property.split(",");
-	            if ((s[0] == a.index || s[1] == a.index) && linkedByIndex[property])
-	                return true;
-	        }
-	        return false;
-	    }
+var minNodeSize = 8;
+var topicTextSize = 48;
+var docTextSize = 12;
+var size = d3.scale.pow().exponent(1)
+    .domain([1, 100])
+    .range([8, 24]);
 
- 	    force.nodes(graph.nodes).links(graph.links).start();
-	
-	    var link = g.selectAll(".link")
-	        .data(graph.links)
-	        .enter().append("line")
-	        .attr("class", "link")
-	        .style("stroke-width", nominal_stroke)
-	        .style("stroke", function(d) {
-	            if (isNumber(d.score) && d.score >= 0) {
-	            	return color(d.score);
-	            } else {
-	            	return default_link_color;
-	            }
-	        });
-	    graph_link = link;
+var defaultNodeColour = '#CCCCCC';
+var specialNodeColour = '#CC0000';
+var minScore = 0;
+var maxScore = 1;
+var color = d3.scale.linear()
+    .domain([minScore, (minScore + maxScore) / 2, maxScore])
+    .range(['#1f77b4', '#2ca02c', '#ff7f0e']);
 
-	    var node = g.selectAll(".node")
-	        .data(graph.nodes)
-	        .enter().append("g")
-	        .attr("class", "node")
-	        .call(force.drag)
-	
-	    node.on("dblclick.zoom", function(d) {
-	        d3.event.stopPropagation();
-	        var dcx = (window.innerWidth / 2 - d.x * zoom.scale());
-	        var dcy = (window.innerHeight / 2 - d.y * zoom.scale());
-	        zoom.translate([dcx, dcy]);
-	        g.attr("transform", "translate(" + dcx + "," + dcy + ")scale(" + zoom.scale() + ")");
-	    }); // end d3.json("graph.json", function(error, graph)
-	
-	    var tocolor = "fill";
-	    var towhite = "stroke";
-	    if (outline) {
-	        tocolor = "stroke"
-	        towhite = "fill"
-	    }
-	
-	    var circle = node.append("path")
-	        .attr("d", d3.svg.symbol()
-	            .size(function(d) {
-	                return Math.PI * Math.pow(size(d.size) || nominal_base_node_size, 2);
-	            })
-	            .type(function(d) {
-	                return d.type;
-	            }))
-	        .style(tocolor, function(d) {
-            	if (d.special == true) {
-            		if (d.hasOwnProperty('highlight_colour')) {
-            			return d.highlight_colour; // returns the user-defined highlight colour
-            		} else {
-                		return special_node_color; // returns the default colour for highlighted item
-            		}
-            	} else {
-    	            if (isNumber(d.score) && d.score >= 0) return color(d.score);
-    	            else {
-    	            	return default_node_color;	            		
-    	            }
-            	}
-	        })
-	        //.attr("r", function(d) { return size(d.size)||nominal_base_node_size; })
-	        .style("stroke-width", nominal_stroke)
-	        .style(towhite, "white")
-	        .style("opacity", circle_opacity);
-		graph_circle = circle;
-	    
-	    var text = g.selectAll(".text")
-	        .data(graph.nodes)
-	        .enter().append("text")
-	        .attr("dy", ".35em")
-	        .style("font-size", function (d) { 
-	        	if (d.name.indexOf(topic_name)>-1) {
-		        	return max_text_size*2 + "px"	        		
-	        	} else {
-		        	return nominal_text_size + "px"	        		
-	        	}
-	        })
-	        .attr("fill", function (d) {
-	        	return "black"
-	        })
-	        .style("opacity", 0)
-	
-	    if (text_center) {
-	        text.text(function(d) {
-	                return d.name;
-	            })
-	            .style("text-anchor", "middle");
-	    } else {
-	        text.attr("dx", function(d) {
-	                return (size(d.size) || nominal_base_node_size);
-	            })
-	            .text(function(d) {
-	                return '\u2002' + d.name;
-	            });
-	    }
-	
-	    node
-	        .on("mouseover", function(d) {
-	            set_highlight(d);
-	        })
-	        .on("mousedown", function(d) {
-	        	
-	            d3.event.stopPropagation();
-	            focus_node = d;
-	            set_focus(d)
-	            if (highlight_node === null) {
-	            	set_highlight(d)
-	            }
+var simulationNumber = 10;
+var simulationTimeout = 1;
 
-	            // highlight the topic in the main window too
-	            tokens = d.name.split('_')
-				node_type = tokens[0]
-	            if (node_type.toLowerCase() === topic_name) {
-	            
-		            // select the topic in the main window
-		            if (window.opener !== null) {
-		            
-			            vis_state = window.opener.vis_state	            
-			            n = parseInt(tokens[1])
-			            circles = vis_state['circles']
-			            selected_circle = circles[0][n]
-			            circle_id = selected_circle.id
+// used in parent window
+var selectNode = undefined;
+var unselectNode = undefined;
+var graphCircle = undefined;
+var graphLink = undefined;
+var graphNodes = undefined;
 
-			            parent_document = window.opener.document
-			            
-						// find the old topic
-			            address_bar_val = window.location.search
-			            function get(name){
-			               if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
-			                  return decodeURIComponent(name[1]);
-			            }
-						visID = get('visID')
-		    			topicID = visID + "-topic";
-					    docPrev = visID + "-prev";
-					    docNext = visID + "-next";
-						
-					    // set as off if it's different from the current one
-						old_topic = topicID + vis_state.topic
-			            if (vis_state.topic > 0 && old_topic != circle_id) {
-			            	var topic_off = window.opener.topic_off
-			                topic_off(parent_document.getElementById(old_topic));
-			            }
+var graphSvg = undefined;
+var optArray = [];
 
-					    // set the currently selected topic and also enable the button to browse the MS1
-			            parent_document.getElementById(topicID).value = vis_state.topic = n+1; 	// +1 because we index circles from 1,..
-						parent_document.getElementById(topicID+"_shown").value = n;  				// but we show circle labels from 0,..
-		                parent_document.getElementById(docPrev).setAttribute("style", "position: absolute; top: 490px; left: 985px; width: 80px; visibility: visible");
-		                parent_document.getElementById(docNext).setAttribute("style", "position: absolute; top: 490px; left: 1070px; width: 80px; visibility: visible");
-						topic_on = window.opener.topic_on
-						topic_on(selected_circle, true);	            			            	
-		            	
-		            }	            	
-	            }
-	            	            
-	        })
-	        .on("mouseout", function(d) {
-	            exit_highlight();
-	        });
-	
-	    d3.select(window).on("mouseup", function() {
-	        if (focus_node !== null) {
-	            focus_node = null;
-	            if (highlight_trans < 1) {
-	                circle.style("opacity", circle_opacity);
-	                // text.style("opacity", 1);
-	                link.style("opacity", 1);
-	            }
-	        }
-	        if (highlight_node === null) {
-	        	exit_highlight();
-	        }
-	    });
-	
-	    exit_highlight = function() {
-	        highlight_node = null;
-	        if (focus_node === null) {
-	            svg.style("cursor", "move");
-	            if (highlight_color != "white") {
-	                circle.style(towhite, "white");
-	                text.style("font-weight", "normal");
-			        text.style("font-size", function (d) { 
-			        	if (d.name.indexOf(topic_name)>-1) {
-				        	return max_text_size*2 + "px"	        		
-			        	} else {
-				        	return nominal_text_size + "px"	        		
-			        	}
-			        })
-		        	text.style("opacity", 0);
-	                link.style("stroke", function(o) {
-	                    return (isNumber(o.score) && o.score >= 0) ? color(o.score) : default_link_color
-	                });
-	            }
-	        }
-	    }
-	
-	    set_focus = function(d) {
-	        if (highlight_trans < 1) {
-	            circle.style("opacity", function(o) {
-	                return isConnected(d, o) ? 1 : highlight_trans;
-	            });
-	            text.style("opacity", function(o) {
-	            	if (isConnected(d, o)) {
-	            		if (o.name.indexOf(topic_name)>-1) {
-		            		return 1;	            			
-	            		} else {
-		            		return 0.75;	            			
-	            		}
-	            	} else {
-	            		return highlight_trans;
-	            	}
-	            });
-	            link.style("opacity", function(o) {
-	                return o.source.index == d.index || o.target.index == d.index ? 1 : highlight_trans;
-	            });
-	        }
-	    }
+var toggle = 0;
 
-	    set_highlight = function(d) {
-	        svg.style("cursor", "pointer");
-	        if (focus_node !== null) d = focus_node;
-	        highlight_node = d;
-	        if (highlight_color != "white") {
-	            circle.style(towhite, function(o) {
-	                return isConnected(d, o) ? highlight_color : "white";
-	            });
-	            text.style("font-weight", function(o) {
-	                return isConnected(d, o) ? "bold" : "normal";
-	            });
-	        	if (d.name.indexOf(topic_name)==-1) { // only for document nodes
-		            text.style("font-size", function(o) {
-		            	if (d.name === o.name) {
-				        	return nominal_text_size*4 + "px"	        		
-		            	} else {
-				        	if (o.name.indexOf(topic_name)>-1) {
-				        		return max_text_size*2 + "px"
-				        	} else {
-					        	return nominal_text_size + "px"	        		
-				        	}	            		
-		            	}
-		            });
-	        	}
-	            text.style("opacity", function(o) {
-	            	if (isConnected(d, o)) {
-	            		if (o.name.indexOf(topic_name)>-1) {
-		            		return 1;	            			
-	            		} else {
-		            		return 0.75;	            			
-	            		}
-	            	} else {
-	            		return highlight_trans;
-	            	}
-	            });
-	            link.style("stroke", function(o) {
-	                return o.source.index == d.index || o.target.index == d.index ? highlight_color : ((isNumber(o.score) && o.score >= 0) ? color(o.score) : default_link_color);
-	            });
-	        }
-	    }
-	
-	    zoom.on("zoom", function() {
-	
-	        var stroke = nominal_stroke;
-	        if (nominal_stroke * zoom.scale() > max_stroke) stroke = max_stroke / zoom.scale();
-	        link.style("stroke-width", stroke);
-	        circle.style("stroke-width", stroke);
-	
-	        var base_radius = nominal_base_node_size;
-	        if (nominal_base_node_size * zoom.scale() > max_base_node_size) base_radius = max_base_node_size / zoom.scale();
-	        circle.attr("d", d3.svg.symbol()
-	            .size(function(d) {
-	                return Math.PI * Math.pow(size(d.size) * base_radius / nominal_base_node_size || base_radius, 2);
-	            })
-	            .type(function(d) {
-	                return d.type;
-	            }))
-	
-	        //circle.attr("r", function(d) { return (size(d.size)*base_radius/nominal_base_node_size||base_radius); })
-	        if (!text_center) text.attr("dx", function(d) {
-	            return (size(d.size) * base_radius / nominal_base_node_size || base_radius);
-	        });
-	        
-	        var text_size = nominal_text_size;
-	        if (nominal_text_size * zoom.scale() > max_text_size) text_size = max_text_size / zoom.scale();
-			text.style("font-size", function(d) {
-	        	if (d.name.indexOf(topic_name)>-1) {
-		        	return max_text_size*2 + "px"	        		
-	        	} else {
-		        	return text_size + "px"	        		
-	        	}				
-			});
-	        
-	        g.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-	    });
-	
-	    svg.call(zoom);
-	
-	    resize();
-	    //window.focus();
-	    d3.select(window).on("resize", resize).on("keydown", keydown);
-	
-	    force.on("tick", function() {
-	
-	        node.attr("transform", function(d) {
-	            return "translate(" + d.x + "," + d.y + ")";
-	        });
-	        text.attr("transform", function(d) {
-	            return "translate(" + d.x + "," + d.y + ")";
-	        });
-	
-	        link.attr("x1", function(d) {
-	                return d.source.x;
-	            })
-	            .attr("y1", function(d) {
-	                return d.source.y;
-	            })
-	            .attr("x2", function(d) {
-	                return d.target.x;
-	            })
-	            .attr("y2", function(d) {
-	                return d.target.y;
-	            });
-	
-	        node.attr("cx", function(d) {
-	                return d.x;
-	            })
-	            .attr("cy", function(d) {
-	                return d.y;
-	            });
-	
-	    });
-	
-	    function resize() {
-	        var width = window.innerWidth,
-	            height = window.innerHeight;
-	        svg.attr("width", width).attr("height", height);
-	        force.size([force.size()[0] + (width - w) / zoom.scale(), force.size()[1] + (height - h) / zoom.scale()]).resume();
-	        w = width;
-	        h = height;
-	    }
-	
-	    function keydown() {
-	        if (d3.event.keyCode == 32) {
-	            force.stop();
-	        } else if (d3.event.keyCode >= 48 && d3.event.keyCode <= 90 && !d3.event.ctrlKey && !d3.event.altKey && !d3.event.metaKey) {
-	            switch (String.fromCharCode(d3.event.keyCode)) {
-	                case "H":
-	                    keyh = !keyh;
-	                    break;
-	            }
-	            link.style("display", function(d) {
-	                var flag = vis_by_type(d.source.special) && vis_by_type(d.target.special);
-	                linkedByIndex[d.source.index + "," + d.target.index] = flag;
-	                return flag ? "inline" : "none";
-	            });
-	            node.style("display", function(d) {
-	                return vis_by_type_and_connection(d) ? "inline" : "none";
-	            	// return (hasConnections(d)) && vis_by_type(d.special) ? "inline" : "none";
-	            });
-	            text.style("display", function(d) {
-	                return vis_by_type_and_connection(d) ? "inline" : "none";
-	            });
-	            if (highlight_node !== null) {
-	                if ((hasConnections(highlight_node)) && vis_by_type(highlight_node.special)) {
-	                    if (focus_node !== null) set_focus(focus_node);
-	                    set_highlight(highlight_node);
-	                } else {
-	                    exit_highlight();
-	                }
-	            }
-	        }
-	    }
-	});
-	
-	function vis_by_type(special) {
-		if (keyh) {
-			return true;
-		} else {
-			return special;
-		}
-	}
+d3.json('/graph.json', function(error, graph) {
 
-	function vis_by_type_and_connection(d) {
-		if (keyh) {
-			return true;
-		} else {
-			if (d.special && (d.name.indexOf(topic_name)>-1)) {
-				return true;
-			} else {
-				// check if we're connected to any special node that is a topic
-		        for (var property in graph_linked_by_index) {
-		            s = property.split(",");
-		            var other_node = undefined;
-		            // connection on the left side
-		            if ((s[0] == d.index) && graph_linked_by_index[property]) {
-		                other_node = graph_nodes[s[1]];		            	
-		            }
-		            // connection on the right side
-		            if ((s[1] == d.index) && graph_linked_by_index[property]) {
-		                other_node = graph_nodes[s[0]];		            	
-		            }
-		            // check other node is a special topic
-		            if (other_node !== undefined && other_node.special && (other_node.name.indexOf(topic_name)>-1)) {
-		            	return true;
-		            }		            
-		        }
-		        return false;
-			}
-		}
-	}
-	
-	function isNumber(n) {
-	    return !isNaN(parseFloat(n)) && isFinite(n);
-	}
-	
+    if (error) throw error;
+
+    var force = d3.layout.force()
+        .size([width, height])
+        .charge(-4000)
+        .linkDistance(function(d) {
+            return d.weight*100;
+        })
+        .friction(0.40)
+        .on('tick', tick);
+
+    var drag = force.drag()
+        .on('dragstart', dragstart);
+
+    // the initial zoom and transform on the svg should be set to the same value
+    var zoom = d3.behavior.zoom().translate([300,300]).scale(.1,.1);
+    svg = d3.select('body').append('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .call(zoom.on('zoom', zoomed))
+        .on('dblclick.zoom', null)
+        .append('g')
+        .attr('transform', 'translate(300,300)scale(.1,.1)');
+
+    //Set up tooltip
+    var tip = d3.tip()
+        .attr('class', 'd3-tip')
+        .offset([-10, 0])
+        .html(function(d) {
+            name = d.name;
+            tokens = name.split('_');
+            if (tokens.length == 2) { // it's a topic, e.g. 'motif_123'
+                tooltip_label = 'motif ' + tokens[1];
+            } else if (tokens.length == 3) { // it's an MS1 peak, e.g. 'doc_123.5225_30.12'
+                tooltip_label = 'MS1 m/z=' + tokens[1] + ' RT=' + tokens[2];
+            } else {
+                tooltip_label = d.name;
+            }
+            return '<strong>' + tooltip_label + "</strong>";
+        })
+    svg.call(tip);
+
+    // to prevent excessive animation
+    svg.on('mouseup', function() {
+          force.stop();
+        });
+
+    var link = svg.selectAll('.link'),
+        node = svg.selectAll('.node');
+
+    // ***************************************************************************
+    // Run force simulation for n steps then stop it
+    // ***************************************************************************
+
+    n = simulationNumber;
+    force
+      .nodes(graph.nodes)
+      .links(graph.links)
+      .start();
+    for (var i = n * n; i > 0; --i) {
+      force.tick();
+    }
+    setTimeout(function(){ force.stop(); }, simulationTimeout * 1000);
+
+    // ***************************************************************************
+    // For fading the currently selected nodes
+    // ***************************************************************************
+
+    var linkedByIndex = {};
+    for (i = 0; i < graph.nodes.length; i++) {
+        linkedByIndex[i + ',' + i] = 1;
+    };
+    graph.links.forEach(function(d) {
+        linkedByIndex[d.source.index + ',' + d.target.index] = 1;
+    });
+    function neighbouring(a, b) {
+        return linkedByIndex[a.index + ',' + b.index];
+    }
+    function isConnected(a, b) {
+        return neighbouring(a, b) || neighbouring(b, a);
+    }
+    selectNode = function(d) {
+        if (toggle == 0) {
+
+            toggle = 1;
+
+            // reduce the opacity of all but the neighbouring nodes
+            d = d3.select(this).node().__data__;
+            node.style('opacity', function(o) {
+                return isConnected(d, o) ? 1.0 : 0.1;
+            });
+            link.style('opacity', function(o) {
+                return d.index==o.source.index | d.index==o.target.index ? 1.0 : 0.1;
+            });
+            graph.nodes.forEach(function(o) {
+                if (isConnected(d, o)) {
+                    if ( (isTopicNode(d) && !isTopicNode(o)) || (!isTopicNode(d) && isTopicNode(o)) ) {
+                        target = document.getElementById(o.name + '_label');
+                        target.style.display = 'inline';
+                    }
+                }
+            });
+
+            // highlight the topic in the main window too
+            tokens = d.name.split('_')
+            node_type = tokens[0]
+            if (node_type.toLowerCase() === topicName) {
+
+                // select the topic in the main window
+                if (window.opener !== null) {
+
+                    vis_state = window.opener.vis_state
+                    n = parseInt(tokens[1])
+                    circles = vis_state['circles']
+                    selected_circle = circles[0][n]
+                    circle_id = selected_circle.id
+
+                    parent_document = window.opener.document
+
+                    // find the old topic
+                    address_bar_val = window.location.search
+                    function get(name){
+                       if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
+                          return decodeURIComponent(name[1]);
+                    }
+                    visID = get('visID')
+                    topicID = visID + "-topic";
+                    docPrev = visID + "-prev";
+                    docNext = visID + "-next";
+
+                    // set as off if it's different from the current one
+                    old_topic = topicID + vis_state.topic
+                    if (vis_state.topic > 0 && old_topic != circle_id) {
+                        var topic_off = window.opener.topic_off
+                        topic_off(parent_document.getElementById(old_topic));
+                    }
+
+                    // set the currently selected topic and also enable the button to browse the MS1
+                    parent_document.getElementById(topicID).value = vis_state.topic = n+1; 	// +1 because we index circles from 1,..
+                    parent_document.getElementById(topicID+"_shown").value = n;  				// but we show circle labels from 0,..
+                    parent_document.getElementById(docPrev).setAttribute("style", "position: absolute; top: 490px; left: 985px; width: 80px; visibility: visible");
+                    parent_document.getElementById(docNext).setAttribute("style", "position: absolute; top: 490px; left: 1070px; width: 80px; visibility: visible");
+                    topic_on = window.opener.topic_on;
+                    topic_on(selected_circle, true);
+
+                }
+            }
+
+        } else {
+            unselectNode(d);
+        }
+
+    }
+
+    unselectNode = function(d) {
+        // restore opacity
+        node.style('opacity', 1);
+        link.style('opacity', 1);
+        text.style('display', 'none');
+        toggle = 0;
+        state_reset = window.opener.state_reset;
+        state_reset();
+    }
+
+
+    function setNodeColour(d) {
+        if (d.special == true) {
+            if (d.hasOwnProperty('highlight_colour')) {
+                return d.highlight_colour; // returns the user-defined highlight colour
+            } else {
+                return specialNodeColour; // returns the default colour for highlighted item
+            }
+        } else {
+            if (isNumber(d.score) && d.score >= 0) {
+                return color(d.score);
+            } else {
+                return defaultNodeColour;
+            }
+        }
+    }
+
+    function setNodeSize(d) {
+        return 10 * Math.pow(size(d.size), 2);
+    }
+
+    // ***************************************************************************
+    // Setup links and nodes in the graph
+    // ***************************************************************************
+
+    var link = link.data(graph.links)
+        .enter().append('line')
+            .attr('class', 'link');
+
+    var node = node.data(graph.nodes)
+        .enter().append('g')
+            .call(drag)
+            .on('dblclick', selectNode)
+            .on('mouseover', tip.show)
+            .on('mouseout', tip.hide);
+
+    var circle = node.append('path')
+        .attr('class', 'node-shape')
+        .attr('d',d3.svg.symbol()
+            .size(setNodeSize)
+            .type(function(d) { return d.type; })
+        )
+        .attr('id', function(d) { return d.name + '_circle'; })
+        .style('fill', setNodeColour);
+
+    var text = node.append('text')
+        .attr('class', 'node-label')
+        .attr('dx', 10)
+        .attr('dy', '.35em')
+        .attr('id', function(d) { return d.name + '_label'; })
+        .style('display', 'none') // initially all node labels are invisible
+        .text(function(d) { return '\u2002' + d.name; });
+
+    // for the search box
+    for (var i = 0; i < graph.nodes.length - 1; i++) {
+        optArray.push(graph.nodes[i].name);
+    }
+    optArray = optArray.sort();
+
+    // to be used in parent window later
+    graphNodes = node;
+    graphCircle = circle;
+    graphLink = link;
+
+    // *****************************************************************************
+    // Handle force tick event
+    // *****************************************************************************
+
+    function tick() {
+
+        link.attr('x1', function(d) { return d.source.x; })
+            .attr('y1', function(d) { return d.source.y; })
+            .attr('x2', function(d) { return d.target.x; })
+            .attr('y2', function(d) { return d.target.y; });
+
+        node.attr('transform', function(d) { return 'translate(' + d.x + ',' + d.y + ')'; });
+
+    }
+
+    // *****************************************************************************
+    // Fix nodes positions after double click or dragging
+    // *****************************************************************************
+
+    function dblclick(d) {
+        d3.select(this).classed('fixed', d.fixed = false);
+    }
+
+    function dragstart(d) {
+        d3.event.sourceEvent.stopPropagation();
+        d3.select(this).classed('fixed', d.fixed = true);
+    }
+
+    // *****************************************************************************
+    // For zooming
+    // *****************************************************************************
+
+    function zoomed() {
+        svg.attr('transform',
+            'translate(' + d3.event.translate + ') scale(' + d3.event.scale + ')');
+    }
+
+    // *****************************************************************************
+    // Key handler
+    // *****************************************************************************
+
+    var keyh = true;
+    d3.select(window).on("keydown", keydown);
+
+    function keydown() {
+        if (d3.event.keyCode == 32) {
+            force.stop();
+        } else if (d3.event.keyCode >= 48 && d3.event.keyCode <= 90 &&
+                !d3.event.ctrlKey && !d3.event.altKey && !d3.event.metaKey) {
+            pressed = String.fromCharCode(d3.event.keyCode);
+            switch (pressed) {
+                case "H":
+
+                    keyh = !keyh;
+
+                    console.log('keypressed = ' + pressed + ' keyh=' + keyh);
+                    nodes_to_hide = node.filter(function(d) {
+                        if (isTopicNode(d)) {
+                            return !d.special; // don't hide special topic nodes
+                        } else {
+                            // don't hide document connected to a special topic node
+                            var count = 0;
+                            graph.nodes.forEach(function(o) {
+                                if (isConnected(d, o) && o.special && isTopicNode(o)) {
+                                    count += 1;
+                                }
+                            });
+                            return count > 0 ? false : true;
+                        }
+                    });
+                    links_to_hide = link.filter(function(d) {
+                        if ( (d.source.special && isTopicNode(d.source)) ||
+                            (d.target.special && isTopicNode(d.target)) ){
+                            // keep if either side is a special topic node
+                            return false;
+                        }
+                        return true;
+                    });
+                    if (keyh) {
+                        node.style('display', 'inline');
+                        link.style('display', 'inline');
+                    } else {
+                        nodes_to_hide.style('display', 'none');
+                        links_to_hide.style('display', 'none');
+                    }
+
+                    break;
+
+            }
+        }
+    }
+
+    // *****************************************************************************
+    // Other functions
+    // *****************************************************************************
+
+    function isNumber(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n);
+    }
+
+    function isTopicNode(d) {
+        if (d.name.indexOf(topicName) > -1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    msg = document.getElementById('message');
+    msg.innerHTML = 'Search for a node above.<br/>' +
+        'Double-click on a motif in the graph to show/hide that motif only.<br/>' +
+        'Press [H] to show only the special nodes';
+    setTimeout(function() {
+        $('#message').fadeOut('fast');
+    }, 3000);
+
+});
+
+// *****************************************************************************
+// Search node
+// *****************************************************************************
+
+$(function () {
+    $("#searchText").autocomplete({
+        source: optArray
+    });
+});
+
+function searchNode() {
+
+    //find the node
+    var selectedVal = document.getElementById('searchText').value;
+    if (selectedVal == "none") {
+        node.style("stroke", "white").style("stroke-width", "1");
+    } else {
+        var selected = graphNodes.filter(function (d, i) {
+            return d.name == selectedVal;
+        });
+        toggle = 0;
+        selected.each(function(d, i) {
+            var onClickFunc = d3.select(this).on("dblclick");
+            onClickFunc.apply(this, [d, i]);
+        });
+    }
+
+}
+
+function resetSearch() {
+    var searchText = document.getElementById('searchText');
+    searchText.value = '';
+    unselectNode();
+}
+
 </script>
+<div class="ui-widget">
+    <input id="searchText">
+    <button id="searchBtn" type="button" onclick="searchNode()">Search</button>&nbsp;
+    <button id="resetBtn" type="button" onclick="resetSearch()">Reset</button>
+    <div id="message">
+        Loading, please wait ...
+    </div>
+</div>

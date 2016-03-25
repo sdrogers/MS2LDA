@@ -18,6 +18,7 @@ var vis_state = {
 // since it will also be called from another file for the graph
 var topic_on = undefined;
 var topic_off = undefined;
+var state_reset = undefined;
 
 var LDAvis = function(to_select, data_or_file_name) {
 
@@ -1519,22 +1520,14 @@ var LDAvis = function(to_select, data_or_file_name) {
 			var child_window = vis_state.graph_window;
 			if (child_window !== undefined) {
 				// find the current node being clicked
-				var child_nodes = child_window.graph_nodes;
-				var to_find = "topic_" + parseInt(topics-1);
-				var d = undefined;
-				for (var n = 0; n < child_nodes.length; n++) {
-				    var node = child_nodes[n];
-				    if (node.name === to_find) {
-				    	d = node;
-				    	break;
-				    }
-				}				
-				if (d !== undefined) {
-		            child_window.focus_node = d;
-		            child_window.set_focus(d);
-		            if (child_window.highlight_node === null) {
-		            	child_window.set_highlight(d);
-		            }					
+				var child_nodes = child_window.graphNodes;
+				var to_find = "motif_" + parseInt(topics-1);
+				var selected = child_nodes.filter(function(d, i) { return d.name == to_find; });				
+				if (selected !== undefined) {
+					var searchField = child_window.document.getElementById('searchText');
+					var searchBtn = child_window.document.getElementById('searchBtn');
+					searchField.value = to_find;
+					searchBtn.click();
 				}
 			}
 
@@ -1638,19 +1631,11 @@ var LDAvis = function(to_select, data_or_file_name) {
 
 			// try to update the graph window too, if possible
 			var child_window = vis_state.graph_window;
-			if (child_window !== undefined) {				
-		        if (child_window.focus_node !== null) {
-		            child_window.focus_node = null;
-		            if (child_window.highlight_trans < 1) {
-		                child_window.graph_circle.style("opacity", child_window.circle_opacity);
-		                child_window.graph_link.style("opacity", 1);
-		            }
-		        }
-		        if (child_window.highlight_node === null) {
-		        	child_window.exit_highlight();
-		        }
-			}
-										
+			if (child_window !== undefined) {
+				var resetBtn = child_window.document.getElementById('resetBtn');
+				resetBtn.click();
+			}					
+															
 		}
 
 		// event definition for mousing over a term
@@ -1788,7 +1773,7 @@ var LDAvis = function(to_select, data_or_file_name) {
 					'hidden');
 		}
 
-		function state_reset() {
+		state_reset = function() {
 			if (vis_state.topic > 0) {
 				topic_off(document.getElementById(topicID + vis_state.topic));
 			}
