@@ -255,13 +255,17 @@ def show(data, topic_plotter, ip='127.0.0.1', port=8888, n_retries=50,
     """
     if local:
         kwargs['ldavis_url'] = '/LDAvis.js'
-        kwargs['d3_url'] = '/d3.js'
         kwargs['ldavis_css_url'] = '/LDAvis.css'
+        kwargs['d3_url'] = '/d3.v3.min.js'
         files = {
                  '/graph.html': ["text/html", open(urls.LDAVIS_GRAPH_LOCAL, 'r').read()],
                  '/LDAvis.js': ["text/javascript", open(urls.LDAVIS_LOCAL, 'r').read()],
                  '/LDAvis.css': ["text/css", open(urls.LDAVIS_CSS_LOCAL, 'r').read()],
-                 '/d3.js': ["text/javascript", open(urls.D3_LOCAL, 'r').read()]
+                 '/d3.v3.min.js': ["text/javascript", open(urls.D3_LOCAL, 'r').read()],
+                 '/jquery-2.2.2.min.js': ["text/javascript", open(urls.JQUERY_LOCAL, 'r').read()],
+                 '/jquery-ui.min.js': ["text/javascript", open(urls.JQUERY_UI_JS_LOCAL, 'r').read()],
+                 '/jquery-ui.css': ["text/css", open(urls.JQUERY_UI_CSS_LOCAL, 'r').read()],
+                 '/d3.tip.v0.6.3.js': ["text/javascript", open(urls.D3_TIP_LOCAL, 'r').read()],
                  }
     else:
         files = None

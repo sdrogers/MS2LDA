@@ -19,6 +19,10 @@ DEV = True
 
 LOCAL_JS_DIR = os.path.join(__path__[0], "js")
 D3_LOCAL = os.path.join(LOCAL_JS_DIR, "d3.v3.min.js")
+JQUERY_LOCAL = os.path.join(LOCAL_JS_DIR, "jquery-2.2.2.min.js")
+JQUERY_UI_JS_LOCAL = os.path.join(LOCAL_JS_DIR, "jquery-ui.min.js")
+JQUERY_UI_CSS_LOCAL = os.path.join(LOCAL_JS_DIR, "jquery-ui.css")
+D3_TIP_LOCAL = os.path.join(LOCAL_JS_DIR, "d3.tip.v0.6.3.js")
 
 LOCAL_IMAGE_DIR = os.path.join(__path__[0], "images")
 DEFAULT_LOGO_LOCAL = os.path.join(LOCAL_IMAGE_DIR, "placeholder3.png")
