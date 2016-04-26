@@ -42,7 +42,7 @@ Sample = namedtuple('Sample', 'cdk ckn')
 
 class CollapseGibbsLda(object):
     
-    def __init__(self, df, vocab, K, alpha, beta, random_state=None, previous_model=None):
+    def __init__(self, df, vocab, K, alpha, beta, random_state=None, previous_model=None, sparse=False):
         """
         Initialises the collapsed Gibbs sampling for LDA
         
@@ -55,7 +55,12 @@ class CollapseGibbsLda(object):
         """
         
         print "CGS LDA initialising"
-        self.df = df.replace(np.nan, 0)
+        self.sparse = sparse
+        if not self.sparse:
+            self.df = df.replace(np.nan, 0)
+        else:
+            self.df = df
+        
         self.alpha = alpha
         self.beta = beta
 
@@ -156,8 +161,8 @@ class CollapseGibbsLda(object):
             if d%10==0:
                 sys.stdout.write('.')
                 sys.stdout.flush()
-            document = self.df.iloc[[d]]
-            word_idx = utils.word_indices(document)
+            document = self.df[d, :] if self.sparse else self.df.iloc[[d]]
+            word_idx = utils.word_indices(document, sparse=sparse)                
             for pos, n in enumerate(word_idx):
                 k = self.random_state.randint(self.K)
                 self.cdk[d, k] += 1
@@ -170,8 +175,8 @@ class CollapseGibbsLda(object):
         # turn word counts in the document into a vector of word occurences
         self.document_indices = {}
         for d in range(self.D):
-            document = self.df.iloc[[d]]
-            word_idx = utils.word_indices(document)
+            document = self.df[d, :] if self.sparse else self.df.iloc[[d]]
+            word_idx = utils.word_indices(document, sparse=self.sparse)
             word_locs = []
             for pos, n in enumerate(word_idx):
                 word_locs.append((pos, n))
@@ -194,21 +199,36 @@ class CollapseGibbsLda(object):
         return theta, phi, alpha_new
     
     def _get_perplexity(self, theta, phi):
+
         # for all documents and all terms
         marg = 0
         n_words = 0
         for d in range(self.D):
-            document = self.df.iloc[[d]]
-            nnz = document.values.nonzero()[1]
-            doc_word_counts = document.values.flatten()
-            nnz_counts = doc_word_counts[nnz]
-            n_words += np.sum(nnz_counts)
-            for n in nnz:
-                curr_word_count = doc_word_counts[n]
-                temp = 0
-                for k in range(self.K):
-                    temp += phi[k, n] * theta[d, k]
-                marg += curr_word_count * np.log(temp)
+            if not self.sparse:
+                document = self.df.iloc[[d]]
+                nnz = document.values.nonzero()[1]
+                doc_word_counts = document.values.flatten()
+                nnz_counts = doc_word_counts[nnz]
+                n_words += np.sum(nnz_counts)
+                for n in nnz:
+                    curr_word_count = doc_word_counts[n]
+                    temp = 0
+                    for k in range(self.K):
+                        temp += phi[k, n] * theta[d, k]
+                    marg += curr_word_count * np.log(temp)
+            else:
+                document = self.df[d, :]
+                nnz = document.nonzero()[1]
+                nnz_counts = document.data[0]                
+                n_words += np.sum(nnz_counts)
+                for i in range(len(nnz)):
+                    n = nnz[i]
+                    curr_word_count = nnz_counts[i]
+                    temp = 0
+                    for k in range(self.K):
+                        temp += phi[k, n] * theta[d, k]
+                    marg += curr_word_count * np.log(temp)
+
         perp = np.exp(-(marg/n_words))
         return marg, perp        
             

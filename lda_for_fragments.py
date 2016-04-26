@@ -298,11 +298,14 @@ class Ms2Lda(object):
         return this_instance        
         
     def run_lda(self, n_topics, n_samples, n_burn, n_thin, alpha, beta, 
-                use_native=True, previous_model=None):    
+                use_native=True, random_state=None, 
+                previous_model=None, sparse=False):    
                         
         print "Fitting model..."
         self.n_topics = n_topics
-        self.model = CollapseGibbsLda(self.df, self.vocab, n_topics, alpha, beta, previous_model=previous_model)
+        self.model = CollapseGibbsLda(self.df, self.vocab, n_topics, alpha, beta, 
+                                      previous_model=previous_model, random_state=random_state, 
+                                      sparse=sparse)
         self.n_topics = self.model.K # might change if previous_model is used
 
         start = timeit.default_timer()

@@ -24,7 +24,7 @@ def threshold_matrix(matrix, epsilon=0.0):
             row[close] = 0        
     return thresholded
 
-def word_indices(document):
+def word_indices(document, sparse=False):
     """
     Turns a document vector of word counts into a vector of the indices
      words that have non-zero counts, repeated for each count
@@ -32,12 +32,38 @@ def word_indices(document):
     >>> word_indices(np.array([3, 0, 1, 2, 0, 5]))
     [0, 0, 0, 2, 3, 3, 5, 5, 5, 5, 5]
     """
-    results = []
-    for nnz in document.values.nonzero()[1]:
-        count = document.values[0].flatten()
-        for n in range(int(count[nnz])):
-            results.append(nnz)
-    return results
+
+    if not sparse: # document is a panda thing
+
+        # easier to read ?
+#         nnz = document.values.nonzero()[1] # get the non-zero positions
+#         counts = document.values.flatten()[nnz] # get their count values
+#         # repeat nnz pos by count-times
+#         results = []
+#         for n in range(len(nnz)):
+#             pos = nnz[n]
+#             count = int(counts[n])
+#             temp = [pos] * count
+#             results.extend(temp)        
+#         return results
+        
+        results = []
+        for nnz in document.values.nonzero()[1]:
+            count = document.values[0].flatten()
+            for n in range(int(count[nnz])):
+                results.append(nnz)
+        return results
+    
+    else: # document is a row slice of a scipy sparse matrix
+        
+        nnz = document.nonzero()[1]
+        counts = []
+        results = []
+        for col in nnz:
+            count = int(document[0, col])
+            temp = [col] * count
+            results.extend(temp)
+        return results
 
 def psi_inverse(initial_x, y, num_iter=5):
     """
