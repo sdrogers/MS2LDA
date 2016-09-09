@@ -2,6 +2,7 @@
 pyLDAvis Prepare
 ===============
 Main transformation functions for preparing LDAdata to the visualization's data structures
+NOT the same as the original pyLDAvis -- modified for MS2LDAvis!
 """
 
 from collections import namedtuple
@@ -92,7 +93,7 @@ def _find_relevance_chunks(log_ttd, log_lift, R, lambda_seq):
     return pd.concat([_find_relevance(log_ttd, log_lift, R, l) for l in lambda_seq])
 
 
-def _topic_info(topic_term_dists, topic_proportion, term_frequency, term_topic_freq, 
+def _topic_info(topic_term_dists, topic_proportion, term_frequency, term_topic_freq,
                 topic_wordfreq, topic_ms1_count,
                 vocab, lambda_step, R, n_jobs):
     # marginal distribution over terms (width of blue bars)
@@ -117,7 +118,7 @@ def _topic_info(topic_term_dists, topic_proportion, term_frequency, term_topic_f
     ## compute relevance and top terms for each topic
     log_lift = np.log(topic_term_dists / term_proportion)
     log_ttd = np.log(topic_term_dists)
-    
+
     lambda_step = 0.1
     lambda_seq = np.arange(0, 1 + lambda_step, lambda_step)
 
@@ -127,7 +128,7 @@ def _topic_info(topic_term_dists, topic_proportion, term_frequency, term_topic_f
 
         label = vocab[term_ix]
         freq = term_topic_freq.loc[original_topic_id, term_ix]
-                
+
         topic_label_count = topic_wordfreq[original_topic_id]
         label_count = freq.copy()
         for freq_idx, freq_val in freq.iteritems():
@@ -135,8 +136,8 @@ def _topic_info(topic_term_dists, topic_proportion, term_frequency, term_topic_f
             if word in topic_label_count:
                 label_count[freq_idx] = topic_label_count[word]
             else:
-                label_count[freq_idx] = 0                
-        
+                label_count[freq_idx] = 0
+
         return pd.DataFrame({'Term': label, \
                                     'Freq': freq, \
                                     'Total': term_frequency[term_ix], \
@@ -261,8 +262,8 @@ def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequenc
 
     # token counts for each term-topic combination (widths of red bars)
     term_topic_freq     = _term_topic_freq(topic_term_dists, topic_freq, term_frequency)
-    topic_info            = _topic_info(topic_term_dists, topic_proportion, term_frequency, term_topic_freq, 
-                                        topic_wordfreq, topic_ms1_count, 
+    topic_info            = _topic_info(topic_term_dists, topic_proportion, term_frequency, term_topic_freq,
+                                        topic_wordfreq, topic_ms1_count,
                                         vocab, lambda_step, R, n_jobs)
     token_table          = _token_table(topic_info, term_topic_freq, vocab, term_frequency)
     topic_coordinates = _topic_coordinates(topic_term_dists, topic_proportion, topic_coordinates)
@@ -271,7 +272,7 @@ def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequenc
 #     client_topic_order = [x + 1 for x in topic_order]
     K = topic_term_dists.shape[0]
     client_topic_order = range(K)
-    
+
     # create a list of the annotation for each topic
     topic_annotation_list = []
     for topic_id in topic_ranking[:, 0]:
@@ -279,11 +280,11 @@ def prepare(topic_term_dists, doc_topic_dists, doc_lengths, vocab, term_frequenc
         if topic_id in topic_annotation:
             annot = topic_annotation[topic_id]
         topic_annotation_list.append(annot)
-    
+
     # pass the topic h-indices for displaying on the front-end later
-    topic_ranking = pd.DataFrame({'topic_id': topic_ranking[:, 0], 
-                                  'rank': topic_ranking[:, 1], 
-                                  'degree': topic_ranking[:, 2], 
+    topic_ranking = pd.DataFrame({'topic_id': topic_ranking[:, 0],
+                                  'rank': topic_ranking[:, 1],
+                                  'degree': topic_ranking[:, 2],
                                   'annotation': topic_annotation_list}).sort('rank', ascending=False)
 
     return PreparedData(topic_coordinates, topic_info, token_table, R, lambda_step, lambda_min, lambda_max, plot_opts, \

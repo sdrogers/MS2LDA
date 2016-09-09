@@ -2,6 +2,7 @@
 LDAvis URLs
 ==========
 URLs and filepaths for the LDAvis javascript libraries
+NOT the same as the original pyLDAvis -- modified for MS2LDAvis!
 """
 
 import os
@@ -9,7 +10,7 @@ from . import __path__, __version__
 import warnings
 
 __all__ = ["D3_URL", "LDAVIS_URL", "LDAVISMIN_URL", "LDAVIS_CSS_URL",
-           "D3_LOCAL", "LDAVIS_LOCAL", "LDAVISMIN_LOCAL", "LDAVIS_CSS_LOCAL", 
+           "D3_LOCAL", "LDAVIS_LOCAL", "LDAVISMIN_LOCAL", "LDAVIS_CSS_LOCAL",
            "LDAVIS_GRAPH_LOCAL", "LDAVIS_GRAPH_JSON"]
 
 D3_URL = "https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"

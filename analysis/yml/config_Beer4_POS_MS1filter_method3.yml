@@ -1,0 +1,226 @@
+# Set the method you want to use for peak detection and MS1-MS2 pairing:
+# - 1 is using a modified xcmsSetFragments script that is suitable to use with high-resolution data (with the courtesy of Dr Tony Larson who provided it)
+#     The script extracts MS1 features from the fragmentation file and subsequently pairs MS2 spectra to them according to the method specified in the script
+# - 2 is similar to 1, but it is possible to define the MS1 features from a separate (full scan) file
+# - 3 is using scripts based on the RMassBank suite (with the courtesy of Dr Emma Schymanski who provided the scripts containing the pairing functions)
+#     The scripts can use an mzXML file or .csv file containing (at least) mz and rt information in separate columns, and additional information like intensity and 
+#     peak identifiers can be added [see example peaklist1.csv and peaklist2.csv, respectively]. The fragmentation file has to be in .mzML format.
+create_peak_method: 3
+
+# Parameters for filenames and locations of input files
+input_files:
+
+    # -----------------------------
+    # For MS1MS2_MatrixGeneration.R
+    # -----------------------------
+
+    # prefix used for the resulting matrix files
+    prefix: BeerQCpos_MS1filter_Method3
+
+    # ----------------------------
+    # For runCreatePeakMethod1.R
+    # ----------------------------
+
+    # Input mzXML file of fragmentation experiment
+    fragmentation_file_m1: 
+
+    # ----------------------------
+    # For runCreatePeakMethod2.R
+    # ----------------------------
+
+    # Input mzXML file of full scan experiment 
+    full_scan_file: 
+
+    # input mzXML file of fragmentation experiment
+    fragmentation_file_m2: 
+
+    # ----------------------------
+    # For runCreatePeakMethod3.R
+    # ----------------------------
+
+    # Input mzXML file of full scan experiment OR csv file including m/z masses,
+    # retention times (s), and intensities (cts/s) - see example file?
+    # input_file_forMS1peaks: xxxx.csv
+    input_file_forMS1peaks: C:/Users/Justin van der Hooft/Documents/Polyomics/Fragmentation_analysis/Files/Beer_QC_full1_pos.mzXML
+
+    # input mzML file of fragmentation experiment
+    fragmentation_file_mzML: C:/Users/Justin van der Hooft/Documents/Polyomics/Fragmentation_analysis/Files/Beer_QC_T10_POS.mzML
+
+    # -----------------------------
+    # For extractFragmentFeatures.R
+    # -----------------------------
+
+    # Used when fixing topics to re-discover in another run.
+    previous_words_file: empty.vocab
+
+# Parameters used when mzXML file is provided for creating MS1 peak list of 
+# features for MS1-MS2 spectral pairing. The default values below provided below
+# are used for pHILIC-MS and HILIC-MS runs.
+MS1_XCMS_peakpicking_settings:
+
+    # --------------------------------
+    # For runCreatePeakMethod{1,2,3}.R
+    # --------------------------------
+
+    # xcms peakpicking method, other options are available (see xcms manual)
+    method: centWave    
+
+    # Parameters to the centWave method, see xcms manuals for details.
+    ppm: 2
+    snthresh: 3
+    peakwidth_from: 5
+    peakwidth_to: 100
+    prefilter_from: 3
+    prefilter_to: 1000
+    mzdiff: 0.001
+    integrate: 0
+    fitgauss: FALSE
+    verbose.column : TRUE
+
+# All parameters, settings, and filters related to chromatography
+filtering_parameters_Chromatography_related:
+
+    # --------------------
+    # For createPeakList.R
+    # --------------------
+    # Initial filtering (in minutes) to remove unwanted MS1 features eluting ...
+    rt_start: 3                         # too early (top of peak)
+    rt_end: 21                          # too late (top of peak)
+
+    # --------------------------
+    # For runCreatePeakMethod3.R
+    # --------------------------
+    # Initial filtering (in minutes) to remove unwanted MS1 features eluting ...
+    rt_start_before_pairing: 3          # too early (top of peak)
+    rt_start_peak_before_pairing: 3     # too early (start of peak)
+    rt_end_before_pairing: 21           # too late
+
+# All parameters, settings, and filters related to mass spectrometry data
+filtering_parameters_MassSpectrometry_related:
+
+    # --------------------
+    # For createPeakList.R
+    # --------------------    
+
+    # Min_MS2_intensity in (counts/s), everything below gets filtered out. 
+    # Default value below is for stepped-energy fragmentation on Thermo Q-Exactive.
+    min_MS2_intensity: 5000
+
+    # Positive mode ionization file value in (counts/s). For negative ionization mode use 260000. 
+    # Default value below is for stepped-energy fragmentation on Thermo Q-Exactive.
+    min_MS1_intensity_wanted: 520000
+
+    # ------------------------------
+    # For runCreatePeakMethod{1,2}.R
+    # ------------------------------
+
+    # Filter to remove all fragments below 0.01% of relative intensity 
+    # compared to the base peak
+    min.rel.int: 0.01
+
+    # Maximum number of fragments to find per spectrum [set high to include all]
+    max.frags: 5000
+
+    # Signal-to-Noise threshold for peaks in MS2 spectrum
+    sn: 3
+
+    # Minimal mass difference between two adjacent mass peaks in the MS2 spectrum
+    mz_gap: 0.005
+
+    # Intensity (counts/s) filter to remove low intensity fragments
+    # Default value below is for stepped-energy fragmentation on Thermo Q-Exactive.
+    ms_msms_cut: 5000
+    
+    # Intensity (counts/s) filter to remove low intensity MS1 features that 
+    # cannot be taken for fragmentation.
+    # Default value below is for stepped-energy fragmentation on Thermo Q-Exactive.
+    min_MS1_intensity : 250000
+    
+# All parameters related to the MS1-MS2 pairing
+ms1_ms2_pairing_parameters:
+
+    # ------------------------------
+    # For runCreatePeakMethod{1,2}.R
+    # ------------------------------
+
+    # Perform some correction if cdf file is provided - if no .cdf file is used, this is set to FALSE.
+    cdf.corrected : FALSE
+    
+    # msnSelect allows for different ways of selecting MS2 scans for each MS1 feature:
+    # precursor_int = most intense precursor ion (default; typical for Thermo data dependent acquisition)
+    # ms1_rt = closest precursor rt
+    # all = any ms2 peaks linked to ms1 precursor, with any duplicated ms2 peaks within 
+    # match.ppm (default = 300) grouped together
+    msnSelect : precursor_int
+    
+    # specFilter = filter criteria for removing ms2 noise peaks
+    # none = no filtering (default)
+    # specPeaks = xcms specPeaks function using sn = 3 and mz.gap = 0.2 as defaults
+    # cor = correlation based filtering with minimum r = 0.75
+    specFilter : specPeaks
+    
+    # Any MS2 peaks within this ppm value will be grouped together in one MS2 spectrum
+    match.ppm : 7
+    
+    # Correlation parameter used if specFilter is set to ''cor''
+    min.r : 0.75
+    
+    # minimum difference between precursor and any ms2 fragment
+    min.diff : 10
+
+    # --------------------------
+    # For runCreatePeakMethod3.R
+    # --------------------------
+ 
+    # Maximum difference in ppm used to query fragmentation files for MS1 features  
+    dppm: 10
+
+    # Retention window (s) in which the fragmentation file is queried for MS2 spectra
+    rt_window_from: -100
+    rt_window_to: 100
+
+    # Type of MS1-MS2 pairing, based on selection of the most intense (TRUE) 
+    # or the closest in retention time (FALSE)
+    select_most_intense: TRUE
+
+    # Maximum difference between retention time (s) of top of MS1 peak and 
+    # retention time (s) of paired MS2 scan
+    rt_ms1_ms2_difference: 15
+
+# All parameters related to the generation of matrix used as input to LDA
+# VALID FOR ALL CreatePeakMethods!    
+MS1MS2_matrixGeneration_parameters:				                   
+
+    # -----------------------------
+    # For extractFragmentFeatures.R
+    # -----------------------------
+
+    # Window in ppm to combine fragment masses into one group ('word').
+    # Default value below is for stepped-energy fragmentation on Thermo Q-Exactive.
+    grouping_tol_frags: 7
+
+    # -------------------------
+    # For extractLossFeatures.R
+    # -------------------------
+
+    # Window in ppm to combine losses into one group ('word').
+    # Default value below is for stepped-energy fragmentation on Thermo Q-Exactive.
+    grouping_tol_losses: 15
+
+    # Minimum number of detections in the data to be included in the matrix
+    threshold_counts: 5
+
+    # Maximum value (Da) of loss
+    threshold_max_loss: 200
+
+    # --------------------
+    # For postProcessing.R
+    # --------------------
+
+    # All losses below this value (Da) will be subjected to another grouping 
+    # using an absolute Da threshold.
+    # The default value below is for stepped-energy fragmentation on Thermo Q-Exactive.
+    min_mass_to_include: 40
+ 
+    # Maximum absolute difference (Da) for smaller losses, below (min_mass_to_include)
+    max_diff: 0.01

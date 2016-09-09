@@ -2,6 +2,7 @@
 # Copyright (c) 2013, Jake Vanderplas
 """
 A Simple server used to serve LDAvis visualizations
+NOT the same as the original pyLDAvis -- modified for MS2LDAvis!
 """
 import itertools
 import random
@@ -36,25 +37,25 @@ except ImportError:
 
 class GlobalVariable(object):
     selected_topic_id = 0
-    ms1_idx = 0   
-    degree = 0 
+    ms1_idx = 0
+    degree = 0
 
 # for http://bugs.python.org/issue6193
 def get_url_path(relative_path):
     abs_path = os.path.abspath(relative_path)
     url = pathname2url(abs_path)
-    return urlparse.urljoin('file:', url)    
+    return urlparse.urljoin('file:', url)
 
 def generate_handler(html, files=None, topic_plotter=None):
-    
+
     if files is None:
         files = {}
-    
+
     logo_url = get_url_path(urls.DEFAULT_LOGO_LOCAL)
     show_graph_url = get_url_path(urls.DEFAULT_SHOW_GRAPH_LOCAL)
     print "logo_url is " + logo_url
     print "show_graph_url is " + show_graph_url
-    
+
     # add default images to files
     logo_content = StringIO.StringIO(urlopen(logo_url).read()).read()
     show_graph_content = StringIO.StringIO(urlopen(show_graph_url).read()).read()
@@ -66,7 +67,7 @@ def generate_handler(html, files=None, topic_plotter=None):
         def do_GET(self):
             """Respond to a GET request."""
 
-            # serve main document        
+            # serve main document
             if self.path == '/':
                 self.send_response(200)
                 self.send_header("Content-type", "text/html")
@@ -80,15 +81,15 @@ def generate_handler(html, files=None, topic_plotter=None):
             # handle request for MS1 plots
             elif self.path.startswith('/topic'):
 
-                # get everything after '?'                    
+                # get everything after '?'
                 path, tmp = self.path.split('?', 1)
                 qs = urlparse.parse_qs(tmp)
                 action = qs['action'][0]
-                
+
                 if action == 'set':
                     # keep track of the current topic that has been clicked
                     circle_id = qs['circle_id'][0]
-                    topic_id = self._get_topic_id(circle_id)                    
+                    topic_id = self._get_topic_id(circle_id)
                     GlobalVariable.ms1_idx = 0
                     GlobalVariable.selected_topic_id = topic_id
                 elif action == 'load':
@@ -107,7 +108,7 @@ def generate_handler(html, files=None, topic_plotter=None):
                     if (GlobalVariable.ms1_idx - 1) >= 0:
                         GlobalVariable.ms1_idx -= 1
                 elif action == 'show':
-                    topic_id = GlobalVariable.selected_topic_id                    
+                    topic_id = GlobalVariable.selected_topic_id
 
                 # get the image content
                 fig = topic_plotter.plot_for_web(topic_id, GlobalVariable.ms1_idx)
@@ -115,7 +116,7 @@ def generate_handler(html, files=None, topic_plotter=None):
                     # topic has some ms1 plot
                     canvas = FigureCanvas(fig)
                     output = StringIO.StringIO()
-                    canvas.print_png(output)  
+                    canvas.print_png(output)
                     content = output.getvalue()
                     content_type = 'image/png'
                 else:
@@ -126,46 +127,46 @@ def generate_handler(html, files=None, topic_plotter=None):
                 self.send_response(200)
                 self.send_header("Content-type", content_type)
                 self.end_headers()
-                self.wfile.write(content)      
+                self.wfile.write(content)
 
             # handle request for the clickable graph
             elif self.path.startswith('/graph.html'):
 
-                # get everything after '?'                    
+                # get everything after '?'
                 path, tmp = self.path.split('?', 1)
                 qs = urlparse.parse_qs(tmp)
                 degree = qs['degree'][0]
                 GlobalVariable.degree = int(degree)
-                
+
                 content_type, content = files[path]
                 self.send_response(200)
                 self.send_header("Content-type", content_type)
                 self.end_headers()
                 self.wfile.write(content.encode())
-                                
+
             # handle request for the clickable graph
             elif self.path.startswith('/graph.json'):
-                
+
                 print "Serving dynamic json file -- threshold = " + str(GlobalVariable.degree)
                 print "to_highlight = " + str(topic_plotter.to_highlight)
-                json_data, G = lda_visualisation.get_json_from_docdf(topic_plotter.docdf.transpose(), 
+                json_data, G = lda_visualisation.get_json_from_docdf(topic_plotter.docdf.transpose(),
                                                                   topic_plotter.to_highlight,
                                                                   GlobalVariable.degree)
 
 #                 print "Debugging file saved to " + json_outfile
 #                 json_outfile = '/home/joewandy/git/metabolomics_tools/justin/visualisation/pyLDAvis/json_out.json'
 #                 with open(json_outfile, 'w') as f:
-#                     json.dump(json_data, f, sort_keys=True, indent=4, ensure_ascii=False)                
-                
+#                     json.dump(json_data, f, sort_keys=True, indent=4, ensure_ascii=False)
+
                 content_type = "application/json"
-                content = json.dumps(json_data, sort_keys=True, indent=4, ensure_ascii=False)                
+                content = json.dumps(json_data, sort_keys=True, indent=4, ensure_ascii=False)
                 self.send_response(200)
                 self.send_header("Content-type", content_type)
                 self.end_headers()
-                self.wfile.write(content.encode())                          
-               
+                self.wfile.write(content.encode())
+
             elif self.path in files:
-                                  
+
                 # handle other images request, serve the content without encode()
                 if self.path.startswith('/images'):
                     content_type, content = files[self.path]
@@ -173,7 +174,7 @@ def generate_handler(html, files=None, topic_plotter=None):
                     self.send_header("Content-type", content_type)
                     self.end_headers()
                     self.wfile.write(content)
-                    
+
                 # serve any other content
                 else:
                     content_type, content = files[self.path]

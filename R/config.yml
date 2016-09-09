@@ -58,7 +58,7 @@ input_files:
     # Can be either in mzXML format or in CSV format, where the columns are
     # masses (m/z), retention times (s) and intensities (cts/s)
     # input_file_forMS1peaks: xxxx.csv
-    input_file_forMS1peaks: /home/joewandy/Dropbox/Project/justin_data/Dataset_for_PiMP/Beers_4Beers_compared/Positive/Samples/Beer_3_full1.mzXML
+    input_file_forMS1peaks: /home/joewandy/Dropbox/Project/justin_data/Dataset_for_PiMP/Beers_4Beers_compared/Positive/Samples/Beer_3/Beer_3_full1.mzXML
 
     # Input mzML (not mzXML!!) file of fragmentation experiment.
     # msconvert (http://proteowizard.sourceforge.net/tools/msconvert.html)
